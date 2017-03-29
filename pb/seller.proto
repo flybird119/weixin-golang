@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package pb;
+
+service SellerService {
+  rpc UserPasswordLogin(LoginReqModel) returns(LoginRspModel);
+}
+
+message LoginReqModel  {
+  string mobile = 1;
+  string password =2;
+}
+
+message LoginRspModel{
+  string mobile = 1;
+}
