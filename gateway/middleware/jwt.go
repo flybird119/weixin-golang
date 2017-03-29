@@ -1,29 +1,35 @@
+/**
+ * Copyright 2015-2016, Wothing Co., Ltd.
+ * All rights reserved.
+ *
+ * Created by Elvizlai on 2016/07/05 17:35
+ */
+
 package middleware
 
 import (
 	"context"
-	"goushuyun/db"
 	"net/http"
 	"strings"
-
-	"goushuyun/errs"
-
-	"goushuyun/misc"
-	"goushuyun/misc/token"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/urfave/negroni"
 	"github.com/wothing/log"
+
+	"github.com/goushuyun/weixin-golang/db"
+	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/token"
 )
 
 var whiteList = map[string]bool{
-	"v1/user/refresh_token": true,
+	"/v1/user/refresh_token": true,
 }
 
+// JWTJWTMiddleware check if Authorization not empty
 func JWTMiddleware() negroni.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		authHeader := r.Header.Get("Authorization")
-
 		if authHeader == "" {
 			authHeader = r.URL.Query().Get("token")
 		}
@@ -32,67 +38,65 @@ func JWTMiddleware() negroni.HandlerFunc {
 			authHeaderParts := strings.Split(authHeader, " ")
 			switch len(authHeaderParts) {
 			case 1:
-				next(w, r)
+				next(rw, r)
 				return
 			case 2:
 				if strings.ToLower(authHeaderParts[0]) != "bearer" || authHeaderParts[1] == "" {
-					misc.RespondMessage(w, r, errs.NewError(errs.ErrTokenFormat, "token format error"))
+					misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenFormat, "token format error"))
 					return
 				}
 			default:
-				misc.RespondMessage(w, r, errs.NewError(errs.ErrTokenFormat, "token length error"))
+				misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenFormat, "token length error"))
 				return
 			}
 
 			c, err := token.Check(authHeaderParts[1])
 			if err != nil {
-				log.Warn("authHeader: ", authHeader, "err: ", err)
-				misc.RespondMessage(w, r, errs.NewError(errs.ErrTokenFormat, "token illegal"))
+				log.Warn("authHeader:", authHeader, "err:", err)
+				misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenFormat, "token illegal"))
 				return
 			}
 
-			//token version check
+			// token version check
 			if !c.VerifyVersion() {
-				misc.RespondMessage(w, r, errs.NewError(errs.ErrTokenRefreshExpired, "need reload"))
+				misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenRefreshExpired, "need relogin"))
 				return
 			}
 
 			if c.VerifyIsExpired() {
 				if c.VerifyCanRefresh() {
 					if !whiteList[r.RequestURI] {
-						w.Header().Add("X-JWT-Token", token.Refresh(c))
+						rw.Header().Add("X-JWT-Token", token.Refresh(c))
 					}
 				} else {
-					misc.RespondMessage(w, r, errs.NewError(errs.ErrTokenRefreshExpired, "need relogin"))
+					misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenRefreshExpired, "need relogin"))
 					return
 				}
 			}
+
 			// claims is ptr
 			r = r.WithContext(context.WithValue(r.Context(), "claims", c))
-
-			log.Debug(misc.SuperPrint(*c))
-
 		}
-		next(w, r)
+
+		next(rw, r)
 	}
 }
 
 func SessionMiddleware() negroni.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		if c := token.Get(r); c != nil {
 			if c.Session == "H5" {
-				// do nothing
+				// do nothing if session is H5
 			} else {
 				rc := db.GetRedisConn()
 				s, err := redis.String(rc.Do("get", "s:"+c.UserId))
-
 				rc.Close()
 				if err == nil && s != c.Session {
-					misc.RespondMessage(w, r, errs.NewError(errs.ErrSessionExpired, "please re-signin"))
+					misc.RespondMessage(rw, r, errs.NewError(errs.ErrSessionExpired, "please re-signin"))
 					return
 				}
 			}
 		}
-		next(w, r)
+		next(rw, r)
 	}
 }

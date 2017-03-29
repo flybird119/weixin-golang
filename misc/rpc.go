@@ -17,7 +17,7 @@ import (
 	"github.com/wothing/worc"
 	"google.golang.org/grpc/metadata"
 
-	"goushuyun/errs"
+	"github.com/goushuyun/weixin-golang/errs"
 )
 
 var serviceList = map[string]interface{}{}
@@ -37,8 +37,7 @@ func CloseServiceConns() {
 // worc.StartServiceConns(addressOfEtcd,serviceList)
 // defer worc.CloseServiceConns()
 func CallRPC(ctx context.Context, serviceName string, method string, req interface{}) (interface{}, error) {
-
-	log.Infof("The service name is : %s", serviceList[serviceName])
+	log.CtxDebugf(ctx, "%s.%s %#v", serviceName, method, req)
 
 	rp, err := worc.CallRPC(ctx, serviceList[serviceName], serviceName, method, req)
 	if err != nil {
@@ -98,7 +97,6 @@ func CallSVCWithNewCtx(ctx context.Context, serviceName string, method string, r
 
 func CallWithResp(rw http.ResponseWriter, r *http.Request, serviceName string, method string, req proto.Message, constraints ...string) {
 	err := Request2Struct(r, req, constraints...)
-
 	if err != nil {
 		RespondMessage(rw, r, err)
 		return

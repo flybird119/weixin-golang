@@ -2,32 +2,26 @@ package main
 
 import (
 	"fmt"
-	"goushuyun/db"
-	"goushuyun/gateway/interway/router"
-	m "goushuyun/gateway/middleware"
+	"net/http"
 	"runtime"
 
 	"github.com/urfave/negroni"
 	"github.com/wothing/log"
+
+	"github.com/goushuyun/weixin-golang/db"
+	"github.com/goushuyun/weixin-golang/gateway/interway/router"
+	m "github.com/goushuyun/weixin-golang/gateway/middleware"
 )
 
 const (
-	port    = 10013
 	svcName = "interway"
+	port    = 8848
 )
 
-var serviceNames = []string{
-	"admin",
-	"store",
-	"mediastore",
-	"books",
-	"orders",
-	"activity",
-	"statistic",
-}
+var serviceNames = []string{}
 
 func main() {
-	defer log.Info("Interway stoped !")
+	defer log.Infof("%s stopped, bye bye !", svcName)
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	micro := db.NewMicro(svcName, port)
@@ -37,9 +31,10 @@ func main() {
 	n.Use(m.RecoveryMiddleware())
 	n.Use(m.LogMiddleware())
 	n.Use(m.JWTMiddleware())
+	n.Use(m.SessionMiddleware())
 	n.UseHandler(router.SetRouterV1())
 
 	networkAddr := fmt.Sprintf("0.0.0.0:%d", db.GetPort(port))
-	log.Infof("Interway servering in %s", networkAddr)
-	n.Run(networkAddr)
+	log.Infof("%s servering on %s", svcName, networkAddr)
+	log.Fatal(http.ListenAndServe(networkAddr, n))
 }

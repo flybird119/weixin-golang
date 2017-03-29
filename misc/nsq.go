@@ -16,9 +16,9 @@ import (
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
 
-	"goushuyun/db"
-	"goushuyun/errs"
-	"goushuyun/misc/hack"
+	"github.com/goushuyun/weixin-golang/db"
+	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/misc/hack"
 )
 
 type NSQCarrier struct {
@@ -76,7 +76,7 @@ func NSQConsume(topic string, channel string, hf HandleFunc) {
 	msgHandlerFunc := func() nsq.HandlerFunc {
 		return func(msg *nsq.Message) error {
 			c := &NSQCarrier{rawMsg: msg.Body}
-			if err = hf(c); err != nil {
+			if err := hf(c); err != nil {
 				if msg.Attempts > _MAX_MSG_ATTEMPTS {
 					msg.Finish()
 					log.Terrorf(c.Tid, "max attempted reached, give up, topic=%s, channel=%s, req=%s", topic, channel, hack.String(msg.Body))
@@ -122,7 +122,7 @@ func NSQConsumeR(topic string, channel string, handler interface{}) {
 	h := func(msg *nsq.Message) error {
 		v := reflect.New(at)
 		c := &NSQCarrier{Payload: v.Interface()}
-		err = c.decode(msg.Body)
+		err := c.decode(msg.Body)
 		if err != nil {
 			// this may never happened
 			log.Errorf("decode error, topic=%s, channel=%s, msg body=%s", topic, channel, hack.String(msg.Body))

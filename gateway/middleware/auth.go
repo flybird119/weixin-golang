@@ -12,10 +12,10 @@ import (
 
 	"github.com/urfave/negroni"
 
-	"goushuyun/admin/role"
-	"goushuyun/errs"
-	"goushuyun/misc"
-	"goushuyun/misc/token"
+	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/token"
+	"github.com/goushuyun/weixin-golang/seller/role"
 )
 
 // CheckAuth checks

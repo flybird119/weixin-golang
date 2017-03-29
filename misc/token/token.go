@@ -14,7 +14,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/elgs/gostrgen"
 
-	ro "goushuyun/admin/role"
+	ro "github.com/goushuyun/weixin-golang/seller/role"
 )
 
 func sign(c Claims) string {
@@ -26,7 +26,7 @@ func sign(c Claims) string {
 	return tokenStr
 }
 
-func Sign(from TokenType, uid, mob string, role int64) (tokenStr string, session string) {
+func Sign(from TokenType, uid, mob, hosp string, role int64) (tokenStr string, session string) {
 	var err error
 	session, err = gostrgen.RandGen(4, gostrgen.Lower|gostrgen.Digit, "", "")
 	if err != nil {
@@ -36,6 +36,7 @@ func Sign(from TokenType, uid, mob string, role int64) (tokenStr string, session
 	c := Claims{
 		UserId:   uid,
 		Mobile:   mob,
+		HospId:   hosp,
 		Session:  session,
 		Scope:    from,
 		Role:     ro.Role(role),
@@ -51,6 +52,7 @@ func SignWithSession(from TokenType, uid, mob, hosp, sess string, role int64) st
 	c := Claims{
 		UserId:   uid,
 		Mobile:   mob,
+		HospId:   hosp,
 		Session:  sess,
 		Scope:    from,
 		Role:     ro.Role(role),
@@ -98,6 +100,7 @@ func ReSign(c *Claims, role ro.Role) string {
 func ReSignAll(c *Claims, userId string, mobile string, hospId string, role ro.Role) string {
 	c.UserId = userId
 	c.Mobile = mobile
+	c.HospId = hospId
 	c.Role = role
 	return sign(*c)
 }

@@ -9,18 +9,8 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
-	"goushuyun/misc/token"
+	"github.com/goushuyun/weixin-golang/misc/token"
 )
-
-func NewContext(ctx context.Context) context.Context {
-	md, ok := metadata.FromContext(ctx)
-	if ok {
-		ctx = metadata.NewContext(context.Background(), md)
-	} else {
-		ctx = context.Background()
-	}
-	return ctx
-}
 
 // GetTidFromContext 从 gPRC context 中取到 tid
 func GetTidFromContext(ctx context.Context) string {
@@ -39,6 +29,15 @@ func GetUserIdFromToken(r *http.Request) string {
 		return c.UserId
 	} else {
 		return "none"
+	}
+}
+
+// TODO remove
+func GetHospitalIdFromToken(r *http.Request) string {
+	if c := token.Get(r); c != nil {
+		return c.HospId
+	} else {
+		return ""
 	}
 }
 

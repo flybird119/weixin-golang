@@ -16,24 +16,24 @@ const (
 )
 
 func RecoveryMiddleware() negroni.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		defer func() {
 			if err := recover(); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
+				rw.WriteHeader(http.StatusInternalServerError)
 
 				stack := make([]byte, stackSize)
 				stack = stack[:runtime.Stack(stack, stackAll)]
+
 				log.Errorf("panic http request: %s, err=%s, stack:\n%s", r.RequestURI, err, string(stack))
 
 				if printStack {
-					fmt.Fprintf(w, "PANIC: %s\n%s", err, stack)
+					fmt.Fprintf(rw, "PANIC: %s\n%s", err, stack)
 				} else {
-					fmt.Fprint(w, "internal error")
+					fmt.Fprint(rw, "internal error")
 				}
-
 			}
 		}()
 
-		next(w, r)
+		next(rw, r)
 	}
 }

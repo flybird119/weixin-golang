@@ -7,43 +7,33 @@ import (
 	"strings"
 	"time"
 
-	"goushuyun/errs"
-	"goushuyun/misc"
-	"goushuyun/misc/hack"
-
 	"github.com/pborman/uuid"
 	"github.com/urfave/negroni"
+
+	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/hack"
 	"github.com/wothing/log"
 )
 
 func LogMiddleware() negroni.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
-		start := time.Now()
-		tid := uuid.New()
-		w.Header().Set("X-Request-ID", tid)
-
-		version := r.Header.Get("X-App-Version")
-
-		body, err := ioutil.ReadAll(r.Body)
-
-		if len(body) > 1000 {
-			log.Debugf("%s", body[:1000])
-		} else {
-			log.Debugf("%s", body)
-		}
-
-		r.Body.Close()
-		if err != nil {
-			log.Terrorf(tid, "error on reading rwquest body, from=%v, method=%v, remote=%v, agent=%v, version=%s", r.RequestURI, r.Method, r.RemoteAddr, r.UserAgent(), version)
-			misc.RespondMessage(w, r, misc.NewErrResult(errs.ErrRequestFormat, "error on reading request body"))
+	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+		// do not read body of socket.io and no log for this request
+		if r.URL.Path == "/v1/ws/" {
+			next(rw, r)
 			return
 		}
 
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, "tid", tid)
-		ctx = context.WithValue(ctx, "body", body)
-		r = r.WithContext(ctx)
+		start := time.Now()
+		tid := uuid.New()
+		rw.Header().Set("X-Request-ID", tid)
 
+		version := r.Header.Get("X-App-Version") // iOS, Android
+		if version == "" {
+			version = "web"
+		}
+
+		// get real ip from nginx header, if not, try to remove port
 		if realIp := r.Header.Get("X-Real-IP"); realIp != "" {
 			r.RemoteAddr = realIp
 		} else {
@@ -52,10 +42,24 @@ func LogMiddleware() negroni.HandlerFunc {
 			}
 		}
 
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Terrorf(tid, "error on reading request body, from=%v, method=%v, remote=%v, agent=%v, version=%s", r.RequestURI, r.Method, r.RemoteAddr, r.UserAgent(), version)
+			misc.RespondMessage(rw, r, misc.NewErrResult(errs.ErrRequestFormat, "error on reading request body"))
+			return
+		}
+		r.Body.Close()
+
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "tid", tid)
+		ctx = context.WithValue(ctx, "body", body)
+		//ctx = context.WithValue(ctx, "ctx", metadata.NewContext(context.Background(), metadata.Pairs("tid", tid)))
+		r = r.WithContext(ctx)
+
 		bodyFormat := replaceHttpReqPassword(hack.String(body))
 		log.Tinfof(tid, "started handling request, from=%v, method=%v, remote=%v, agent=%v, version=%s, body=%v", r.RequestURI, r.Method, r.RemoteAddr, r.UserAgent(), version, bodyFormat)
-		next(w, r)
-		log.Tinfof(tid, "completed handling request, status=%v, took=%v", w.(negroni.ResponseWriter).Status(), time.Since(start))
+		next(rw, r)
+		log.Tinfof(tid, "completed handling request, status=%v, took=%v", rw.(negroni.ResponseWriter).Status(), time.Since(start))
 	}
 }
 
@@ -64,11 +68,13 @@ func replaceHttpReqPassword(s string) string {
 		s = s[:10000]
 	}
 
-	match := `"password":"`
+	match := `"password":"` //len=12
+
 	if i := strings.Index(s, match); i != -1 {
 		if j := strings.Index(s[i+12:], `"`); j != -1 {
-			return s[:i+12] + "******" + s[i+12+j:]
+			return s[:i+12] + "****" + s[i+12+j:]
 		}
 	}
+
 	return s
 }

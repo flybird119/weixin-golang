@@ -1,3 +1,6 @@
+// Copyright 2015-2016, Wothing Co., Ltd.
+// All rights reserved.
+
 package middleware
 
 import (
@@ -7,6 +10,7 @@ import (
 	"github.com/urfave/negroni"
 )
 
+// wrap http.HandlerFunc to negroni.HandlerFunc
 func Wrap(handler http.HandlerFunc) negroni.HandlerFunc {
 	return func(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
 		handler(rw, r)

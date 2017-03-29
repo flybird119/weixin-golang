@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"goushuyun/errs"
+	"github.com/goushuyun/weixin-golang/errs"
 )
 
 // Deprecated: using Request2Struct instead

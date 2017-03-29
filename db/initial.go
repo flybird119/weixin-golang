@@ -15,7 +15,7 @@ import (
 	"github.com/wothing/log"
 	wonaming "github.com/wothing/wonaming/etcd"
 
-	"goushuyun/ver"
+	"github.com/goushuyun/weixin-golang/ver"
 )
 
 var (

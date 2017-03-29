@@ -17,11 +17,8 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/proto"
-
-	"goushuyun/errs"
-	"goushuyun/misc/jsonpb"
-
-	"github.com/wothing/log"
+	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/misc/jsonpb"
 )
 
 var jsu = jsonpb.Unmarshaler{AllowUnknownFields: true}
@@ -105,9 +102,6 @@ func underscoreToCamelCase(s string) string {
 
 func Request2Struct(r *http.Request, req proto.Message, constraints ...string) error {
 	body := r.Context().Value("body").([]byte)
-
-	log.Debug(body)
-
 	if body == nil || len(body) == 0 || bytes.Equal(body, []byte("null")) {
 		return errs.NewError(errs.ErrRequestFormat, "request check failed: body is blank or 'null'")
 	}

@@ -13,7 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"goushuyun/errs"
+	"github.com/goushuyun/weixin-golang/errs"
 )
 
 var client = &http.Client{}
@@ -37,12 +37,12 @@ func GET(url string) ([]byte, error) {
 	return data, nil
 }
 
-func GETWithUnmarshal(url string, i interface{}) error {
+func GETWithUnmarshal(url string, resp interface{}) error {
 	data, err := GET(url)
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal(data, i); err != nil {
+	if err := json.Unmarshal(data, resp); err != nil {
 		return errs.NewRpcError(errs.ErrInternal, err.Error())
 	}
 	return nil
@@ -68,9 +68,17 @@ func POST(url string, data []byte) ([]byte, error) {
 }
 
 func POSTWithUnmarshal(url string, req interface{}, resp interface{}) error {
-	data, err := json.Marshal(req)
-	if err != nil {
-		return errs.NewRpcError(errs.ErrInternal, err.Error())
+	var data []byte
+	var err error
+
+	switch req.(type) {
+	case []byte:
+		data = req.([]byte)
+	default:
+		data, err = json.Marshal(req)
+		if err != nil {
+			return errs.NewRpcError(errs.ErrInternal, err.Error())
+		}
 	}
 
 	data, err = POST(url, data)

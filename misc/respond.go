@@ -12,10 +12,9 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/wothing/log"
 
-	"goushuyun/errs"
-
-	"goushuyun/misc/hack"
-	"goushuyun/misc/jsonpb"
+	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/misc/hack"
+	"github.com/goushuyun/weixin-golang/misc/jsonpb"
 )
 
 var jbm = &jsonpb.Marshaler{EnumsAsInts: true, EmitDefaults: true, OrigName: true}
@@ -27,7 +26,7 @@ func respondBytes(rw http.ResponseWriter, r *http.Request, data []byte) {
 		// If data > 10k, only log out 10k chars
 		l = 10000
 	}
-	if bytes.Contains(data, []byte(`"code":"00000"`)) {
+	if bytes.HasPrefix(data, []byte(`{"code":"00000"`)) {
 		log.Tinfof(tid, "responding, response=%s", hack.String(data[:l]))
 	} else {
 		log.Terrorf(tid, "responding, response=%s", hack.String(data[:l]))
@@ -48,6 +47,11 @@ func respondObject(rw http.ResponseWriter, r *http.Request, obj interface{}) {
 }
 
 func RespondMessage(rw http.ResponseWriter, r *http.Request, message interface{}) {
+	if message == nil {
+		respondObject(rw, r, map[string]interface{}{"code": errs.Ok})
+		return
+	}
+
 	switch m := message.(type) {
 	case proto.Message:
 		s, err := jbm.MarshalToString(m)

@@ -13,23 +13,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"reflect"
-	"regexp"
 	"strconv"
 	"strings"
 
-	"goushuyun/errs"
+	"github.com/goushuyun/weixin-golang/errs"
 )
-
-func FazzyQuery(value string) string {
-	var fazzy_value = "%"
-	for _, char := range value {
-		char := fmt.Sprintf("%c", char)
-		if char != " " {
-			fazzy_value += (char + "%")
-		}
-	}
-	return fazzy_value
-}
 
 func Md5String(objs ...interface{}) string {
 	text := ""
@@ -51,14 +39,17 @@ func Contains(array []string, element string) bool {
 	return false
 }
 
-var reg = regexp.MustCompile("86-1\\d{10}")
-
 func MobileFormat(mobile string) ([]string, error) {
-	if !reg.MatchString(mobile) {
-		return []string{}, errs.NewError(errs.ErrMobileFormat, `The mobile should match 86-1\d{10}`)
-	}
-
 	s := strings.Split(mobile, "-")
+	if len(s) != 2 {
+		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
+	}
+	if s[0] != "86" {
+		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
+	}
+	if len(s[1]) != 11 {
+		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
+	}
 	if _, err := strconv.Atoi(s[0]); err != nil {
 		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
 	}
