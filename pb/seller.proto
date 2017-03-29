@@ -3,7 +3,7 @@ syntax = "proto3";
 package pb;
 
 service SellerService {
-  rpc UserPasswordLogin(LoginReqModel) returns(LoginRspModel);
+  rpc UserPasswordLogin (LoginReqModel) returns (LoginRspModel);
 }
 
 message LoginReqModel  {

@@ -18,9 +18,12 @@ import (
 	"google.golang.org/grpc/metadata"
 
 	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/goushuyun/weixin-golang/pb"
 )
 
-var serviceList = map[string]interface{}{}
+var serviceList = map[string]interface{}{
+	"seller": pb.NewSellerServiceClient,
+}
 
 func StartServiceConns(address string, serviceNames []string) {
 	worc.StartServiceConns(address, serviceNames)

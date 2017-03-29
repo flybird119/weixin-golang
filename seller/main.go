@@ -14,7 +14,7 @@ import (
 
 const (
 	svcName = "seller"
-	port    = 10014
+	port    = 8849
 )
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 		panic(err)
 	}
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
-	pb.RegisterSellerServiceServer(s, &service.SellerServiceServer)
+	pb.RegisterSellerServiceServer(s, &service.SellerServiceServer{})
 	s.Serve(lis)
 
 }

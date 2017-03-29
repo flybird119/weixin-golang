@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/wothing/log"
+	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/pb"
 )
 
 func SellerLogin(w http.ResponseWriter, r *http.Request) {
-	log.Info("My name is Wang Kai ...")
+	req := &pb.LoginReqModel{}
 
 	fmt.Fprintf(w, "Hello, world")
+
+	misc.CallWithResp(w, r, "seller", "UserPasswordLogin", req, "mobile", "password")
 }

@@ -18,7 +18,9 @@ const (
 	port    = 8848
 )
 
-var serviceNames = []string{}
+var serviceNames = []string{
+	"seller",
+}
 
 func main() {
 	defer log.Infof("%s stopped, bye bye !", svcName)
