@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package pb;
+import "pb/common.proto";
+
+service SMSService {
+    // 即将关闭订单
+    rpc SendSMS(SMSReq) returns (Void);
+}
+
+enum SMSType {
+    UnknownSMSType                 = 0;
+    // 购书云 164093 帐号申请时的短息验证码
+    // 【购书云】您的验证码是{1}，请于3分钟内正确输入
+    CommonCheckCode = 1;
+}
+
+message SMSReq {
+    // 短信类型枚举
+    SMSType type            = 1;
+    // 电话号码, 格式 86-15618309412
+    string mobile           = 2;
+    // 根据上面短信魔板依次填入
+    repeated string message = 3;
+}

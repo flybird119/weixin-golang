@@ -1,12 +1,15 @@
 package db
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
+	"fmt"
 	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/pb"
-	log "qiniupkg.com/x/log.v7"
+	"github.com/wothing/log"
 )
 
 func Save() error {
@@ -35,18 +38,19 @@ func CheckSellerExists(loginModel *pb.LoginModel) (userinfo *pb.UserInfo, err er
 		return userinfo, nil
 	}
 
-	//SellerRegister 商家注册
-	func SellerRegister(registerModel *pb.RegisterModel) error {
-		query := "insert into seller (mobile,password,username,create_at,update_at,status,)"
-		fmt.Println(query)
-		return nil
-	}
+}
 
-	//private functions
-	func encryPassword(password string) (string) {
-		h := md5.New()
-		h.Write([]byte(password)) // 需要加密的字符串为 sharejs.com
-		result := hex.EncodeToString(h.Sum(nil))
-		return result;
-	}
+//SellerRegister 商家注册
+func SellerRegister(registerModel *pb.RegisterModel) error {
+	query := "insert into seller (mobile,password,username,create_at,update_at,status,)"
+	fmt.Println(query)
+	return nil
+}
+
+//private functions
+func encryPassword(password string) string {
+	h := md5.New()
+	h.Write([]byte(password)) // 需要加密的字符串为 sharejs.com
+	result := hex.EncodeToString(h.Sum(nil))
+	return result
 }
