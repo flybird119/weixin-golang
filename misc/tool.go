@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/wothing/log"
 )
 
 const (
@@ -39,6 +40,7 @@ func GenCheckCode(size int, kind int) string {
 		scope, base := kinds[ikind][0], kinds[ikind][1]
 		result[i] = uint8(base + rand.Intn(scope))
 	}
+	log.Debugf(">>>>>>>>>%s", result)
 	return string(result)
 }
 

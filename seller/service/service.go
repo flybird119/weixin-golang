@@ -11,9 +11,10 @@ import (
 	"golang.org/x/net/context"
 )
 
+//SellerServiceServer server
 type SellerServiceServer struct{}
 
-//UserPasswordLogin 登录
+//SellerLogin 登录
 func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel) (*pb.LoginResp, error) {
 
 	userinfo, err := db.CheckSellerExists(in)
@@ -73,13 +74,14 @@ func (s *SellerServiceServer) CheckMobileExist(ctx context.Context, in *pb.Check
 	return &pb.CheckMobileRsp{Code: "00000", Message: "ok"}, nil
 }
 
-//CheckMobileExist 检验手机号是否注册过
+//GetTelCode 检验手机号是否注册过
 func (s *SellerServiceServer) GetTelCode(ctx context.Context, in *pb.CheckMobileReq) (*pb.CheckMobileRsp, error) {
 	isExist := db.CheckMobileExist(in.Mobile)
 	if isExist {
 		return &pb.CheckMobileRsp{Code: "00000", Message: "exist"}, nil
 	}
-	code := misc.GenCheckCode(misc.KC_RAND_KIND_NUM, 4)
+	code := misc.GenCheckCode(4, misc.KC_RAND_KIND_NUM)
+	log.Debugf("sms code:%s", code)
 
 	_, err := misc.CallRPC(ctx, "sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: in.Mobile, Message: []string{code}})
 	if err != nil {
