@@ -14,8 +14,7 @@ import (
 	"fmt"
 	"math/rand"
 	"reflect"
-	"strconv"
-	"strings"
+	"regexp"
 	"time"
 
 	"github.com/goushuyun/weixin-golang/errs"
@@ -63,25 +62,14 @@ func Contains(array []string, element string) bool {
 	return false
 }
 
-func MobileFormat(mobile string) ([]string, error) {
-	s := strings.Split(mobile, "-")
-	if len(s) != 2 {
-		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
-	}
-	if s[0] != "86" {
-		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
-	}
-	if len(s[1]) != 11 {
-		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
-	}
-	if _, err := strconv.Atoi(s[0]); err != nil {
-		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
-	}
-	if _, err := strconv.Atoi(s[1]); err != nil {
-		return []string{}, errs.NewError(errs.ErrMobileFormat, `mobile should 86-156xxxx`)
+var reg = regexp.MustCompile("1\\d{10}")
+
+func MobileFormat(mobile string) (string, error) {
+	if !reg.MatchString(mobile) {
+		return "", errs.NewError(errs.ErrMobileFormat, `The mobile should match 1\d{10}`)
 	}
 
-	return []string{s[0], s[1]}, nil
+	return mobile, nil
 }
 
 func SuperPrint(x interface{}) string {
