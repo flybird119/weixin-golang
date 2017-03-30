@@ -38,5 +38,9 @@ func TestSms(t *testing.T) {
 }
 
 func TestType(t *testing.T) {
+
+	log.Debug(">>>>>>>>>>>>>")
+	log.Js
+
 	t.Logf("-----%d----", pb.SMSType_CommonCheckCode)
 }
