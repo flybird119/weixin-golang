@@ -2,16 +2,19 @@ package service
 
 import (
 	"github.com/goushuyun/weixin-golang/pb"
-	"github.com/wothing/log"
 	"golang.org/x/net/context"
 )
 
 type SellerServiceServer struct{}
 
 //UserPasswordLogin 登录
-func (s *SellerServiceServer) UserPasswordLogin(ctx context.Context, in *pb.LoginReqModel) (*pb.LoginRspModel, error) {
+func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel) (*pb.UserInfo, error) {
 
-	log.Debug(">>>>>>>>>akjsdhfklashdflkhl>>>>>>>>>>>")
+	return &pb.UserInfo{}, nil
+}
 
-	return &pb.LoginRspModel{}, nil
+//SellerRegister 商家用户注册
+func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *RegisterModel) (*UserInfo, error) {
+
+	return &pb.UserInfo{}, nil
 }

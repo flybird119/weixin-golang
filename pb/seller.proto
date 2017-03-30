@@ -3,14 +3,25 @@ syntax = "proto3";
 package pb;
 
 service SellerService {
-  rpc UserPasswordLogin (LoginReqModel) returns (LoginRspModel);
+  rpc SellerLogin (loginModel) returns (UserInfo);
+  rpc SellerRegister (registerModel) returns (UserInfo);
 }
 
-message LoginReqModel  {
+message loginModel  {
   string mobile = 1;
   string password =2;
 }
 
-message LoginRspModel{
+message UserInfo{
+  string id = 1;
+  string mobile = 2;
+  string username = 3;
+  string token = 4;
+}
+
+message registerModel{
   string mobile = 1;
+  string username = 2;
+  string password = 3;
+  string message_code = 4;
 }

@@ -9,9 +9,9 @@ import (
 )
 
 func SellerLogin(w http.ResponseWriter, r *http.Request) {
-	req := &pb.LoginReqModel{}
+	req := &pb.LoginModel
 
 	fmt.Fprintf(w, "Hello, world")
 
-	misc.CallWithResp(w, r, "seller", "UserPasswordLogin", req, "mobile", "password")
+	misc.CallWithResp(w, r, "seller", "SellerLogin", req, "mobile", "password")
 }
