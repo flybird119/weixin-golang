@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"goushuyun/misc"
 	"net"
 
 	"github.com/goushuyun/weixin-golang/db"
@@ -17,7 +18,13 @@ const (
 	port    = 8849
 )
 
+var svcNames = []string{
+	"sms",
+}
+
 func main() {
+	misc.StartServiceConns(db.GetEtcd(), svcNames)
+	defer misc.CloseServiceConns()
 
 	db.InitPG(svcName)
 	defer db.ClosePG()

@@ -1,4 +1,4 @@
---create by lixiao 
+--create by lixiao
 CREATE TABLE seller(
 	id serial,
 	mobile varchar(15),
@@ -6,7 +6,8 @@ CREATE TABLE seller(
 	username varchar(24),
 	name varchar(50),
 	avatar text,
-	register_time int,
+	create_at int,
+	update_at int,
 	status int,
 	id_card varchar(50),
 	PRIMARY KEY (id)
