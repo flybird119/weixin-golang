@@ -87,11 +87,11 @@ func (*SMSServer) SendMessage(send string) error {
 func (*SMSServer) GenSMSJson(tid string, mobile string, message []string) (jsonString string, err error) {
 	var ms []string
 	for _, m := range strings.Split(mobile, ",") {
-		strs, err := misc.MobileFormat(m)
+		str, err := misc.MobileFormat(m)
 		if err != nil {
 			return "", err
 		}
-		ms = append(ms, strs[1])
+		ms = append(ms, str)
 	}
 	if len(message) == 0 {
 		message = []string{}
