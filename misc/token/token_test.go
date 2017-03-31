@@ -15,6 +15,23 @@ import (
 var tokenStr string
 var session string
 
+func TestSign(t *testing.T) {
+	c := Claims{Mobile: "18817953402"}
+	tokenStr = sign(c)
+	t.Log(">>>>>>>>>>>>>>>token>>>>>>>>>>>>>>")
+	t.Logf("%s\n", tokenStr)
+	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+
+	claims, err := Check(tokenStr)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	t.Logf("%+v", claims)
+}
+
 func TestCheck(t *testing.T) {
 	c, err := Check(tokenStr)
 	if err != nil {

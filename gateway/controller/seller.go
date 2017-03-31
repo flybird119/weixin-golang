@@ -15,7 +15,6 @@ func SellerLogin(w http.ResponseWriter, r *http.Request) {
 
 //SellerRegister 商家注册
 func SellerRegister(w http.ResponseWriter, r *http.Request) {
-
 	req := &pb.RegisterModel{}
 	misc.CallWithResp(w, r, "seller", "SellerRegister", req, "mobile", "password", "message_code", "username")
 }
