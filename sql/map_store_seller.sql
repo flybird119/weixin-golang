@@ -2,9 +2,9 @@
 CREATE TABLE map_store_seller (
 	id serial,
 	role int8 not null,
-	store_id int4 not null,
-	seller_id int4 not null,
-	status int4 default 0,
+	store_id int not null,
+	seller_id int not null,
+	status int default 0,
 	PRIMARY KEY (id)
 )
 -- COMMENT ON COLUMN "public"."bc_map_store_seller"."id" IS '代理主键';
