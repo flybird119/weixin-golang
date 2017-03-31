@@ -7,7 +7,7 @@ CREATE TABLE store(
 	profile text,
 	create_at timestamptz  not null default now(),
 	service_mobiles text not null,
-	expire_at int timestamptz  not null default now(),
+	expire_at timestamptz  not null default now(),
 	address text ,
 	map_address text ,
 	business_license text,
