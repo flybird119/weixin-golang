@@ -1,13 +1,15 @@
 --create by lixiao
+create SEQUENCE seller_id_seq;
+
 CREATE TABLE seller(
-	id serial,
+	"id" text primary key not null default trim(to_char(nextval('seller_id_seq'), '00000000')),
 	mobile varchar(15) not null,
 	password text not null,
-	username varchar(24) not null,
+	nickname varchar(24) not null,
 	name varchar(50),
 	avatar text,
-	create_at timestamptz  not null default now(),
-	update_at timestamptz  not null default now(),
+	create_at timestamptz not null default now(),
+	update_at timestamptz not null default now(),
 	status int default 0,
 	id_card varchar(50),
 	PRIMARY KEY (id)

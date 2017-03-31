@@ -1,10 +1,11 @@
 --create by lixiao
 CREATE TABLE map_store_seller (
-	id serial,
-	role int8 not null,
-	store_id int not null,
-	seller_id int not null,
-	status int default 0,
+	id uuid primary key default gen_random_uuid(),
+	role int not null,
+	store_id text not null default '',
+	seller_id text not null default '',
+	create_at timestamptz not null default now(),
+	update_at timestamptz not null default now(),
 	PRIMARY KEY (id)
 )
 -- COMMENT ON COLUMN "public"."bc_map_store_seller"."id" IS '代理主键';

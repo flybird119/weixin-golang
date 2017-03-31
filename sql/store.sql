@@ -1,6 +1,8 @@
 --create by lixiao
+create SEQUENCE store_id_seq;
+
 CREATE TABLE store(
-	id serial,
+	"id" text primary key not null default to_char(now() AT TIME ZONE 'cct', 'yymmdd') || trim(to_char(nextval('store_id_seq'), '000000')),
 	name varchar(50) not null,
 	logo text ,
 	stutus int default 0,
