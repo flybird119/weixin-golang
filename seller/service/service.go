@@ -97,7 +97,7 @@ func (s *SellerServiceServer) GetTelCode(ctx context.Context, in *pb.CheckMobile
 	code := misc.GenCheckCode(4, misc.KC_RAND_KIND_NUM)
 	log.Debugf("sms code:%s", code)
 	//rpc调用短信接口
-	_, err := misc.CallRPC(ctx, "sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: in.Mobile, Message: []string{code}})
+	_, err := misc.CallRPC(ctx, "bc_sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: in.Mobile, Message: []string{code}})
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))

@@ -12,8 +12,7 @@ CREATE TABLE store(
 	expire_at timestamptz  not null,
 	address text ,
 	map_address text ,
-	business_license text,
-	PRIMARY KEY (id)
+	business_license text
 )
 -- COMMENT ON COLUMN "public"."bc_info_store"."name" IS '店铺名称';
 -- COMMENT ON COLUMN "public"."bc_info_store"."logo" IS '店铺logo';

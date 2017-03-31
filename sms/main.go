@@ -14,7 +14,7 @@ import (
 	"github.com/goushuyun/weixin-golang/sms/service"
 )
 
-const svcName = "sms"
+const svcName = "bc_sms"
 const port = 8850
 
 func main() {

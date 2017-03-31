@@ -11,9 +11,8 @@ CREATE TABLE seller(
 	create_at timestamptz not null default now(),
 	update_at timestamptz not null default now(),
 	status int default 0,
-	id_card varchar(50),
-	PRIMARY KEY (id)
-)
+	id_card varchar(50)
+);
 -- COMMENT ON TABLE "public"."bc_info_seller" IS '购书云商家注册表';
 -- COMMENT ON COLUMN "public"."bc_info_seller"."id" IS '代理主键';
 -- COMMENT ON COLUMN "public"."bc_info_seller"."mobile" IS '注册手机号';

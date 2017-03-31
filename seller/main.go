@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	svcName = "seller"
+	svcName = "bc_seller"
 	port    = 8849
 )
 
