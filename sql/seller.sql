@@ -1,14 +1,14 @@
 --create by lixiao
 CREATE TABLE seller(
 	id serial,
-	mobile varchar(15),
-	password text,
-	username varchar(24),
-	name varchar(50),
-	avatar text,
-	create_at int,
-	update_at int,
-	status int,
+	mobile varchar(15) not null,
+	password text not null,
+	username varchar(24) not null,
+	name varchar(50) not null,
+	avatar text not null,
+	create_at int not null,
+	update_at int not null,
+	status int default 0,
 	id_card varchar(50),
 	PRIMARY KEY (id)
 )

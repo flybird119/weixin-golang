@@ -1,15 +1,15 @@
---create by lixiao 
+--create by lixiao
 CREATE TABLE store(
 	id serial,
-	name varchar(50),
-	logo text,
-	stutus int4,
+	name varchar(50) not null,
+	logo text not null,
+	stutus int4 default 0,
 	profile text,
-	create_time int4,
-	service_mobiles text,
-	expire_time int4,
-	address text,
-	map_address text,
+	create_time int4 not null,
+	service_mobiles text not null,
+	expire_time int4 not null,
+	address text not null,
+	map_address text not null,
 	business_license text,
 	PRIMARY KEY (id)
 )

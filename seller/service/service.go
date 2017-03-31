@@ -3,6 +3,8 @@ package service
 import (
 	"errors"
 
+	"github.com/garyburd/redigo/redis"
+	baseDb "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -20,7 +22,7 @@ func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel
 	userinfo, err := db.CheckSellerExists(in)
 
 	if err != nil {
-		log.Error(err)
+		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	/**
@@ -44,6 +46,17 @@ func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.Registe
 	*		检验手机验证码
 	*====================================
 	 */
+	var conn redis.Conn = baseDb.GetRedisConn()
+	code, err := redis.String(conn.Do("get", "sellerRegister:"+in.Mobile))
+	if err == redis.ErrNil || code != in.MessageCode {
+		log.Debugf("验证码错误：%s:%s", code, in.MessageCode)
+		return &pb.RegisterResp{Code: "00000", Message: "codeErr"}, nil
+	}
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
 	id, err := db.SellerRegister(in)
 
 	if err != nil {
@@ -74,16 +87,29 @@ func (s *SellerServiceServer) CheckMobileExist(ctx context.Context, in *pb.Check
 	return &pb.CheckMobileRsp{Code: "00000", Message: "ok"}, nil
 }
 
-//GetTelCode 检验手机号是否注册过
+//GetTelCode 获取验证码
 func (s *SellerServiceServer) GetTelCode(ctx context.Context, in *pb.CheckMobileReq) (*pb.CheckMobileRsp, error) {
+	//检查手机号是否存在
 	isExist := db.CheckMobileExist(in.Mobile)
 	if isExist {
 		return &pb.CheckMobileRsp{Code: "00000", Message: "exist"}, nil
 	}
 	code := misc.GenCheckCode(4, misc.KC_RAND_KIND_NUM)
 	log.Debugf("sms code:%s", code)
-
+	//rpc调用短信接口
 	_, err := misc.CallRPC(ctx, "sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: in.Mobile, Message: []string{code}})
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//redis 存放验证码
+	var conn redis.Conn = baseDb.GetRedisConn()
+	_, err = conn.Do("set", "sellerRegister:"+in.Mobile, code)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	_, err = conn.Do("expire", "sellerRegister:"+in.Mobile, 300)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
