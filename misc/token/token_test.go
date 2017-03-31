@@ -9,15 +9,15 @@ package token
 
 import (
 	"testing"
-	//"time"
+
+	"github.com/goushuyun/weixin-golang/seller/role"
 )
 
 var tokenStr string
 var session string
 
 func TestSign(t *testing.T) {
-	c := Claims{Mobile: "18817953402"}
-	tokenStr = sign(c)
+	tokenStr = SignSellerToken("2487583", "18817953402", role.InterAdmin)
 	t.Log(">>>>>>>>>>>>>>>token>>>>>>>>>>>>>>")
 	t.Logf("%s\n", tokenStr)
 	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")

@@ -2,14 +2,14 @@
 CREATE TABLE store(
 	id serial,
 	name varchar(50) not null,
-	logo text not null,
+	logo text ,
 	stutus int default 0,
 	profile text,
-	create_at timestamptz not null default now(),
+	create_at timestamptz  not null default now(),
 	service_mobiles text not null,
-	expire_time int not null,
-	address text not null,
-	map_address text not null,
+	expire_at timestamptz  not null,
+	address text ,
+	map_address text ,
 	business_license text,
 	PRIMARY KEY (id)
 )

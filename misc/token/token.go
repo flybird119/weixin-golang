@@ -26,6 +26,17 @@ func sign(c Claims) string {
 	return tokenStr
 }
 
+func SignSellerToken(seller_id, mobile string, role int64) string {
+	var token string
+	c := Claims{
+		SellerId: seller_id,
+		Mobile:   mobile,
+		Role:     ro.Role(role),
+	}
+	token = sign(c)
+	return token
+}
+
 func Sign(from TokenType, uid, mob, hosp string, role int64) (tokenStr string, session string) {
 	var err error
 	session, err = gostrgen.RandGen(4, gostrgen.Lower|gostrgen.Digit, "", "")
