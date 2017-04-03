@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
-	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -14,8 +13,8 @@ import (
 
 //CheckSellerExists 通过手机号和登录密码检查商家是否存在
 func CheckSellerExists(loginModel *pb.LoginModel) (*pb.UserInfo, error) {
-	query := "select id,mobile,username from seller as s where s.mobile=$1 and s.password=$2"
-	log.Debugf("select id,mobile,username from seller as s where s.mobile=%s and s.password=%s", loginModel.Mobile, loginModel.Password)
+	query := "select id,mobile,nickname from seller as s where s.mobile=$1 and s.password=$2"
+	log.Debugf("select id,mobile,nickname from seller as s where s.mobile=%s and s.password=%s", loginModel.Mobile, loginModel.Password)
 
 	userinfo := &pb.UserInfo{}
 	loginModel.Password = encryPassword(loginModel.Password)
@@ -39,10 +38,9 @@ func SellerRegister(registerModel *pb.RegisterModel) (id string, err error) {
 	if isExist {
 		return "", nil
 	}
-	query := "insert into seller (mobile,password,username,create_at,update_at,status) values (%s) returning id"
-	timestamp := time.Now().Unix()
+	query := "insert into seller (mobile,password,nickname,status) values (%s) returning id"
 	registerModel.Password = encryPassword(registerModel.Password)
-	params := fmt.Sprintf("'%s','%s','%s',%d,%d,%d", registerModel.Mobile, registerModel.Password, registerModel.Username, timestamp, timestamp, 0)
+	params := fmt.Sprintf("'%s','%s','%s',%d", registerModel.Mobile, registerModel.Password, registerModel.Username, 0)
 	query = fmt.Sprintf(query, params)
 	log.Debugf("=============>", query)
 	err = DB.QueryRow(query).Scan(&id)

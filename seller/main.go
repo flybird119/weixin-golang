@@ -14,7 +14,7 @@ const (
 )
 
 var svcNames = []string{
-	"sms",
+	"bc_sms",
 }
 
 func main() {

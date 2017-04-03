@@ -33,7 +33,7 @@ func init() {
 
 func TestSms(t *testing.T) {
 	message := []string{"35421"}
-	a := &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: "86-13122210065", Message: message}
+	a := &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: "86-17600404379", Message: message}
 	smsClient.SendSMS(ctx, a)
 }
 
