@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package pb;
+import "pb/common.proto";
+import "pb/seller.proto";
+
+service StoreService {
+  rpc AddStore (Store) returns (AddStoreResp);
+  rpc UpdateStore (Store) returns (NormalResp);
+}
+
+
+//店铺
+message Store{
+  string id = 1;
+  string name = 2;
+  string logo = 3;
+  string stutus =4;
+  string profile =5;
+  string service_mobiles = 6;
+  int64 expire_at = 7;
+  string address = 8;
+  string business_license = 9;
+  int64 create_at = 10;
+  SellerInfo seller = 11;
+}
+
+message AddStoreResp{
+  string code = 1;
+  string message = 2;
+  Store data = 3;
+
+}
+
+
+enum StoreStatus {
+    Normal =0;
+    Abnormal = 1;
+}

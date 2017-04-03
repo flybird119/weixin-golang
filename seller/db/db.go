@@ -12,13 +12,13 @@ import (
 )
 
 //CheckSellerExists 通过手机号和登录密码检查商家是否存在
-func CheckSellerExists(loginModel *pb.LoginModel) (*pb.UserInfo, error) {
+func CheckSellerExists(loginModel *pb.LoginModel) (*pb.SellerInfo, error) {
 	query := "select id,mobile,nickname from seller as s where s.mobile=$1 and s.password=$2"
 	log.Debugf("select id,mobile,nickname from seller as s where s.mobile=%s and s.password=%s", loginModel.Mobile, loginModel.Password)
 
-	userinfo := &pb.UserInfo{}
+	sellerInfo := &pb.SellerInfo{}
 	loginModel.Password = encryPassword(loginModel.Password)
-	err := DB.QueryRow(query, loginModel.Mobile, loginModel.Password).Scan(&userinfo.Id, &userinfo.Mobile, &userinfo.Username)
+	err := DB.QueryRow(query, loginModel.Mobile, loginModel.Password).Scan(&sellerInfo.Id, &sellerInfo.Mobile, &sellerInfo.Username)
 	//如果检查失败
 	switch {
 	case err == sql.ErrNoRows:
@@ -27,7 +27,7 @@ func CheckSellerExists(loginModel *pb.LoginModel) (*pb.UserInfo, error) {
 		log.Error(err)
 		return nil, err
 	default:
-		return userinfo, nil
+		return sellerInfo, nil
 	}
 }
 

@@ -14,7 +14,7 @@ message LoginModel  {
   string password =2;
 }
 
-message UserInfo{
+message SellerInfo{
   string id = 1;
   string mobile = 2;
   string username = 3;
@@ -23,13 +23,13 @@ message UserInfo{
 message LoginResp{
   string code = 1;
   string message = 2;
-  UserInfo data = 3;
+  SellerInfo data = 3;
 }
 
 message RegisterResp{
   string code = 1;
   string message = 2;
-  UserInfo data = 3;
+  SellerInfo data = 3;
 }
 
 message RegisterModel{

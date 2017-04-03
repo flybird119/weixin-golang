@@ -5,10 +5,13 @@ import (
 
 	"github.com/garyburd/redigo/redis"
 	baseDb "github.com/goushuyun/weixin-golang/db"
+
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/token"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/goushuyun/weixin-golang/seller/db"
+	"github.com/goushuyun/weixin-golang/seller/role"
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
 )
@@ -19,24 +22,24 @@ type SellerServiceServer struct{}
 //SellerLogin 登录
 func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel) (*pb.LoginResp, error) {
 
-	userinfo, err := db.CheckSellerExists(in)
+	sellerInfo, err := db.CheckSellerExists(in)
 
 	if err != nil {
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	if sellerInfo == nil {
+		return &pb.LoginResp{Code: "00000", Message: "notFound"}, nil
 	}
 	/**
 	*====================================
 	*		token 构建
 	*====================================
 	 */
-	if userinfo == nil {
-		return &pb.LoginResp{Code: "00000", Message: "notFound"}, nil
-	}
-	log.Warn(*userinfo)
-	userinfo.Token = "还没有token啦"
-
-	return &pb.LoginResp{Code: "00000", Message: "ok", Data: userinfo}, nil
+	tokenStr := token.SignSellerToken(sellerInfo.Id, sellerInfo.Mobile, int64(role.AppNormalUser))
+	sellerInfo.Token = tokenStr
+	return &pb.LoginResp{Code: "00000", Message: "ok", Data: sellerInfo}, nil
 }
 
 //SellerRegister 商家用户注册
@@ -73,9 +76,11 @@ func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.Registe
 	*		token 构建
 	*====================================
 	 */
-	userinfo := &pb.UserInfo{Id: id, Username: in.Username, Mobile: in.Mobile, Token: "tokenya"}
+	tokenStr := token.SignSellerToken(id, in.Mobile, int64(role.AppNormalUser))
 
-	return &pb.RegisterResp{Code: "00000", Message: "ok", Data: userinfo}, nil
+	sellerInfo := &pb.SellerInfo{Id: id, Username: in.Username, Mobile: in.Mobile, Token: tokenStr}
+
+	return &pb.RegisterResp{Code: "00000", Message: "ok", Data: sellerInfo}, nil
 }
 
 //CheckMobileExist 检验手机号是否注册过

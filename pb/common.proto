@@ -2,4 +2,9 @@ syntax = "proto3";
 
 package pb;
 
-message Void {}
+message Void{}
+  
+message NormalResp {
+    string code    = 1;
+    string message = 2;
+}

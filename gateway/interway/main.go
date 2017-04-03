@@ -20,6 +20,7 @@ const (
 
 var serviceNames = []string{
 	"bc_seller",
+	"bc_store",
 }
 
 func main() {
