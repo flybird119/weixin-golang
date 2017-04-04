@@ -17,5 +17,9 @@ func SetRouterV1() *m.Router {
 	//store 开始
 	v1.Register("/store/add", m.Wrap(c.AddStore))
 	v1.Register("/store/update", m.Wrap(c.UpdateStore))
+
+	// mediastore
+	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
+
 	return v1
 }

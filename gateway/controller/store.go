@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"17mei/misc/token"
 	"net/http"
+
+	"github.com/goushuyun/weixin-golang/misc/token"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
