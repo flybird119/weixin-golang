@@ -8,7 +8,6 @@ CREATE TABLE store(
 	status int default 0,
 	profile text,
 	create_at timestamptz  not null default now(),
-	service_mobiles text ,
 	expire_at timestamptz  not null,
 	address text ,
 	map_address text ,

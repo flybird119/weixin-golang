@@ -53,14 +53,12 @@ message Store{
   string logo = 3;
   string status =4;
   string profile =5;
-  string service_mobiles = 6;
-  int64 expire_at = 7;
-  string address = 8;
-  string business_license = 9;
-  int64 create_at = 10;
-  SellerInfo seller = 11;
-  int64 role = 12;
-
+  int64 expire_at = 6;
+  string address = 7;
+  string business_license = 8;
+  int64 create_at = 9;
+  SellerInfo seller = 10;
+  int64 role = 11;
 }
 
 

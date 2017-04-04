@@ -17,7 +17,7 @@ var tokenStr string
 var session string
 
 func TestSign(t *testing.T) {
-	tokenStr = SignSellerToken("2487583", "18817953402", role.InterAdmin)
+	tokenStr = SignSellerToken(InterToken, "2487583", "18817953402", role.InterAdmin)
 	t.Log(">>>>>>>>>>>>>>>token>>>>>>>>>>>>>>")
 	t.Logf("%s\n", tokenStr)
 	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
@@ -33,7 +33,12 @@ func TestSign(t *testing.T) {
 }
 
 func TestCheck(t *testing.T) {
+	tokenStr := `eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJtb2IiOiIxODgxNzk1MzQwMiIsInNlcyI6Im1wNDAiLCJzY3AiOjIsInJvbCI6MSwiaWF0IjoxNDkxMzE0ODM1LCJzZWxsZXJfaWQiOiIwMDAwMDAwNCIsImlzcyI6IjEuMCJ9.uEbyqA8MpMtUWtm2qVdN8cWehhNyRvYlPQLB4eDaXkH5MJlsBdVDqyEZmy4B38tTiEbLpSeoF0U6zdt-7algwU_wfiNI5x47IqTb3XW2d8Z3WuNh1l7E_80vWi-Q_QkNDjbApY4_w7eRL9Se1ZgfOvCKnTHT4V2THEVlOAWT4Sh_p1gZyclQqmtR2Pq6OLMKM9SkROZeQNgANi9UGeeyV6XIDajeoRh4F8lDwMIiy1ZgO2VfOi8IU-9rduSIGrhOBYX_dK3iNxNjiSN_eAylbEBPCASag0CDGttknSOSPndMB-nHkA2nqtcP857mfM-AXNm2xESN6BOKyVLu89gJUw`
+
 	c, err := Check(tokenStr)
+
+	t.Logf("%+v\n", c)
+
 	if err != nil {
 		t.Error("check failed")
 	}

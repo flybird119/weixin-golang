@@ -35,7 +35,7 @@ func main() {
 	n.Use(m.RecoveryMiddleware())
 	n.Use(m.LogMiddleware())
 	n.Use(m.JWTMiddleware())
-	n.Use(m.SessionMiddleware())
+	// n.Use(m.SessionMiddleware())
 	n.UseHandler(router.SetRouterV1())
 
 	networkAddr := fmt.Sprintf("0.0.0.0:%d", db.GetPort(port))
