@@ -22,9 +22,10 @@ import (
 )
 
 var serviceList = map[string]interface{}{
-	"bc_seller": pb.NewSellerServiceClient,
-	"bc_sms":    pb.NewSMSServiceClient,
-	"bc_store":  pb.NewStoreServiceClient,
+	"bc_seller":     pb.NewSellerServiceClient,
+	"bc_sms":        pb.NewSMSServiceClient,
+	"bc_store":      pb.NewStoreServiceClient,
+	"bc_mediastore": pb.NewMediastoreClient,
 }
 
 func StartServiceConns(address string, serviceNames []string) {
