@@ -19,8 +19,8 @@ func SetRouterV1() *m.Router {
 	//store 开始
 	v1.Register("/store/add", m.Wrap(c.AddStore))
 	v1.Register("/store/update", m.Wrap(c.UpdateStore))
-	v1.Register("/store/addRealStore", m.Wrap(c.AddRealStore))
-	v1.Register("/store/updateRealStore", m.Wrap(c.UpdateRealStore))
+	v1.Register("/store/add_real_store", m.Wrap(c.AddRealStore))
+	v1.Register("/store/update_real_store", m.Wrap(c.UpdateRealStore))
 	v1.Register("/store/store_info", m.Wrap(c.StoreInfo))
 
 	// mediastore
