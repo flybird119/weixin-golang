@@ -59,7 +59,7 @@ func JWTMiddleware() negroni.HandlerFunc {
 
 			// token version check
 			if !c.VerifyVersion() {
-				misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenRefreshExpired, "need relogin"))
+				misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenRefreshExpired, "token version error, need relogin"))
 				return
 			}
 
@@ -69,7 +69,7 @@ func JWTMiddleware() negroni.HandlerFunc {
 						rw.Header().Add("X-JWT-Token", token.Refresh(c))
 					}
 				} else {
-					misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenRefreshExpired, "need relogin"))
+					misc.RespondMessage(rw, r, errs.NewError(errs.ErrTokenRefreshExpired, "token is overdue, need relogin"))
 					return
 				}
 			}

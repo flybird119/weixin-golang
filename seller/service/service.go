@@ -37,7 +37,7 @@ func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel
 	*		token 构建
 	*====================================
 	 */
-	tokenStr := token.SignSellerToken(sellerInfo.Id, sellerInfo.Mobile, int64(role.AppNormalUser))
+	tokenStr := token.SignSellerToken(token.InterToken, sellerInfo.Id, sellerInfo.Mobile, int64(role.AppNormalUser))
 	sellerInfo.Token = tokenStr
 	return &pb.LoginResp{Code: "00000", Message: "ok", Data: sellerInfo}, nil
 }
