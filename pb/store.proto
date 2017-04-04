@@ -9,6 +9,7 @@ service StoreService {
   rpc UpdateStore (Store) returns (NormalResp);
   rpc AddRealStore (RealStore) returns (AddRealStoreResp);
   rpc UpdateRealStore (RealStore) returns (NormalResp);
+  rpc StoreInfo (Store) returns (AddStoreResp);
 }
 
 //增加云店铺 resp model

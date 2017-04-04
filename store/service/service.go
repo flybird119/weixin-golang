@@ -105,3 +105,16 @@ func (s *StoreServiceServer) UpdateRealStore(ctx context.Context, in *pb.RealSto
 	 */
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
+
+//StoreInfo 查看店铺的信息
+func (s *StoreServiceServer) StoreInfo(ctx context.Context, in *pb.Store) (*pb.AddStoreResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "AddStore", "%#v", in))
+	err := db.GetStoreInfo(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.AddStoreResp{Code: "00000", Message: "ok", Data: in}, nil
+}

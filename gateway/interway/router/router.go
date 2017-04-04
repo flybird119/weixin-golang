@@ -19,14 +19,12 @@ func SetRouterV1() *m.Router {
 	//store 开始
 	v1.Register("/store/add", m.Wrap(c.AddStore))
 	v1.Register("/store/update", m.Wrap(c.UpdateStore))
-<<<<<<< HEAD
 	v1.Register("/store/addRealStore", m.Wrap(c.AddRealStore))
 	v1.Register("/store/updateRealStore", m.Wrap(c.UpdateRealStore))
-=======
+	v1.Register("/store/store_info", m.Wrap(c.StoreInfo))
 
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
->>>>>>> c3f2a920a2a3b760a584cf85cd517015d847bac2
 
 	return v1
 }

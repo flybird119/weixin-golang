@@ -40,3 +40,9 @@ func UpdateRealStore(w http.ResponseWriter, r *http.Request) {
 	req := &pb.RealStore{Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
 	misc.CallWithResp(w, r, "bc_store", "AddRealStore", req, "name", "province_code", "city_code", "scope_code", "address", "images", "id")
 }
+
+//StoreInfo 获取云店铺信息
+func StoreInfo(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Store{}
+	misc.CallWithResp(w, r, "bc_store", "StoreInfo", req, "id")
+}
