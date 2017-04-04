@@ -58,8 +58,50 @@ func (s *StoreServiceServer) UpdateStore(ctx context.Context, in *pb.Store) (*pb
 	 */
 
 	if err != nil {
+		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//AddRealStore 增加实体店
+func (s *StoreServiceServer) AddRealStore(ctx context.Context, in *pb.RealStore) (*pb.AddRealStoreResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "AddRealStore", "%#v", in))
+
+	err := db.AddRealStore(in)
+
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	/**
+	*================
+	*	记录日志
+	*================
+	 */
+	return &pb.AddRealStoreResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//UpdateRealStore 增加实体店
+func (s *StoreServiceServer) UpdateRealStore(ctx context.Context, in *pb.RealStore) (*pb.NormalResp, error) {
+	//记录踪迹
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateRealStore", "%#v", in))
+
+	err := db.UpdateRealStore(in)
+
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	/**
+	*================
+	*	记录日志
+	*================
+	 */
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }

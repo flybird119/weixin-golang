@@ -3,45 +3,83 @@ syntax = "proto3";
 package pb;
 
 service SellerService {
-  rpc SellerLogin (LoginModel) returns (LoginResp);
-  rpc SellerRegister (RegisterModel) returns (RegisterResp);
-  rpc CheckMobileExist (CheckMobileReq) returns (CheckMobileRsp);
-  rpc GetTelCode (CheckMobileReq) returns (CheckMobileRsp);
+    //商家登录
+    rpc SellerLogin (LoginModel) returns (LoginResp);
+    //商家注册
+    rpc SellerRegister (RegisterModel) returns (RegisterResp);
+    //查看手机号好吗是否存在
+    rpc CheckMobileExist (CheckMobileReq) returns (CheckMobileRsp);
+    //获取验证码
+    rpc GetTelCode (CheckMobileReq) returns (CheckMobileRsp);
+    //获取修改密码的短信
+    rpc GetUpdateTelCode (CheckMobileReq) returns (CheckMobileRsp);
+    //获取自己所关联的店铺
+    rpc SelfStores (SellerInfo) returns (SelfStoresResp);
+    //修改登录密码
+    rpc UpdatePasswordAndLogin (RegisterModel) returns (RegisterResp);
+
 }
 
+
+//自己所关联的店铺响应model
+message SelfStoresResp{
+    string code = 1;
+    string message = 2;
+    repeated Store data = 3;
+    message Store{
+        string id = 1;
+        string name = 2;
+        string logo = 3;
+        string status =4;
+        string profile =5;
+        string service_mobiles = 6;
+        int64 expire_at = 7;
+        string address = 8;
+        string business_license = 9;
+        int64 create_at = 10;
+        int64 role = 12;
+    }
+}
+
+//登录model
 message LoginModel  {
   string mobile = 1;
   string password =2;
 }
-
+//商家详情model
 message SellerInfo{
   string id = 1;
   string mobile = 2;
   string username = 3;
   string token = 4;
 }
+
+//登录响应model
 message LoginResp{
   string code = 1;
   string message = 2;
   SellerInfo data = 3;
 }
 
+//注册响应model
 message RegisterResp{
   string code = 1;
   string message = 2;
   SellerInfo data = 3;
 }
 
+//注册model
 message RegisterModel{
   string mobile = 1;
   string username = 2;
   string password = 3;
   string message_code = 4;
 }
-
+//检测手机model
 message CheckMobileReq{
   string mobile = 1;
 }
+//检测手机响应model
 message CheckMobileRsp{
   string code = 1;
   string message = 2;

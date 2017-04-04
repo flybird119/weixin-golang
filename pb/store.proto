@@ -7,24 +7,11 @@ import "pb/seller.proto";
 service StoreService {
   rpc AddStore (Store) returns (AddStoreResp);
   rpc UpdateStore (Store) returns (NormalResp);
+  rpc AddRealStore (RealStore) returns (AddRealStoreResp);
+  rpc UpdateRealStore (RealStore) returns (NormalResp);
 }
 
-
-//店铺
-message Store{
-  string id = 1;
-  string name = 2;
-  string logo = 3;
-  string stutus =4;
-  string profile =5;
-  string service_mobiles = 6;
-  int64 expire_at = 7;
-  string address = 8;
-  string business_license = 9;
-  int64 create_at = 10;
-  SellerInfo seller = 11;
-}
-
+//增加云店铺 resp model
 message AddStoreResp{
   string code = 1;
   string message = 2;
@@ -32,7 +19,51 @@ message AddStoreResp{
 
 }
 
+//增加实体店 resp model
+message AddRealStoreResp{
 
+    string code = 1;
+    string message = 2;
+    RealStore data = 3;
+}
+
+
+
+//实体店铺model
+message RealStore{
+    string id = 1;
+    string name = 2;
+    int64 province_code = 3;
+    int64 city_code = 4;
+    int64 scope_code = 5;
+    string address = 6;
+    string images = 7;
+    string store_id = 8;
+    int64 create_at = 9;
+    int64 update_at = 10;
+    SellerInfo seller = 11;
+
+}
+
+//云店铺model
+message Store{
+  string id = 1;
+  string name = 2;
+  string logo = 3;
+  string status =4;
+  string profile =5;
+  string service_mobiles = 6;
+  int64 expire_at = 7;
+  string address = 8;
+  string business_license = 9;
+  int64 create_at = 10;
+  SellerInfo seller = 11;
+  int64 role = 12;
+
+}
+
+
+//店铺状态的枚举类型
 enum StoreStatus {
     Normal =0;
     Abnormal = 1;
