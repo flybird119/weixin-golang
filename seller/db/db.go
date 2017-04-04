@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -63,6 +64,47 @@ func CheckMobileExist(mobile string) bool {
 
 	return true
 
+}
+
+//GetStoresBySeller 通过商家获取所管理的店铺
+func GetStoresBySeller(seller *pb.SellerInfo) (s []*pb.SelfStoresResp_Store, err error) {
+	query := "select s.id,s.name,s.logo,extract(epoch from s.expire_at)::integer,ms.role from store s inner join map_store_seller ms on s.id=ms.seller_id where s.id=$1 order by id "
+
+	rows, err := DB.Query(query, seller.Id)
+	//
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var store pb.SelfStoresResp_Store
+		s = append(s, &store)
+		err = rows.Scan(&store.Id, &store.Name, &store.Logo, &store.ExpireAt, &store.Role)
+		if err != nil {
+			log.Debug(err)
+			return nil, err
+		}
+	}
+	if err = rows.Err(); err != nil {
+		log.Debug("scan rows err last error: %s", err)
+		return nil, err
+	}
+
+	return s, nil
+}
+
+//UpdatePassword 更改手机号
+func UpdatePassword(model *pb.RegisterModel) (*pb.SellerInfo, error) {
+	timeNow := time.Now()
+	model.Password = encryPassword(model.Password)
+	query := "update seller set password=$1,update_at=$2 where mobile=$3 returning id,nickname"
+	seller := &pb.SellerInfo{}
+	err := DB.QueryRow(query, model.Password, timeNow, model.Mobile).Scan(&seller.Id, &seller.Username)
+	if err != nil {
+		return nil, err
+	}
+	return seller, nil
 }
 
 //private functions
