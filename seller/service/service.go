@@ -21,6 +21,8 @@ type SellerServiceServer struct{}
 
 //SellerLogin 登录
 func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel) (*pb.LoginResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SellerLogin", "%#v", in))
 
 	sellerInfo, err := db.CheckSellerExists(in)
 
@@ -44,6 +46,10 @@ func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel
 
 //SellerRegister 商家用户注册
 func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.RegisterModel) (*pb.RegisterResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SellerRegister", "%#v", in))
+
 	/**
 	*====================================
 	*		检验手机验证码
@@ -85,6 +91,9 @@ func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.Registe
 
 //CheckMobileExist 检验手机号是否注册过
 func (s *SellerServiceServer) CheckMobileExist(ctx context.Context, in *pb.CheckMobileReq) (*pb.CheckMobileRsp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "CheckMobileExist", "%#v", in))
+
 	isExist := db.CheckMobileExist(in.Mobile)
 	if isExist {
 		return &pb.CheckMobileRsp{Code: "00000", Message: "exist"}, nil
@@ -94,6 +103,10 @@ func (s *SellerServiceServer) CheckMobileExist(ctx context.Context, in *pb.Check
 
 //GetTelCode 获取验证码
 func (s *SellerServiceServer) GetTelCode(ctx context.Context, in *pb.CheckMobileReq) (*pb.CheckMobileRsp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SellerRegister", "%#v", in))
+
 	//检查手机号是否存在
 	isExist := db.CheckMobileExist(in.Mobile)
 	if isExist {

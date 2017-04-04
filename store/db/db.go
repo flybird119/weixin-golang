@@ -31,3 +31,13 @@ func UpdateStore(store *pb.Store) error {
 	}
 	return nil
 }
+
+func AddStoreSellerMap(store *pb.Store, role int64) error {
+	query := "insert into map_store_seller (seller_id,store_id,role) values($1,$2,$3)"
+	_, err := DB.Query(query, store.Seller.Id, store.Id, role)
+	if err != nil {
+		log.Debug(err)
+		return err
+	}
+	return nil
+}
