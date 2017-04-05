@@ -46,6 +46,7 @@ type Claims struct {
 	Role     role.Role `json:"rol,omitempty"` // self def
 	IssuedAt int64     `json:"iat,omitempty"`
 	SellerId string    `json:"seller_id,omitempty"`
+	StoreId  string    `json:"store_id,omitempty"`
 	Version  string    `json:"iss,omitempty"` // version of the claims
 
 	//ExpiresAt int64  `json:"exp,omitempty"`
