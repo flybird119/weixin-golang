@@ -3,9 +3,11 @@ package service
 import (
 	"errors"
 
+	"github.com/garyburd/redigo/redis"
+	baseDb "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"
-
+	sellerDb "github.com/goushuyun/weixin-golang/seller/db"
 	"github.com/wothing/log"
 
 	"golang.org/x/net/context"
@@ -129,7 +131,7 @@ func (s *StoreServiceServer) StoreInfo(ctx context.Context, in *pb.Store) (*pb.A
 func (s *StoreServiceServer) EnterStore(ctx context.Context, in *pb.Store) (*pb.AddStoreResp, error) {
 
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "AddStore", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "EnterStore", "%#v", in))
 
 	err := db.GetStoreInfo(in)
 	if err != nil {
@@ -149,7 +151,7 @@ func (s *StoreServiceServer) EnterStore(ctx context.Context, in *pb.Store) (*pb.
 func (s *StoreServiceServer) ChangeStoreLogo(ctx context.Context, in *pb.Store) (*pb.NormalResp, error) {
 
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "AddStore", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "ChangeStoreLogo", "%#v", in))
 	err := db.ChangeStoreLogo(in.Logo, in.Id)
 
 	if err != nil {
@@ -172,4 +174,62 @@ func (s *StoreServiceServer) RealStores(ctx context.Context, in *pb.Store) (*pb.
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	return &pb.RealStoresResp{Code: "00000", Message: "ok", Data: shops}, nil
+}
+
+//CheckCode 校验验证码
+func (s *StoreServiceServer) CheckCode(ctx context.Context, in *pb.RegisterModel) (*pb.NormalResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "CheckCode", "%#v", in))
+	//获取redis的连接
+	conn := baseDb.GetRedisConn()
+	//检验验证码是否正确
+	code, err := redis.String(conn.Do("get", "sellerUpdate:"+in.Mobile))
+	if err == redis.ErrNil || code != in.MessageCode {
+		log.Debugf("验证码错误：%s:%s", code, in.MessageCode)
+		return &pb.NormalResp{Code: "00000", Message: "codeErr"}, nil
+	}
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	conn.Close()
+
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//TransferStore 转让店铺
+func (s *StoreServiceServer) TransferStore(ctx context.Context, in *pb.TransferStoreReq) (*pb.AddStoreResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "TransferStore", "%#v", in))
+	//获取redis的连接
+	conn := baseDb.GetRedisConn()
+	//检验验证码是否正确
+	code, err := redis.String(conn.Do("get", "sellerUpdate:"+in.Mobile))
+	if err == redis.ErrNil || code != in.MessageCode {
+		log.Debugf("验证码错误：%s:%s", code, in.MessageCode)
+		return &pb.AddStoreResp{Code: "00000", Message: "codeErr"}, nil
+	}
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	conn.Close()
+	//转让店铺的核心操作
+	//首先根据手机号获取用户的id
+	sellerId, err := sellerDb.GetSellerByMobile(in.Mobile)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	err = db.TransferStore(sellerId, in.Store.Id)
+
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//重新牵token
+	tokenStr := token.SignSellerToken(token.InterToken, sellerId, in.Mobile, in.Store.Id, role.InterAdmin)
+	return &pb.AddStoreResp{Code: "00000", Message: "ok", Token: tokenStr}, nil
 }

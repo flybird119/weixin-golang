@@ -13,6 +13,8 @@ service StoreService {
   rpc ChangeStoreLogo (Store) returns (NormalResp);
   rpc RealStores (Store) returns (RealStoresResp);
   rpc EnterStore (Store) returns (AddStoreResp);
+  rpc CheckCode (RegisterModel) returns (NormalResp);
+  rpc TransferStore (TransferStoreReq) returns (AddStoreResp);
 
 }
 
@@ -24,6 +26,11 @@ message AddStoreResp{
   string token = 4;
 }
 
+message TransferStoreReq{
+    string mobile = 1;
+    string message_code = 2 ;
+    Store store = 3;
+}
 
 
 //增加实体店 resp model
