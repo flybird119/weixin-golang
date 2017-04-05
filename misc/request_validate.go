@@ -105,7 +105,6 @@ func Request2Struct(r *http.Request, req proto.Message, constraints ...string) e
 	if body == nil || len(body) == 0 || bytes.Equal(body, []byte("null")) {
 		return errs.NewError(errs.ErrRequestFormat, "request check failed: body is blank or 'null'")
 	}
-
 	err := jsu.Unmarshal(bytes.NewBuffer(body), req)
 	if err != nil {
 		return errs.NewError(errs.ErrRequestFormat, "request unmarshal failed: "+err.Error())

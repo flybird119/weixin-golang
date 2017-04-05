@@ -37,6 +37,7 @@ func (s *StoreServiceServer) AddStore(ctx context.Context, in *pb.Store) (*pb.Ad
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	in.AdminMobile = in.Seller.Mobile
 	/**
 	*================
 	*	记录日志
@@ -50,6 +51,7 @@ func (s *StoreServiceServer) UpdateStore(ctx context.Context, in *pb.Store) (*pb
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UpdateStore", "%#v", in))
 
+	log.Debugf("===========%s", in.Id)
 	err := db.UpdateStore(in)
 
 	/**
@@ -92,6 +94,9 @@ func (s *StoreServiceServer) UpdateRealStore(ctx context.Context, in *pb.RealSto
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UpdateRealStore", "%#v", in))
 
+	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>")
+	log.Debugf("%+v", in)
+	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	err := db.UpdateRealStore(in)
 
 	if err != nil {
@@ -138,4 +143,33 @@ func (s *StoreServiceServer) EnterStore(ctx context.Context, in *pb.Store) (*pb.
 	//重新牵token
 	tokenStr := token.SignSellerToken(token.InterToken, in.Seller.Id, in.Seller.Mobile, in.Id, role)
 	return &pb.AddStoreResp{Code: "00000", Message: "ok", Data: in, Token: tokenStr}, nil
+}
+
+//ChangeStoreLogo 修改店铺头像
+func (s *StoreServiceServer) ChangeStoreLogo(ctx context.Context, in *pb.Store) (*pb.NormalResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "AddStore", "%#v", in))
+	err := db.ChangeStoreLogo(in.Logo, in.Id)
+
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//RealStores 获取实体店列表
+func (s *StoreServiceServer) RealStores(ctx context.Context, in *pb.Store) (*pb.RealStoresResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "AddStore", "%#v", in))
+
+	shops, err := db.GetStoreShops(in.Id)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.RealStoresResp{Code: "00000", Message: "ok", Data: shops}, nil
 }
