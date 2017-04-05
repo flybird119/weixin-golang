@@ -39,7 +39,7 @@ func (s *SellerServiceServer) SellerLogin(ctx context.Context, in *pb.LoginModel
 	*		token 构建
 	*====================================
 	 */
-	tokenStr := token.SignSellerToken(token.InterToken, sellerInfo.Id, sellerInfo.Mobile, int64(role.AppNormalUser))
+	tokenStr := token.SignSellerToken(token.InterToken, sellerInfo.Id, sellerInfo.Mobile, "", int64(role.AppNormalUser))
 	sellerInfo.Token = tokenStr
 	return &pb.LoginResp{Code: "00000", Message: "ok", Data: sellerInfo}, nil
 }
@@ -83,7 +83,7 @@ func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.Registe
 	*		token 构建
 	*====================================
 	 */
-	tokenStr := token.SignSellerToken(token.InterToken, id, in.Mobile, int64(role.AppNormalUser))
+	tokenStr := token.SignSellerToken(token.InterToken, id, in.Mobile, "", int64(role.AppNormalUser))
 
 	sellerInfo := &pb.SellerInfo{Id: id, Username: in.Username, Mobile: in.Mobile, Token: tokenStr}
 
@@ -125,7 +125,7 @@ func (s *SellerServiceServer) UpdatePasswordAndLogin(ctx context.Context, in *pb
 	*		token 构建
 	*====================================
 	 */
-	tokenStr := token.SignSellerToken(token.InterToken, seller.Id, in.Mobile, int64(role.AppNormalUser))
+	tokenStr := token.SignSellerToken(token.InterToken, seller.Id, in.Mobile, "", int64(role.AppNormalUser))
 
 	sellerInfo := &pb.SellerInfo{Id: seller.Id, Username: seller.Username, Mobile: in.Mobile, Token: tokenStr}
 

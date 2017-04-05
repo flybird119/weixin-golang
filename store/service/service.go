@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/token"
 
 	"github.com/wothing/log"
 
@@ -117,4 +118,24 @@ func (s *StoreServiceServer) StoreInfo(ctx context.Context, in *pb.Store) (*pb.A
 	}
 
 	return &pb.AddStoreResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//EnterStore 进入店铺
+func (s *StoreServiceServer) EnterStore(ctx context.Context, in *pb.Store) (*pb.AddStoreResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "AddStore", "%#v", in))
+
+	err := db.GetStoreInfo(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	role, err := db.GetSellerStoreRole(in.Seller.Id, in.Id)
+	if err != nil {
+		log.Debug(err)
+	}
+	//重新牵token
+	tokenStr := token.SignSellerToken(token.InterToken, in.Seller.Id, in.Seller.Mobile, in.Id, role)
+	return &pb.AddStoreResp{Code: "00000", Message: "ok", Data: in, Token: tokenStr}, nil
 }

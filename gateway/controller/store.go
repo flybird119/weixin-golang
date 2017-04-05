@@ -46,3 +46,11 @@ func StoreInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Store{}
 	misc.CallWithResp(w, r, "bc_store", "StoreInfo", req, "id")
 }
+
+//StoreInfo 获取云店铺信息
+func EnterStore(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	log.Debug(c)
+	req := &pb.Store{Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
+	misc.CallWithResp(w, r, "bc_store", "EnterStore", req, "id")
+}

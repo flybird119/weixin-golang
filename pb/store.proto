@@ -10,6 +10,9 @@ service StoreService {
   rpc AddRealStore (RealStore) returns (AddRealStoreResp);
   rpc UpdateRealStore (RealStore) returns (NormalResp);
   rpc StoreInfo (Store) returns (AddStoreResp);
+  //rpc ChangeStoreLogo (Store) returns (NormalResp);
+  rpc EnterStore (Store) returns (AddStoreResp);
+  
 }
 
 //增加云店铺 resp model
@@ -17,8 +20,10 @@ message AddStoreResp{
   string code = 1;
   string message = 2;
   Store data = 3;
-
+  string token = 4;
 }
+
+
 
 //增加实体店 resp model
 message AddRealStoreResp{

@@ -4,12 +4,12 @@ create SEQUENCE store_id_seq;
 CREATE TABLE store(
 	"id" text primary key not null default to_char(now() AT TIME ZONE 'cct', 'yymmdd') || trim(to_char(nextval('store_id_seq'), '000000')),
 	name varchar(50) not null,
-	logo text ,
+	logo text default '',
 	status int default 0,
-	profile text,
+	profile text default '',
 	create_at timestamptz  not null default now(),
 	expire_at timestamptz  not null,
-	address text ,
+	address text default '',
 	map_address text ,
 	business_license text
 )

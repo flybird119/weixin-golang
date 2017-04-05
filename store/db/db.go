@@ -88,3 +88,15 @@ func GetStoreInfo(store *pb.Store) error {
 
 	return nil
 }
+
+func GetSellerStoreRole(sellerId, storeId string) (int64, error) {
+	query := "select role from map_store_seller where seller_id=$1 and store_id=$2"
+	log.Debugf("select role from map_store_seller where seller_id=%s and store_id=%s", sellerId, storeId)
+	var role int64
+	err := DB.QueryRow(query, sellerId, storeId).Scan(&role)
+	if err != nil {
+		log.Errorf("select role from map_store_seller where seller_id=%s and store_id=%s", sellerId, storeId)
+		return 0, err
+	}
+	return role, nil
+}
