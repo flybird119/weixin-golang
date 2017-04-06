@@ -31,5 +31,11 @@ func SetRouterV1() *m.Router {
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 
+	//school
+	v1.Register("/school/add", m.Wrap(c.AddSchool))
+	v1.Register("/school/update", m.Wrap(c.UpdateSchool))
+	v1.Register("/school/update_express_fee", m.Wrap(c.UpdateExpressFee))
+	v1.Register("/school/store_schools", m.Wrap(c.StoreSchools))
+
 	return v1
 }

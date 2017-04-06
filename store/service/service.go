@@ -229,7 +229,5 @@ func (s *StoreServiceServer) TransferStore(ctx context.Context, in *pb.TransferS
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	//重新牵token
-	tokenStr := token.SignSellerToken(token.InterToken, sellerId, in.Mobile, in.Store.Id, role.InterAdmin)
-	return &pb.AddStoreResp{Code: "00000", Message: "ok", Token: tokenStr}, nil
+	return &pb.AddStoreResp{Code: "00000", Message: "ok"}, nil
 }

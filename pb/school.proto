@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/seller.proto";
+import "pb/common.proto";
+service SchoolService{
+
+    rpc AddSchool (School) returns (SchoolResp);
+    rpc UpdateSchool (School) returns (SchoolResp);
+    rpc UpdateExpressFee (School) returns (NormalResp);
+    rpc StoreSchools (School) returns (SchoolsResp);
+
+}
+
+//学校基本model
+message School{
+
+    string id = 1;
+    string name = 2;
+    string tel = 3;
+    int64 express_fee = 4;
+    string store_id = 5;
+    double lat = 6;
+    double lng = 7;
+    int64 create_at = 8;
+    int64 update_at = 9;
+    SellerInfo seller = 10;
+
+}
+//通用学校返回model
+message SchoolResp{
+    string code = 1;
+    string message = 2;
+    School data = 3;
+}
+
+//通用学校列表返回model
+message SchoolsResp{
+    string code = 1;
+    string message =2;
+    repeated School data = 3;
+}
