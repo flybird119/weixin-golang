@@ -32,7 +32,7 @@ func UpdateSchool(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
-	misc.CallWithResp(w, r, "bc_school", "AddSchool", req, "id", "name", "tel", "express_fee", "lat", "lng")
+	misc.CallWithResp(w, r, "bc_school", "UpdateSchool", req, "id", "name", "tel", "express_fee", "lat", "lng")
 }
 
 //UpdateSchool 更改学校基本信息
@@ -44,7 +44,7 @@ func UpdateExpressFee(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
-	misc.CallWithResp(w, r, "bc_school", "AddSchool", req, "id", "express_fee")
+	misc.CallWithResp(w, r, "bc_school", "UpdateExpressFee", req, "id", "express_fee")
 }
 
 //StoreSchools 店铺下的所有学校
@@ -56,7 +56,7 @@ func StoreSchools(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
-	misc.CallWithResp(w, r, "bc_school", "AddSchool", req)
+	misc.CallWithResp(w, r, "bc_school", "StoreSchools", req)
 }
 
 //returnNotToken 返回没找到token的错误提示

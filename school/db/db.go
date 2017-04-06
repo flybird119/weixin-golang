@@ -10,8 +10,8 @@ import (
 
 //SaveSchool 保存学校
 func SaveSchool(school *pb.School) error {
-	query := "insert into school value(name,tel,express_fee,store_id,lat,lng) values($1,$2,$3,$4,$5,$6) returning id,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer"
-	log.Debugf("insert into school value(name,tel,express_fee,store_id,lat,lng) values( %s,%s,%d,%s,%d,%d ) returning id", school.Name, school.Tel, school.ExpressFee, school.StoreId, school.Lat, school.Lng)
+	query := "insert into school (name,tel,express_fee,store_id,lat,lng) values($1,$2,$3,$4,$5,$6) returning id,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer"
+	log.Debugf("insert into school (name,tel,express_fee,store_id,lat,lng) values( %s,%s,%d,%s,%f,%f ) returning id", school.Name, school.Tel, school.ExpressFee, school.StoreId, school.Lat, school.Lng)
 	err := DB.QueryRow(query, school.Name, school.Tel, school.ExpressFee, school.StoreId, school.Lat, school.Lng).Scan(&school.Id, &school.CreateAt, &school.CreateAt)
 	if err != nil {
 		log.Errorf("%+v", err)
@@ -46,8 +46,8 @@ func UpdateExpressFee(school *pb.School) error {
 
 //GetSchoolsByStore根据店铺获取所管理的学校
 func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
-	query := "select namt ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=$1"
-	log.Debugf("select namt ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=%s", storeId)
+	query := "select name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=$1"
+	log.Debugf("select name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=%s", storeId)
 	rows, err := DB.Query(query, storeId)
 
 	if err != nil {
