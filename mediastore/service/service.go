@@ -3,7 +3,8 @@ package service
 import (
 	"errors"
 	"goushuyun/errs"
-	"goushuyun/pb"
+
+	"github.com/goushuyun/weixin-golang/pb"
 
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
@@ -18,7 +19,7 @@ func (s *MediastoreServer) RefreshUrls(ctx context.Context, req *pb.RefreshReq) 
 	err := RefreshURLCache(req.Urls)
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
 	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil

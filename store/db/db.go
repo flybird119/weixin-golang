@@ -155,3 +155,15 @@ func GetStoreShops(storeId string) (r []*pb.RealStore, err error) {
 	}
 	return r, nil
 }
+
+//TransferStore 转让店铺
+func TransferStore(sellerId, storeId string) error {
+	query := "update map_store_seller set seller_id=$1 where store_id=$2 and role=$3"
+	log.Debugf("update map_store_seller set seller_id=%s where store_id=%s and role=%d", sellerId, storeId, role.InterAdmin)
+	_, err := DB.Exec(query, sellerId, storeId, role.InterAdmin)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}

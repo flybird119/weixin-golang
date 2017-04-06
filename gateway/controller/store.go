@@ -75,3 +75,17 @@ func RealStores(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Store{Id: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "RealStores", req)
 }
+
+//检查code
+func CheckCode(w http.ResponseWriter, r *http.Request) {
+	req := &pb.RegisterModel{}
+	misc.CallWithResp(w, r, "bc_store", "CheckCode", req, "mobile", "message_code")
+}
+
+//TransferStore 转让店铺
+func TransferStore(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	log.Debug(c)
+	req := &pb.TransferStoreReq{Store: &pb.Store{Id: c.StoreId}}
+	misc.CallWithResp(w, r, "bc_store", "TransferStore", req, "mobile", "message_code")
+}

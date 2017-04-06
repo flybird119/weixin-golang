@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package pb;
+import "pb/common.proto";
+
+service LocationService {
+    rpc AddLocation (Location) returns (NormalResp);
+    rpc UpdateLocation (Location) returns (NormalResp);
+    rpc ListLocation (Location) returns (listLocationResp);
+}
+
+message listLocationResp {
+    string code = 1;
+    string message = 2;
+    repeated Location data = 3;
+}
+
+message Location {
+    int64 level = 1;
+    string pid = 2;
+    string name = 3;
+    string id = 4;
+    string store_id = 5;
+}

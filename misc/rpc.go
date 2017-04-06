@@ -26,6 +26,8 @@ var serviceList = map[string]interface{}{
 	"bc_sms":        pb.NewSMSServiceClient,
 	"bc_store":      pb.NewStoreServiceClient,
 	"bc_mediastore": pb.NewMediastoreClient,
+	"bc_school":     pb.NewSchoolServiceClient,
+	"bc_location":   pb.NewLocationServiceClient,
 }
 
 func StartServiceConns(address string, serviceNames []string) {

@@ -25,9 +25,22 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/enter_store", m.Wrap(c.EnterStore))
 	v1.Register("/store/change_logo", m.Wrap(c.ChangeStoreLogo))
 	v1.Register("/store/real_stores", m.Wrap(c.RealStores))
+	v1.Register("/store/check_code", m.Wrap(c.CheckCode))
+	v1.Register("/store/transfer_store", m.Wrap(c.TransferStore))
 
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 
+<<<<<<< Updated upstream
+	//school
+	v1.Register("/school/add", m.Wrap(c.AddSchool))
+	v1.Register("/school/update", m.Wrap(c.UpdateSchool))
+	v1.Register("/school/update_express_fee", m.Wrap(c.UpdateExpressFee))
+	v1.Register("/school/store_schools", m.Wrap(c.StoreSchools))
+
+=======
+	// location
+	v1.Register("/location/add_location", m.Wrap(c.AddLocation))
+>>>>>>> Stashed changes
 	return v1
 }
