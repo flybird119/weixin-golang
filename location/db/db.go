@@ -10,7 +10,7 @@ import (
 )
 
 func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
-	query := "select id, level, pid, store_id, name from location where store_id = $1 %s"
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at DESC"
 
 	conditions := ""
 	if loc.Pid != "" {
@@ -32,7 +32,7 @@ func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 	locations := []*pb.Location{}
 	for rows.Next() {
 		tempLoc := &pb.Location{}
-		err = rows.Scan(&tempLoc.Id, &tempLoc.Level, &tempLoc.Pid, &tempLoc.StoreId, &tempLoc.Name)
+		err = rows.Scan(&tempLoc.Id, &tempLoc.Level, &tempLoc.Pid, &tempLoc.StoreId, &tempLoc.Name, &tempLoc.CreateAt, &tempLoc.UpdateAt)
 		if err != nil {
 			log.Error(err)
 			return nil, err
@@ -45,6 +45,7 @@ func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 
 func UpdateLocation(loc *pb.Location) error {
 	query := "update location set name = $1, pid = $2 where id = $3"
+
 	_, err := DB.Exec(query, loc.Name, loc.Pid, loc.Id)
 	log.Debugf("update location set name = '%s', pid = '%s' where id = '%s'", loc.Name, loc.Pid, loc.Id)
 

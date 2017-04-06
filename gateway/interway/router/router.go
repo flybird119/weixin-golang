@@ -31,16 +31,15 @@ func SetRouterV1() *m.Router {
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 
-<<<<<<< Updated upstream
 	//school
 	v1.Register("/school/add", m.Wrap(c.AddSchool))
 	v1.Register("/school/update", m.Wrap(c.UpdateSchool))
 	v1.Register("/school/update_express_fee", m.Wrap(c.UpdateExpressFee))
 	v1.Register("/school/store_schools", m.Wrap(c.StoreSchools))
 
-=======
 	// location
 	v1.Register("/location/add_location", m.Wrap(c.AddLocation))
->>>>>>> Stashed changes
+	v1.Register("/location/update_location", m.Wrap(c.UpdateLocation))
+	v1.Register("/location/list_location", m.Wrap(c.ListLocation))
 	return v1
 }

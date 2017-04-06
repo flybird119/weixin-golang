@@ -22,11 +22,8 @@ var serviceNames = []string{
 	"bc_seller",
 	"bc_store",
 	"bc_mediastore",
-<<<<<<< Updated upstream
 	"bc_school",
-=======
 	"bc_location",
->>>>>>> Stashed changes
 }
 
 func main() {

@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"gsb/errs"
 	"net/http"
 	"strings"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/urfave/negroni"
 
