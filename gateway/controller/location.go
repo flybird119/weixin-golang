@@ -11,12 +11,12 @@ import (
 
 func GetChildrenLocation(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Location{}
-	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req, "id", "name")
+	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req, "id")
 }
 
 func UpdateLocation(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Location{}
-	misc.CallWithResp(w, r, "bc_location", "UpdateLocation", req, "id")
+	misc.CallWithResp(w, r, "bc_location", "UpdateLocation", req, "id", "name")
 }
 
 func ListLocation(w http.ResponseWriter, r *http.Request) {

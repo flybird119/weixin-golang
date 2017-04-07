@@ -72,14 +72,11 @@ func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at DESC"
 
 	conditions := ""
+	conditions += fmt.Sprintf("and level = %d", loc.Level)
+
 	if loc.Pid != "" {
 		// constraint pid
 		conditions += fmt.Sprintf("and pid = '%s'", loc.Pid)
-	}
-
-	if loc.Level != 0 {
-		// constraint level
-		conditions += fmt.Sprintf("and level = %d", loc.Level)
 	}
 
 	rows, err := DB.Query(fmt.Sprintf(query, conditions), loc.StoreId)
