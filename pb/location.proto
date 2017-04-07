@@ -24,4 +24,6 @@ message Location {
     string store_id = 5;
     int64 create_at = 6;
     int64 update_at = 7;
+
+    int64 children_amount = 8;
 }
