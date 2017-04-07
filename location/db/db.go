@@ -44,7 +44,7 @@ func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 }
 
 func UpdateLocation(loc *pb.Location) error {
-	query := "update location set name = $1 where id = $3"
+	query := "update location set name = $1 where id = $2"
 
 	_, err := DB.Exec(query, loc.Name, loc.Id)
 	log.Debugf("update location set name = '%s' where id = '%s'", loc.Name, loc.Id)
