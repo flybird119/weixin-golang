@@ -43,5 +43,6 @@ func SetRouterV1() *m.Router {
 	v1.Register("/location/update_location", m.Wrap(c.UpdateLocation))
 	v1.Register("/location/list_location", m.Wrap(c.ListLocation))
 	v1.Register("/location/list_children_location", m.Wrap(c.GetChildrenLocation))
+	v1.Register("/location/del_location", m.Wrap(c.DelLocation))
 	return v1
 }

@@ -8,6 +8,7 @@ service LocationService {
     rpc UpdateLocation (Location) returns (NormalResp);
     rpc ListLocation (Location) returns (listLocationResp);
     rpc GetChildrenLocation (Location) returns (GetChildrenLocationResp);
+    rpc DelLocation (Location) returns (NormalResp);
 }
 
 message listLocationResp {

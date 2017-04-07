@@ -9,6 +9,36 @@ import (
 	"github.com/wothing/log"
 )
 
+func DeleteLocation(loc *pb.Location) error {
+	err := GetChildLocations(loc)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	query := "delete from location where id = $1"
+	_, err = DB.Exec(query, loc.Id)
+	log.Debugf("delete from location where id = '%s'", loc.Id)
+
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	// delete it's children
+	if len(loc.Children) > 0 {
+		for _, tmp := range loc.Children {
+			err = DeleteLocation(tmp)
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func GetDescLocation(loc *pb.Location, genaration int64) error {
 	err := GetChildLocations(loc)
 	if err != nil {
