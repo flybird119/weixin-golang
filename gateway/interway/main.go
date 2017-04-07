@@ -23,6 +23,7 @@ var serviceNames = []string{
 	"bc_store",
 	"bc_mediastore",
 	"bc_school",
+	"bc_location",
 }
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 	n.Use(m.RecoveryMiddleware())
 	n.Use(m.LogMiddleware())
 	n.Use(m.JWTMiddleware())
-	// n.Use(m.SessionMiddleware())
+	// n.Use(m.TokenRequiredMiddle())
 	n.UseHandler(router.SetRouterV1())
 
 	networkAddr := fmt.Sprintf("0.0.0.0:%d", db.GetPort(port))

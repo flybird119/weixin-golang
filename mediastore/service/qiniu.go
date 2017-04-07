@@ -7,9 +7,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"goushuyun/pb"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/goushuyun/weixin-golang/pb"
 
 	"github.com/wothing/log"
 	"qiniupkg.com/api.v7/kodo"

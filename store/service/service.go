@@ -231,3 +231,18 @@ func (s *StoreServiceServer) TransferStore(ctx context.Context, in *pb.TransferS
 	}
 	return &pb.AddStoreResp{Code: "00000", Message: "ok"}, nil
 }
+
+//DelRealStore 删除实体店
+func (s *StoreServiceServer) DelRealStore(ctx context.Context, in *pb.RealStore) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "TransferStore", "%#v", in))
+
+	err := db.DelRealStore(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//记录日志
+	log.Debugf("DelRealStore realStoreId:%s Operater Id:%s", in.Id, in.Seller.Id)
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}

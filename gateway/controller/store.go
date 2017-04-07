@@ -18,13 +18,18 @@ func AddStore(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_store", "AddStore", req, "name")
 }
 
-//UpdateStore 增加店铺接口
+//UpdateStore 修改
 func UpdateStore(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
-	log.Debugf("================%s", c.StoreId)
+	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
 
 	storeid := c.StoreId
-	log.Debugf("================%s", storeid)
 	req := &pb.Store{Id: storeid, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
 	misc.CallWithResp(w, r, "bc_store", "UpdateStore", req, "name", "profile")
 }
@@ -32,6 +37,14 @@ func UpdateStore(w http.ResponseWriter, r *http.Request) {
 //AddRealStore 增加实体店
 func AddRealStore(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
+	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.RealStore{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
 	misc.CallWithResp(w, r, "bc_store", "AddRealStore", req, "name", "province_code", "city_code", "scope_code", "address", "images")
 }
@@ -39,7 +52,14 @@ func AddRealStore(w http.ResponseWriter, r *http.Request) {
 //UpdateRealStore 修改实体店信息
 func UpdateRealStore(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
-	log.Debugf("%+v", c)
+	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.RealStore{Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
 	misc.CallWithResp(w, r, "bc_store", "UpdateRealStore", req, "name", "province_code", "city_code", "scope_code", "address", "images")
 }
@@ -48,6 +68,13 @@ func UpdateRealStore(w http.ResponseWriter, r *http.Request) {
 func StoreInfo(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.Store{Id: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "StoreInfo", req)
 }
@@ -64,6 +91,13 @@ func EnterStore(w http.ResponseWriter, r *http.Request) {
 func ChangeStoreLogo(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.Store{Id: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "ChangeStoreLogo", req, "logo")
 }
@@ -72,12 +106,28 @@ func ChangeStoreLogo(w http.ResponseWriter, r *http.Request) {
 func RealStores(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.Store{Id: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "RealStores", req)
 }
 
 //检查code
 func CheckCode(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.RegisterModel{}
 	misc.CallWithResp(w, r, "bc_store", "CheckCode", req, "mobile", "message_code")
 }
@@ -86,6 +136,29 @@ func CheckCode(w http.ResponseWriter, r *http.Request) {
 func TransferStore(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
 	req := &pb.TransferStoreReq{Store: &pb.Store{Id: c.StoreId}}
 	misc.CallWithResp(w, r, "bc_store", "TransferStore", req, "mobile", "message_code")
+}
+
+//删除实体店
+func DelRealStore(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	log.Debug(c)
+
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.RealStore{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
+	misc.CallWithResp(w, r, "bc_store", "DelRealStore", req, "id")
+
 }

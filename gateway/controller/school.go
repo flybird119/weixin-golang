@@ -3,7 +3,6 @@ package controller
 import (
 	"net/http"
 
-	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/misc/token"
 
 	"github.com/goushuyun/weixin-golang/misc"
@@ -15,7 +14,7 @@ func AddSchool(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
 	if c == nil || c.StoreId == "" {
-		returnNotToken(w, r)
+		misc.ReturnNotToken(w, r)
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
@@ -28,7 +27,7 @@ func UpdateSchool(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
 	if c == nil || c.StoreId == "" {
-		returnNotToken(w, r)
+		misc.ReturnNotToken(w, r)
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
@@ -40,7 +39,7 @@ func UpdateExpressFee(w http.ResponseWriter, r *http.Request) {
 	//检测token
 	c := token.Get(r)
 	if c == nil || c.StoreId == "" {
-		returnNotToken(w, r)
+		misc.ReturnNotToken(w, r)
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
@@ -52,18 +51,9 @@ func StoreSchools(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
 	if c == nil || c.StoreId == "" {
-		returnNotToken(w, r)
+		misc.ReturnNotToken(w, r)
 		return
 	}
 	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
 	misc.CallWithResp(w, r, "bc_school", "StoreSchools", req)
-}
-
-//returnNotToken 返回没找到token的错误提示
-func returnNotToken(w http.ResponseWriter, r *http.Request) {
-
-	misc.RespondMessage(w, r, map[string]interface{}{
-		"code":    errs.ErrTokenNotFound,
-		"message": "need token but not found",
-	})
 }

@@ -167,3 +167,15 @@ func TransferStore(sellerId, storeId string) error {
 	}
 	return nil
 }
+
+//DelRealStore 删除店铺
+func DelRealStore(shop *pb.RealStore) error {
+	query := "delete from real_shop where id=$1 and store_id=$2"
+	log.Debugf("delete from real_shop where id=%s and store_id=%s", shop.Id, shop.StoreId)
+	_, err := DB.Exec(query, shop.Id, shop.StoreId)
+	if err != nil {
+		log.Errorf("%+v", err)
+		return err
+	}
+	return nil
+}

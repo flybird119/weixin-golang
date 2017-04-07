@@ -15,6 +15,7 @@ service StoreService {
   rpc EnterStore (Store) returns (AddStoreResp);
   rpc CheckCode (RegisterModel) returns (NormalResp);
   rpc TransferStore (TransferStoreReq) returns (AddStoreResp);
+  rpc DelRealStore (RealStore) returns (NormalResp);
 
 }
 
