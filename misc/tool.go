@@ -13,6 +13,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"reflect"
 	"regexp"
 	"time"
@@ -27,6 +28,15 @@ const (
 	KC_RAND_KIND_UPPER = 2 // 大写字母
 	KC_RAND_KIND_ALL   = 3 // 数字、大小写字母
 )
+
+//returnNotToken 返回没找到token的错误提示
+func ReturnNotToken(w http.ResponseWriter, r *http.Request) {
+
+	RespondMessage(w, r, map[string]interface{}{
+		"code":    errs.ErrTokenNotFound,
+		"message": "need token but not found",
+	})
+}
 
 // 随机字符串
 func GenCheckCode(size int, kind int) string {
