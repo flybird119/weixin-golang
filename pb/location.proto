@@ -7,6 +7,7 @@ service LocationService {
     rpc AddLocation (Location) returns (NormalResp);
     rpc UpdateLocation (Location) returns (NormalResp);
     rpc ListLocation (Location) returns (listLocationResp);
+
 }
 
 message listLocationResp {
@@ -21,4 +22,6 @@ message Location {
     string name = 3;
     string id = 4;
     string store_id = 5;
+    int64 create_at = 6;
+    int64 update_at = 7;
 }

@@ -26,7 +26,7 @@ func ListLocation(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// call RPC to handle request
-	misc.CallWithResp(w, r, "bc_location", "ListLocation", req, "name")
+	misc.CallWithResp(w, r, "bc_location", "ListLocation", req)
 }
 
 func AddLocation(w http.ResponseWriter, r *http.Request) {
