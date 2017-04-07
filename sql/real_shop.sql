@@ -1,4 +1,4 @@
-\-- 实体店表
+-- 实体店表
 create table real_shop (
     id uuid primary key default gen_random_uuid(),
 

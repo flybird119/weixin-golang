@@ -63,6 +63,7 @@ func makeToken(zone pb.MediaZone, filename string) (token, url string) {
 	} else {
 		c = zones["Test"]
 	}
+
 	scope := c.bucket
 
 	if filename != "" {

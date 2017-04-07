@@ -1,8 +1,9 @@
 package service
 
 import (
-	"goushuyun/pb"
 	"testing"
+
+	"github.com/goushuyun/weixin-golang/pb"
 )
 
 func TestFetch(t *testing.T) {
@@ -15,9 +16,11 @@ func TestFetch(t *testing.T) {
 }
 
 func TestMakeToken(t *testing.T) {
-	token, url := makeToken(1, "haiting")
+	token, url := makeToken(0, "wanghaiting")
 
+	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	t.Log(token, url)
+	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 }
 
 func TestGenAt(t *testing.T) {

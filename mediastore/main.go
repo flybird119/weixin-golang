@@ -5,8 +5,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	"goushuyun/mediastore/service"
-	"goushuyun/pb"
+	"github.com/goushuyun/weixin-golang/mediastore/service"
+
+	"github.com/goushuyun/weixin-golang/pb"
 
 	"github.com/goushuyun/weixin-golang/db"
 
