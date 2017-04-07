@@ -19,6 +19,7 @@ message listLocationResp {
 message GetChildrenLocationResp {
     string code = 1;
     string message = 2;
+    repeated Location data = 3;
 }
 
 message Location {

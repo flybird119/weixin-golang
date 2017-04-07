@@ -9,6 +9,65 @@ import (
 	"github.com/wothing/log"
 )
 
+func GetDescLocation(loc *pb.Location, genaration int64) error {
+	err := GetChildLocations(loc)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	genaration--
+
+	// 默认只取出一层
+	if genaration > 0 {
+
+		// 对每个子位置取元素
+		for _, loc := range loc.Children {
+			err := GetChildLocations(loc)
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+			genaration--
+
+			if genaration > 0 {
+				err = GetDescLocation(loc, genaration)
+				if err != nil {
+					log.Error(err)
+					return err
+				}
+			}
+		}
+
+	}
+
+	return nil
+}
+
+func GetChildLocations(loc *pb.Location) error {
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1"
+
+	rows, err := DB.Query(query, loc.Id)
+	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s'", loc.Id)
+
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	for rows.Next() {
+		tmp := &pb.Location{}
+		err := rows.Scan(&tmp.Id, &tmp.Level, &tmp.Pid, &tmp.StoreId, &tmp.Name, &tmp.CreateAt, &tmp.UpdateAt)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		loc.Children = append(loc.Children, tmp)
+		log.JSON("%+v", tmp)
+	}
+
+	return nil
+}
+
 func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at DESC"
 

@@ -9,9 +9,14 @@ import (
 	"github.com/goushuyun/weixin-golang/pb"
 )
 
+func GetChildrenLocation(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Location{}
+	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req, "id", "name")
+}
+
 func UpdateLocation(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Location{}
-	misc.CallWithResp(w, r, "bc_location", "UpdateLocation", req, "id", "name")
+	misc.CallWithResp(w, r, "bc_location", "UpdateLocation", req, "id")
 }
 
 func ListLocation(w http.ResponseWriter, r *http.Request) {

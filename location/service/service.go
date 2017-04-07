@@ -14,6 +14,20 @@ import (
 
 type LocationServiceServer struct{}
 
+func (s *LocationServiceServer) GetChildrenLocation(ctx context.Context, req *pb.Location) (*pb.GetChildrenLocationResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetChildrenLocation", "%#v", req))
+
+	// to get location's children
+	err := db.GetDescLocation(req, req.Level)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.GetChildrenLocationResp{Code: errs.Ok, Message: "ok", Data: req.Children}, nil
+}
+
 func (s *LocationServiceServer) ListLocation(ctx context.Context, req *pb.Location) (*pb.ListLocationResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "ListLocation", "%#v", req))
