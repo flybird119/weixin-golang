@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package pb;
+
+service BooksService {
+    rpc GetBookInfoByISBN (Book) returns (GetBookInfoResp);
+}
+
+message GetBookInfoResp {
+    string code = 1;
+    string message = 2;
+    Book data = 3;
+}
+
+message Book {
+    string id = 1;
+    string store_id = 2;
+    string title = 3;
+    string isbn = 4;
+    int64 price = 5;
+    string author = 6;
+    string publisher = 7;
+    string pubdate = 8;
+    string subtitle = 9;
+    string image = 10;
+    string summary = 11;
+    string author_intro = 12;
+    int64 create_at = 13;
+    int64 level = 14;
+}

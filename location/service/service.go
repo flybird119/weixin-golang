@@ -2,7 +2,8 @@ package service
 
 import (
 	"errors"
-	"goushuyun/errs"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/goushuyun/weixin-golang/misc"
 

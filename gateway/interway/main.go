@@ -24,6 +24,7 @@ var serviceNames = []string{
 	"bc_mediastore",
 	"bc_school",
 	"bc_location",
+	"bc_books",
 }
 
 func main() {
