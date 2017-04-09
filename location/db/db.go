@@ -74,7 +74,7 @@ func GetDescLocation(loc *pb.Location, genaration int64) error {
 }
 
 func GetChildLocations(loc *pb.Location) error {
-	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1"
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1 order by create_at ASC"
 
 	rows, err := DB.Query(query, loc.Id)
 	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s'", loc.Id)
@@ -99,7 +99,7 @@ func GetChildLocations(loc *pb.Location) error {
 }
 
 func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
-	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at DESC"
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at ASC"
 
 	conditions := ""
 	conditions += fmt.Sprintf("and level = %d", loc.Level)
