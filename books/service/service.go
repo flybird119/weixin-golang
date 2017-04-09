@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"path/filepath"
 	"strings"
 
 	"github.com/goushuyun/weixin-golang/errs"
@@ -80,8 +81,24 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 		return &pb.GetBookInfoResp{Code: errs.Ok, Message: "book_not_found"}, nil
 	}
 
-	// 数据入库
+	// 抓取图书图片，存到七牛
 	final_book.StoreId = req.StoreId
+	if strings.HasPrefix(final_book.Image, "http") {
+		fetchImageReq := &pb.FetchImageReq{
+			Zone: pb.MediaZone_Test,
+			Url:  final_book.Image,
+			Key:  final_book.StoreId + "/" + final_book.Isbn + filepath.Ext(final_book.Image),
+		}
+		mediaResp := &pb.FetchImageResp{}
+		err = misc.CallSVC(ctx, "bc_mediastore", "FetchImage", fetchImageReq, mediaResp)
+		if err != nil {
+			log.Error(err)
+			return nil, errs.Wrap(errors.New(err.Error()))
+		}
+		final_book.Image = fetchImageReq.Key
+	}
+
+	// 数据入库
 	err = db.SaveBook(final_book)
 	if err != nil {
 		log.Error(err)

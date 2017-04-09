@@ -1,10 +1,8 @@
 package service
 
-import (
-	"github.com/goushuyun/weixin-golang/pb"
-)
+import "github.com/goushuyun/weixin-golang/pb"
 
-func integreteInfo(to, from *pb.Book) (*pb.Book, error) {
+func integreteInfo(to, from *pb.Book) *pb.Book {
 	if to.Title == "" {
 		to.Title = from.Title
 	}
@@ -33,7 +31,7 @@ func integreteInfo(to, from *pb.Book) (*pb.Book, error) {
 		to.Subtitle = from.Subtitle
 	}
 
-	return to, nil
+	return to
 }
 
 func bookInfoIsOk(book *pb.Book) bool {
