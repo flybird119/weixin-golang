@@ -9,6 +9,16 @@ import (
 	"github.com/goushuyun/weixin-golang/pb"
 )
 
+func DelLocation(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Location{}
+	misc.CallWithResp(w, r, "bc_location", "DelLocation", req, "id")
+}
+
+func GetChildrenLocation(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Location{}
+	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req, "id")
+}
+
 func UpdateLocation(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Location{}
 	misc.CallWithResp(w, r, "bc_location", "UpdateLocation", req, "id", "name")

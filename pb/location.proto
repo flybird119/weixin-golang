@@ -7,10 +7,17 @@ service LocationService {
     rpc AddLocation (Location) returns (NormalResp);
     rpc UpdateLocation (Location) returns (NormalResp);
     rpc ListLocation (Location) returns (listLocationResp);
-
+    rpc GetChildrenLocation (Location) returns (GetChildrenLocationResp);
+    rpc DelLocation (Location) returns (NormalResp);
 }
 
 message listLocationResp {
+    string code = 1;
+    string message = 2;
+    repeated Location data = 3;
+}
+
+message GetChildrenLocationResp {
     string code = 1;
     string message = 2;
     repeated Location data = 3;
@@ -24,6 +31,6 @@ message Location {
     string store_id = 5;
     int64 create_at = 6;
     int64 update_at = 7;
-
     int64 children_amount = 8;
+    repeated  Location children = 9;
 }

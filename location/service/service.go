@@ -2,7 +2,8 @@ package service
 
 import (
 	"errors"
-	"goushuyun/errs"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/goushuyun/weixin-golang/misc"
 
@@ -13,6 +14,34 @@ import (
 )
 
 type LocationServiceServer struct{}
+
+func (s *LocationServiceServer) DelLocation(ctx context.Context, req *pb.Location) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "DelLocation", "%#v", req))
+
+	// to delete location with it's children if it has
+	err := db.DeleteLocation(req)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
+}
+
+func (s *LocationServiceServer) GetChildrenLocation(ctx context.Context, req *pb.Location) (*pb.GetChildrenLocationResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetChildrenLocation", "%#v", req))
+
+	// to get location's children
+	err := db.GetDescLocation(req, req.Level)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.GetChildrenLocationResp{Code: errs.Ok, Message: "ok", Data: req.Children}, nil
+}
 
 func (s *LocationServiceServer) ListLocation(ctx context.Context, req *pb.Location) (*pb.ListLocationResp, error) {
 	tid := misc.GetTidFromContext(ctx)

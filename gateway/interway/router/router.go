@@ -7,7 +7,11 @@ import (
 
 //SetRouterV1 设置seller的router
 func SetRouterV1() *m.Router {
-	v1 := m.NewWithPrefix("/v1") // /v1/seller/test
+	v1 := m.NewWithPrefix("/v1")
+
+	// books
+	v1.Register("/books/get_book_info_by_isbn", m.Wrap(c.GetBookInfoByISBN))
+
 	//seller 开始
 	v1.Register("/seller/login", m.Wrap(c.SellerLogin))
 	v1.Register("/seller/register", m.Wrap(c.SellerRegister))
@@ -42,5 +46,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/location/add_location", m.Wrap(c.AddLocation))
 	v1.Register("/location/update_location", m.Wrap(c.UpdateLocation))
 	v1.Register("/location/list_location", m.Wrap(c.ListLocation))
+	v1.Register("/location/list_children_location", m.Wrap(c.GetChildrenLocation))
+	v1.Register("/location/del_location", m.Wrap(c.DelLocation))
 	return v1
 }
