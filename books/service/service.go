@@ -12,6 +12,7 @@ import (
 
 	"github.com/goushuyun/weixin-golang/books/db"
 	"github.com/goushuyun/weixin-golang/books/info-src/douban"
+	"github.com/goushuyun/weixin-golang/books/info-src/wanxiang"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 )
@@ -23,7 +24,7 @@ func (s *BooksServer) SaveBookInfo(ctx context.Context, req *pb.Book) (*pb.GetBo
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetBookInfo", "%#v", req))
 
-	// save book info, level plus one and return a new ID
+	// save info, level plus one and return a new ID
 	err := db.SaveBook(req)
 	if err != nil {
 		log.Error(err)
@@ -50,6 +51,8 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 		api_usage  int64
 		final_book *pb.Book
 	)
+
+	// get from douban
 	douban_book, err := douban.GetBookInfo(req.Isbn)
 	if err != nil && strings.Index(err.Error(), "404") == -1 {
 		log.Error(err)
@@ -57,12 +60,18 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 	}
 	api_usage++
 
-	// requeat other API
+	if !bookInfoIsOk(douban_book) {
+		// get from wanxiang
+		wanxiang_book, err := wanxiang.GetBookInfo(req.Isbn)
+		if err != nil {
+			log.Error(err)
+			return nil, errs.Wrap(errors.New(err.Error()))
+		}
+		api_usage++
+		final_book = integreteInfo(douban_book, wanxiang_book)
+	}
 
-	if api_usage > 1 {
-		// 将多API 返回图书信息整合
-		// final_book = integreteInfo(douban_book, douban_book)
-	} else {
+	if api_usage == 1 {
 		final_book = douban_book
 	}
 

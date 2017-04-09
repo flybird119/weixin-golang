@@ -77,7 +77,7 @@ func GetChildLocations(loc *pb.Location) error {
 	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1 order by create_at ASC"
 
 	rows, err := DB.Query(query, loc.Id)
-	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s'", loc.Id)
+	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s' order by create_at ASC", loc.Id)
 
 	if err != nil {
 		log.Error(err)
