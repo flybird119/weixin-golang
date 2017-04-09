@@ -46,8 +46,8 @@ func UpdateExpressFee(school *pb.School) error {
 
 //GetSchoolsByStore根据店铺获取所管理的学校
 func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
-	query := "select name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=$1"
-	log.Debugf("select name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=%s", storeId)
+	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=$1 order by create_at"
+	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=%s order by create_at", storeId)
 	rows, err := DB.Query(query, storeId)
 
 	if err != nil {
@@ -58,7 +58,7 @@ func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
 	for rows.Next() {
 		var school pb.School
 		s = append(s, &school)
-		err = rows.Scan(&school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt)
+		err = rows.Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt)
 		if err != nil {
 			log.Errorf("%+v", err)
 		}
