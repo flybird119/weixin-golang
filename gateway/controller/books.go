@@ -1,8 +1,9 @@
 package controller
 
 import (
-	"gsb/errs"
 	"net/http"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"

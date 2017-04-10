@@ -168,3 +168,15 @@ func encode(buf *bytes.Buffer, v reflect.Value) error {
 	}
 	return nil
 }
+
+//FazzyQuery 模糊查询
+func FazzyQuery(value string) string {
+	var fazzy_value = "%"
+	for _, char := range value {
+		char := fmt.Sprintf("%c", char)
+		if char != " " {
+			fazzy_value += (char + "%")
+		}
+	}
+	return fazzy_value
+}

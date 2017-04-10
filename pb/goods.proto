@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/books.proto";
+import "pb/common.proto";
+
+service GoodsService{
+    rpc AddGoods (Goods) returns (NormalResp);               //添加商品
+    rpc UpdateGoods (Goods) returns (NormalResp);            //更新商品
+    rpc SearchGoods (Goods) returns (GoodsDetailResp);      //查找商品
+}
+
+
+
+message Goods{
+    string id = 1;
+    string book_id = 2;
+    string store_id = 3;
+    string isbn = 4;
+    string title = 5;
+    int64 new_book_price = 6;
+    int64 new_book_amount = 7;
+    int64 old_book_price = 8;
+    int64 old_book_amount = 9;
+    int64 create_at = 10;
+    int64 update_at = 11;
+    int64 sales_status = 12;        //关联数据库字段 is_selling 状态值由GoodsStatus管理
+    repeated GoodsLocation location = 13;
+    string seller_id = 14;
+    int64 search_picture = 15;//-100 所有的 0有图片 1无图片
+    int64 search_type = 16; //-100 所有的  0新书 1旧书
+    int64 search_amount = 17;//-100 所有
+    int64 page = 18;
+    int64 size = 19;
+    bool is_selling = 20;
+}
+
+
+message GoodsSalesModel{            //当前云店商品数量统计
+    string goods_id = 1;
+    int64 type = 2;
+    int64 price = 3;
+    int64 amount = 4;
+    repeated GoodsLocation location = 13;
+}
+
+
+message GoodsLocation{
+    string id = 1;
+    string goods_id = 2;
+    int64 type = 3;                 //0 新 1旧
+    string storehouse_id = 4;
+    string shelf_id = 5;
+    string floor_id = 6;
+    int64 create_at = 7;
+    int64 update_at = 8;
+    int64 amount = 9;
+    int64 price = 10;
+}
+
+message GoodsDetailResp{
+    string code = 1;
+    string message = 2;
+    repeated GoodsSearchResult data = 3;
+}
+message GoodsSearchResult{
+    Book book = 1;
+    repeated GoodsSalesModel data = 2;
+}
