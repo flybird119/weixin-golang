@@ -1,8 +1,9 @@
 package service
 
 import (
-	"17mei/errs"
 	"errors"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/goushuyun/weixin-golang/goods/db"
 	"github.com/goushuyun/weixin-golang/misc"
@@ -18,6 +19,9 @@ type GoodsServiceServer struct{}
 func (s *GoodsServiceServer) AddGoods(ctx context.Context, in *pb.Goods) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "AddGoods", "%#v", in))
+	if in.StoreId == "" {
+		return nil, errs.Wrap(errors.New("没有关联店铺，请重试！"))
+	}
 	err := db.AddGoods(in)
 	if err != nil {
 		log.Error(err)

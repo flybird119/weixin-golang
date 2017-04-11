@@ -212,7 +212,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		args = append(args, misc.FazzyQuery(goods.Title))
 		condition += fmt.Sprintf(" and b.title like $%d", len(args))
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by rum_ts_distance(to_tsvector('jiebacfg', title) , to_tsquery('jiebacfg', $%d)),g.id", len(args))
+		condition += fmt.Sprintf(" order by  title <-> '$%d' ,g.id", len(args))
 	} else {
 		condition += " order by g.id"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
