@@ -1,6 +1,7 @@
 package misc
 
 import (
+	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
@@ -77,4 +78,9 @@ func update1(mobile, nickname, id string) {
 		log.Debugf("提交出错%+v", err)
 		return
 	}
+}
+func TestUpdate(t *testing.T) {
+	var nihao bool
+	fmt.Print(nihao)
+	log.Debug(nihao)
 }

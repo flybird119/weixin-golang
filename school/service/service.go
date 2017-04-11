@@ -17,6 +17,9 @@ type SchoolServiceServer struct{}
 
 //AddSchool 增加学校
 func (s *SchoolServiceServer) AddSchool(ctx context.Context, in *pb.School) (*pb.SchoolResp, error) {
+	if in.StoreId == "" {
+		return nil, errs.Wrap(errors.New("需要重新登录！"))
+	}
 	//新建学校
 	err := db.SaveSchool(in)
 	if err != nil {

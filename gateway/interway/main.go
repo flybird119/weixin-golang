@@ -25,6 +25,7 @@ var serviceNames = []string{
 	"bc_school",
 	"bc_location",
 	"bc_books",
+	"bc_goods",
 }
 
 func main() {
