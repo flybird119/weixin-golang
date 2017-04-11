@@ -46,28 +46,18 @@ func GetDescLocation(loc *pb.Location, genaration int64) error {
 		return err
 	}
 	genaration--
+	log.Debugf("The genaration is %d", genaration)
 
 	// 默认只取出一层
 	if genaration > 0 {
-
 		// 对每个子位置取元素
 		for _, loc := range loc.Children {
-			err := GetChildLocations(loc)
+			err := GetDescLocation(loc, genaration)
 			if err != nil {
 				log.Error(err)
 				return err
 			}
-			genaration--
-
-			if genaration > 0 {
-				err = GetDescLocation(loc, genaration)
-				if err != nil {
-					log.Error(err)
-					return err
-				}
-			}
 		}
-
 	}
 
 	return nil
