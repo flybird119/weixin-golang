@@ -16,7 +16,15 @@ func DelLocation(w http.ResponseWriter, r *http.Request) {
 
 func GetChildrenLocation(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Location{}
-	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req, "id")
+	if c := token.Get(r); c != nil {
+		req.StoreId = c.StoreId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req)
 }
 
 func UpdateLocation(w http.ResponseWriter, r *http.Request) {

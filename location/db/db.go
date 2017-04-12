@@ -46,38 +46,28 @@ func GetDescLocation(loc *pb.Location, genaration int64) error {
 		return err
 	}
 	genaration--
+	log.Debugf("The genaration is %d", genaration)
 
 	// 默认只取出一层
 	if genaration > 0 {
-
 		// 对每个子位置取元素
 		for _, loc := range loc.Children {
-			err := GetChildLocations(loc)
+			err := GetDescLocation(loc, genaration)
 			if err != nil {
 				log.Error(err)
 				return err
 			}
-			genaration--
-
-			if genaration > 0 {
-				err = GetDescLocation(loc, genaration)
-				if err != nil {
-					log.Error(err)
-					return err
-				}
-			}
 		}
-
 	}
 
 	return nil
 }
 
 func GetChildLocations(loc *pb.Location) error {
-	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1 order by create_at ASC"
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1 and store_id = $2 order by create_at ASC"
 
-	rows, err := DB.Query(query, loc.Id)
-	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s' order by create_at ASC", loc.Id)
+	rows, err := DB.Query(query, loc.Id, loc.StoreId)
+	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s' and store_id = '%s' order by create_at ASC", loc.Id, loc.StoreId)
 
 	if err != nil {
 		log.Error(err)
