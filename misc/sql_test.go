@@ -46,6 +46,7 @@ func TestTransaction(t *testing.T) {
 
 func update1(mobile, nickname, id string) {
 	tx, _ := db.DB.Begin()
+
 	var status int
 
 	_, err := tx.Exec("update seller set mobile=$1 ,nickname=$2,status=status+1 where id=$3", mobile, nickname, id)

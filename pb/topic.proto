@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+package pb;
+import "pb/common.proto";
+
+service TopicService{
+    rpc AddTopic (Topic) returns (NormalResp);
+    rpc DelTopic (Topic) returns (NormalResp);
+    rpc UpdateTopic (Topic) returns (NormalResp);
+    rpc AddTopicItem (TopicItem) returns (NormalResp);
+    rpc DelTopicItem (TopicItem) returns (NormalResp);
+    rpc SearchTopics (Topic) returns (SearchTopicResp);
+}
+
+message Topic{
+    string id = 1;
+    string profile = 2;
+    string title = 3;
+    string token_seller_id = 4;
+    int64 sort = 5;         // 1 优先级低  2 优先级中   3 优先级高
+    int64 status = 6;       // 1 正常  2 下架
+    int64 create_at = 7;
+    int64 update_at = 8;
+    string token_store_id = 9;
+    repeated TopicItem items = 10;
+    int64 item_count = 11;
+}
+
+message SearchTopicResp{
+    string code = 1;
+    string message = 2;
+    repeated Topic data = 3;
+}
+
+
+message TopicItem{
+    string id = 1;
+    string goods_id = 2;        //商品id
+    string isbn = 3;            //isbn
+    string title = 4;           //标题
+    string author = 5;          //作者
+    string puhlisher = 6;        //出版社
+    string image = 7;            //图片
+    int64 book_price = 8;        //原价
+    int64 stock = 9;             //库存量
+    string topic_id = 10;         //话题id
+}

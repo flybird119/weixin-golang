@@ -230,7 +230,8 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		book := &pb.Book{}
 		searchGoods := &pb.Goods{}
 
-		var salesModels []*pb.GoodsSalesModel
+		var newbookModel *pb.GoodsSalesModel
+		var oldbookModel *pb.GoodsSalesModel
 
 		/**	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling"
 		 */
@@ -243,36 +244,31 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		if goods.SearchType == -100 {
 			newLocations, _ := SearchGoodsLoaction(searchGoods.Id, 0)
 			oldLocations, _ := SearchGoodsLoaction(searchGoods.Id, 1)
-			log.Debugf("<<<<<<<<<<<<<<<<<<%d", goods.SearchType)
-			log.Debug(newLocations == nil)
-			log.Debug(oldLocations == nil)
 
 			if newLocations != nil {
-				newSales := &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
-				salesModels = append(salesModels, newSales)
+				newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
 			}
 			if oldLocations != nil {
-				oldSales := &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
-				salesModels = append(salesModels, oldSales)
+				oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
 			}
 
 		} else {
 			if goods.SearchType == 0 {
 				newLocations, _ := SearchGoodsLoaction(searchGoods.Id, 0)
 				if newLocations != nil {
-					newSales := &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
-					salesModels = append(salesModels, newSales)
+					newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
+
 				}
 			} else {
 				oldLocations, _ := SearchGoodsLoaction(searchGoods.Id, 1)
 				if oldLocations != nil {
-					oldSales := &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
-					salesModels = append(salesModels, oldSales)
+					oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
+
 				}
 			}
 		}
 
-		r = append(r, &pb.GoodsSearchResult{Book: book, Data: salesModels})
+		r = append(r, &pb.GoodsSearchResult{Book: book, NewBook: newbookModel, OldBook: oldbookModel})
 	}
 
 	return r, nil

@@ -66,5 +66,6 @@ message GoodsDetailResp{
 }
 message GoodsSearchResult{
     Book book = 1;
-    repeated GoodsSalesModel data = 2;
+    GoodsSalesModel new_book = 2;
+    GoodsSalesModel old_book = 3;
 }

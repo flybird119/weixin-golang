@@ -180,3 +180,8 @@ func FazzyQuery(value string) string {
 	}
 	return fazzy_value
 }
+
+//记录日志
+func LogErr(err error) {
+	log.Debugf("%+v", err)
+}
