@@ -19,6 +19,7 @@ func main() {
 	m := db.NewMicro(svcName, port)
 	m.RegisterPG()
 	m.ReferServices(svcNames...)
+
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
 	pb.RegisterTopicServiceServer(s, &service.TopicServiceServer{})
 

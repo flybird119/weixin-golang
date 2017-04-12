@@ -22,8 +22,10 @@ func AddTopic(topic *pb.Topic) error {
 	}
 	errStr := ""
 	for i := 0; i < len(topic.Items); i++ {
+		topic.Items[i].TopicId = topic.Id
 		err = AddTopicItem(topic.Items[i])
 		if err != nil {
+			misc.LogErr(err)
 			errStr += fmt.Sprintf("第%d项上传时失败", i)
 		}
 	}
@@ -79,13 +81,18 @@ func UpdateTopic(topic *pb.Topic) error {
 		args = append(args, topic.Sort)
 		condition += fmt.Sprintf(",sort=$%d", len(args))
 	}
+	if topic.Status != 0 {
+		args = append(args, topic.Status)
+		condition += fmt.Sprintf(",status=$%d", len(args))
+	}
+
 	args = append(args, topic.Id)
 	condition += fmt.Sprintf(" where id=$%d", len(args))
 
 	args = append(args, topic.TokenStoreId)
 	condition += fmt.Sprintf(" and store_id=$%d", len(args))
 	query += condition
-	_, err := DB.Exec(query, args)
+	_, err := DB.Exec(query, args...)
 	if err != nil {
 		misc.LogErr(err)
 		return err
@@ -95,9 +102,30 @@ func UpdateTopic(topic *pb.Topic) error {
 
 //AddTopicItem 增加话题项 topicItem.TopicId topicItem.GoodsId
 func AddTopicItem(topicItem *pb.TopicItem) error {
-	query := "insert topic_item (topic_id,goods_id) values($1,$2)"
-	log.Debugf("insert topic_item (topic_id,goods_id) values(%s,%s)", topicItem.TopicId, topicItem.GoodsId)
-	_, err := DB.Exec(query, topicItem.TopicId, topicItem.GoodsId)
+	query := "select goods_id,count(goods_id) from topic_item where topic_id=$1 group by goods_id"
+	rows, err := DB.Query(query, topicItem.TopicId)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var goods_id string
+		var count int
+		err = rows.Scan(&goods_id, &count)
+		if err != nil {
+			misc.LogErr(err)
+			return err
+		}
+		if goods_id == topicItem.GoodsId {
+
+			return errors.New("不能更添加重复的商品")
+		}
+
+	}
+	query = "insert into topic_item (topic_id,goods_id) values($1,$2)"
+	log.Debugf("insert into topic_item (topic_id,goods_id) values(%s,%s)", topicItem.TopicId, topicItem.GoodsId)
+	_, err = DB.Exec(query, topicItem.TopicId, topicItem.GoodsId)
 	if err != nil {
 		log.Errorf("%+v", err)
 		return err
@@ -110,7 +138,7 @@ func AddTopicItem(topicItem *pb.TopicItem) error {
 func DelTopicItem(topicItem *pb.TopicItem) error {
 	query := "delete from topic_item where id=$1 and topic_id=$2"
 	log.Debugf("delete from topic_item where id=%s and topic_id=%s", topicItem.Id, topicItem.TopicId)
-	_, err := DB.Exec(query, topicItem.Id)
+	_, err := DB.Exec(query, topicItem.Id, topicItem.TopicId)
 	if err != nil {
 		misc.LogErr(err)
 		return err
@@ -120,7 +148,7 @@ func DelTopicItem(topicItem *pb.TopicItem) error {
 
 //SearchTopics 搜索话题 topic.Id topic.Title topic.TokenStoreId
 func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
-	query := "select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer t.create_at,extract(epoch from t.update_at)::integer t.update_at,count(ti.id) from topic t join topic_item ti on ti.topic_id=t.id where 1=1"
+	query := "select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer create_at,extract(epoch from t.update_at)::integer update_at  from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
 	var args []interface{}
 	var condition string
 	if topic.Id != "" {
@@ -128,19 +156,19 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 		condition += fmt.Sprintf(" and id=$%d", len(args))
 	}
 	if topic.Title != "" {
-		args = append(args, topic.Title)
-		condition += fmt.Sprintf(" and id=$%d", len(args))
+		args = append(args, misc.FazzyQuery(topic.Title))
+		condition += fmt.Sprintf(" and title like $%d", len(args))
 	}
 	if topic.TokenStoreId != "" {
 		args = append(args, topic.TokenStoreId)
-		condition += fmt.Sprintf(" and id=$%d", len(args))
+		condition += fmt.Sprintf(" and store_id=$%d", len(args))
 	}
 
-	condition += "order by t.sort"
+	condition += " order by t.sort"
 	query += condition
 
 	log.Debugf(query+" args:%s", args)
-	rows, err := DB.Query(query, args)
+	rows, err := DB.Query(query, args...)
 	if err != nil {
 		misc.LogErr(err)
 		return nil, err
@@ -150,7 +178,14 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 		//select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer t.create_at,extract(epoch from t.update_at)::integer t.update_at,count(ti.id)
 		topic := &pb.Topic{}
 		topics = append(topics, topic)
-		rows.Scan(&topic.Id, &topic.Profile, &topic.Title, &topic.Sort, &topic.Status, &topic.CreateAt, &topic.UpdateAt, &topic.ItemCount)
+		rows.Scan(&topic.Id, &topic.Profile, &topic.Title, &topic.Sort, &topic.Status, &topic.CreateAt, &topic.UpdateAt)
+		query = "select count(*) from topic_item where topic_id=$1"
+		err = DB.QueryRow(query, topic.Id).Scan(&topic.ItemCount)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+
 	}
 	return topics, err
 }
