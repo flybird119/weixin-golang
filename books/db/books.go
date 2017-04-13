@@ -10,6 +10,16 @@ import (
 	"github.com/wothing/log"
 )
 
+func GetBookInfo(book *pb.Book) error {
+	query := "select title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where id = $1"
+	err := DB.QueryRow(query, book.Id).Scan(&book.Title, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &book.AuthorIntro)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
 func GetBookInfoByISBN(book *pb.Book) error {
 	query := "select id, title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where isbn = $1 %s order by level DESC limit 1"
 

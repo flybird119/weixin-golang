@@ -21,9 +21,21 @@ import (
 type BooksServer struct {
 }
 
-func (s *BooksServer) SaveBookInfo(ctx context.Context, req *pb.Book) (*pb.GetBookInfoResp, error) {
+func (s *BooksServer) GetBookInfo(ctx context.Context, req *pb.Book) (*pb.Book, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetBookInfo", "%#v", req))
+
+	err := db.GetBookInfo(req)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return req, nil
+}
+
+func (s *BooksServer) SaveBookInfo(ctx context.Context, req *pb.Book) (*pb.GetBookInfoResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SaveBookInfo", "%#v", req))
 
 	// save info, level plus one and return a new ID
 	err := db.SaveBook(req)
@@ -37,7 +49,7 @@ func (s *BooksServer) SaveBookInfo(ctx context.Context, req *pb.Book) (*pb.GetBo
 
 func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.GetBookInfoResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "GetBookInfo", "%#v", req))
+	defer log.TraceOut(log.TraceIn(tid, "GetBookInfoByISBN", "%#v", req))
 
 	// 查找本地数据库
 	err := db.GetBookInfoByISBN(req)

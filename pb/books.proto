@@ -4,6 +4,7 @@ package pb;
 
 service BooksService {
     rpc GetBookInfoByISBN (Book) returns (GetBookInfoResp);
+    rpc GetBookInfo (Book) returns (Book);
 }
 
 message GetBookInfoResp {
