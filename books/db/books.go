@@ -11,8 +11,8 @@ import (
 )
 
 func GetBookInfo(book *pb.Book) error {
-	query := "select title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where id = $1"
-	err := DB.QueryRow(query, book.Id).Scan(&book.Title, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &book.AuthorIntro)
+	query := "select title, price, author, publisher, pubdate, subtitle, image, summary, author_intro, isbn from books where id = $1"
+	err := DB.QueryRow(query, book.Id).Scan(&book.Title, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &book.AuthorIntro, &book.Isbn)
 	if err != nil {
 		log.Error(err)
 		return err
