@@ -19,7 +19,6 @@ create table books (
     image text not null default '',
     summary text not null default '',
     author_intro text not null default '',
-
     /* 时间记录 */
     create_at timestamptz not null default now()
 );

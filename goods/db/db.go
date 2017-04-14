@@ -184,7 +184,14 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		condition += fmt.Sprintf(" and (g.new_book_amount=$%d or g.old_book_amount=$%d)", len(args), len(args)+1)
 		args = append(args, goods.SearchAmount)
 	}
-
+	if goods.Author != "" {
+		args = append(args, misc.FazzyQuery(goods.Author))
+		condition += fmt.Sprintf(" and b.author like $%d", len(args))
+	}
+	if goods.Publisher != "" {
+		args = append(args, misc.FazzyQuery(goods.Publisher))
+		condition += fmt.Sprintf(" and b.publisher like $%d", len(args))
+	}
 	if goods.SearchType != -100 {
 		if goods.SearchType == 0 {
 			condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0)"
@@ -201,6 +208,13 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 			condition += " and b.image=''"
 		}
 	}
+	args = append(args, goods.StoreId)
+	condition += fmt.Sprintf(" and g.store_id=$%d", len(args))
+
+	if goods.Id != "" {
+		args = append(args, goods.Id)
+		condition += fmt.Sprintf(" and g.id=$%d", len(args))
+	}
 
 	if goods.Page <= 0 {
 		goods.Page = 1
@@ -208,6 +222,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 	if goods.Size <= 0 {
 		goods.Size = 20
 	}
+
 	if goods.Title != "" {
 		args = append(args, misc.FazzyQuery(goods.Title))
 		condition += fmt.Sprintf(" and b.title like $%d", len(args))
@@ -303,4 +318,32 @@ func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation
 		}
 	}
 	return l, err
+}
+
+//获取图书信息 精确搜索
+func GetGoodsByIdOrIsbn(goods *pb.Goods) error {
+	query := "select id,book_id,store_id,isbn,new_book_amount,old_book_amount,new_book_price,old_book_price,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer,is_selling from goods where 1=1"
+
+	var args []interface{}
+	var condition string
+
+	if goods.Id != "" {
+		args = append(args, goods.Id)
+		condition += fmt.Sprintf(" and id=$%d", len(args))
+	}
+
+	if goods.Isbn != "" {
+		args = append(args, goods.Isbn)
+		condition += fmt.Sprintf(" and isbn=$%d", len(args))
+	}
+	args = append(args, goods.StoreId)
+	condition += fmt.Sprintf(" and store_id=$%d limit 1", len(args))
+
+	query += condition
+	err := DB.QueryRow(query, args...).Scan(&goods.Id, &goods.BookId, &goods.StoreId, &goods.Isbn, &goods.NewBookAmount, &goods.OldBookAmount, &goods.NewBookPrice, &goods.OldBookPrice, &goods.CreateAt, &goods.UpdateAt, &goods.IsSelling)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	return nil
 }

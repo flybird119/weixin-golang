@@ -9,6 +9,8 @@ service GoodsService{
     rpc AddGoods (Goods) returns (NormalResp);               //添加商品
     rpc UpdateGoods (Goods) returns (NormalResp);            //更新商品
     rpc SearchGoods (Goods) returns (GoodsDetailResp);      //查找商品
+    rpc GetGoodsByIdOrIsbn (Goods) returns (NormalGoodsResp);//通过isbn获取商品
+    rpc SearchGoodsTypeInfo (Goods) returns (TypeGoodsResp); //查询商品单类型
 }
 
 
@@ -34,8 +36,37 @@ message Goods{
     int64 page = 18;
     int64 size = 19;
     bool is_selling = 20;
+    string author = 21;
+    string publisher = 22;
 }
 
+message TypeGoods{
+    string id = 1;
+    string book_id = 2;
+    string store_id = 3;
+    string isbn = 4;
+    string title = 5;
+    string is_selling = 6;
+    string type = 7;
+    string price = 8;
+    string amount = 9;
+    string author = 10;
+    string publisher = 11;
+    string goods_image = 12;
+}
+
+message TypeGoodsResp{
+    string code = 1;
+    string message = 2;
+    TypeGoods data = 3;
+}
+
+
+message NormalGoodsResp{
+    string code =1;
+    string message = 2;
+    Goods data = 3;
+}
 
 message GoodsSalesModel{            //当前云店商品数量统计
     string goods_id = 1;

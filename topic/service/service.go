@@ -112,3 +112,50 @@ func (s *TopicServiceServer) SearchTopics(ctx context.Context, in *pb.Topic) (*p
 	}
 	return &pb.SearchTopicResp{Code: "00000", Message: "ok", Data: topics}, nil
 }
+
+//SearchTopics 搜索话题
+func (s *TopicServiceServer) TopicsInfo(ctx context.Context, in *pb.Topic) (*pb.SearchTopicResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SearchTopics", "%#v", in))
+	topics, err := db.SearchTopics(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	for i := 0; i < len(topics); i++ {
+		topic := topics[i]
+		for j := 0; j < len(topic.Items); j++ {
+			item := topic.Items[j]
+			goods := &pb.Goods{StoreId: in.TokenStoreId, Id: item.GoodsId}
+			data, err := misc.CallRPC(ctx, "bc_goods", "GetGoodsByIdOrIsbn", goods)
+			if err != nil {
+				log.Debug(err)
+				return nil, errs.Wrap(errors.New(err.Error()))
+			}
+			goodsResp, ok := data.(*pb.NormalGoodsResp)
+			if !ok {
+				log.Debug(err)
+				return nil, errs.Wrap(errors.New(err.Error()))
+			}
+			data, err = misc.CallRPC(ctx, "bc_books", "GetBookInfo", &pb.Book{Id: goodsResp.Data.BookId})
+			if err != nil {
+				log.Debug(err)
+				return nil, errs.Wrap(errors.New(err.Error()))
+			}
+			book, ok := data.(*pb.Book)
+			if !ok {
+				log.Debug(err)
+				return nil, errs.Wrap(errors.New(err.Error()))
+			}
+			item.Isbn = book.Isbn
+			item.Title = book.Title
+			item.Author = book.Author
+			item.Puhlisher = book.Publisher
+			item.Image = book.Image
+			item.BookPrice = book.Price
+			log.Debugf("=====================data=%+v", book)
+
+		}
+	}
+	return &pb.SearchTopicResp{Code: "00000", Message: "ok", Data: topics}, nil
+}

@@ -53,3 +53,23 @@ func (s *GoodsServiceServer) SearchGoods(ctx context.Context, in *pb.Goods) (*pb
 	}
 	return &pb.GoodsDetailResp{Code: "00000", Message: "ok", Data: res}, nil
 }
+
+//GetGoodsByIdOrIsbn 获取商品基本信息
+func (s *GoodsServiceServer) GetGoodsByIdOrIsbn(ctx context.Context, in *pb.Goods) (*pb.NormalGoodsResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SearchGoods", "%#v", in))
+	err := db.GetGoodsByIdOrIsbn(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalGoodsResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//GetGoodsTypeInfo 获取商品单类型基础类型
+func (s *GoodsServiceServer) SearchGoodsTypeInfo(ctx context.Context, in *pb.Goods) (*pb.TypeGoodsResp, error) {
+	//首先先获取商品的基本信息
+
+	return &pb.TypeGoodsResp{Code: "00000", Message: "ok"}, nil
+}

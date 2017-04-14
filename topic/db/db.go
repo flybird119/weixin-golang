@@ -153,18 +153,22 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 	var condition string
 	if topic.Id != "" {
 		args = append(args, topic.Id)
-		condition += fmt.Sprintf(" and id=$%d", len(args))
+		condition += fmt.Sprintf(" and t.id=$%d", len(args))
 	}
 	if topic.Title != "" {
 		args = append(args, misc.FazzyQuery(topic.Title))
-		condition += fmt.Sprintf(" and title like $%d", len(args))
+		condition += fmt.Sprintf(" and t.title like $%d", len(args))
 	}
 	if topic.TokenStoreId != "" {
 		args = append(args, topic.TokenStoreId)
-		condition += fmt.Sprintf(" and store_id=$%d", len(args))
+		condition += fmt.Sprintf(" and t.store_id=$%d", len(args))
+	}
+	if topic.Status != 0 {
+		args = append(args, topic.Status)
+		condition += fmt.Sprintf(" and t.status=$%d", len(args))
 	}
 
-	condition += " order by t.sort"
+	condition += " order by t.sort desc"
 	query += condition
 
 	log.Debugf(query+" args:%s", args)
@@ -179,13 +183,40 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 		topic := &pb.Topic{}
 		topics = append(topics, topic)
 		rows.Scan(&topic.Id, &topic.Profile, &topic.Title, &topic.Sort, &topic.Status, &topic.CreateAt, &topic.UpdateAt)
-		query = "select count(*) from topic_item where topic_id=$1"
-		err = DB.QueryRow(query, topic.Id).Scan(&topic.ItemCount)
+		items, findErr := GetTopicItemsByTopic(topic.Id)
+		if err != nil {
+
+			misc.LogErr(findErr)
+			return nil, findErr
+		}
+		topic.ItemCount = int64(len(items))
+
+		topic.Items = items
+	}
+	return topics, err
+}
+
+//GetTopicItemsByTopic 获取话题项
+func GetTopicItemsByTopic(topic_id string) (items []*pb.TopicItem, err error) {
+	query := "select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=$1 order by id"
+	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=%s order by id", topic_id)
+
+	rows, err := DB.Query(query, topic_id)
+
+	if err != nil {
+		misc.LogErr(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		item := &pb.TopicItem{}
+		items = append(items, item)
+		err = rows.Scan(&item.Id, &item.TopicId, &item.GoodsId, &item.Status, &item.CreateAt)
+
 		if err != nil {
 			misc.LogErr(err)
 			return nil, err
 		}
-
 	}
-	return topics, err
+	return items, err
 }

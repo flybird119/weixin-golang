@@ -14,8 +14,13 @@ const (
 	port    = 8856
 )
 
+var svcNames = []string{
+	"bc_books",
+}
+
 func main() {
 	m := db.NewMicro(svcName, port)
+	m.ReferServices(svcNames...)
 	m.RegisterPG()
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
 	pb.RegisterGoodsServiceServer(s, &service.GoodsServiceServer{})
