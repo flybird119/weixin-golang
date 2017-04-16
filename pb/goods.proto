@@ -10,7 +10,7 @@ service GoodsService{
     rpc UpdateGoods (Goods) returns (NormalResp);            //更新商品
     rpc SearchGoods (Goods) returns (GoodsDetailResp);      //查找商品
     rpc GetGoodsByIdOrIsbn (Goods) returns (NormalGoodsResp);//通过isbn获取商品
-    rpc SearchGoodsTypeInfo (Goods) returns (TypeGoodsResp); //查询商品单类型
+    rpc SearchGoodsTypeInfo (TypeGoods) returns (TypeGoodsResp); //查询商品单类型
 }
 
 
