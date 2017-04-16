@@ -68,7 +68,7 @@ func (s *GoodsServiceServer) GetGoodsByIdOrIsbn(ctx context.Context, in *pb.Good
 }
 
 //GetGoodsTypeInfo 获取商品单类型基础类型
-func (s *GoodsServiceServer) SearchGoodsTypeInfo(ctx context.Context, in *pb.Goods) (*pb.TypeGoodsResp, error) {
+func (s *GoodsServiceServer) SearchGoodsTypeInfo(ctx context.Context, in *pb.TypeGoods) (*pb.TypeGoodsResp, error) {
 	//首先先获取商品的基本信息
 
 	return &pb.TypeGoodsResp{Code: "00000", Message: "ok"}, nil

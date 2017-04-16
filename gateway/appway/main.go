@@ -9,7 +9,7 @@ import (
 	"github.com/wothing/log"
 
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/goushuyun/weixin-golang/gateway/interway/router"
+	"github.com/goushuyun/weixin-golang/gateway/appway/router"
 	m "github.com/goushuyun/weixin-golang/gateway/middleware"
 )
 

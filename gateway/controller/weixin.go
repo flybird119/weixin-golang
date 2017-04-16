@@ -8,7 +8,7 @@ import (
 )
 
 func ReceiveTicket(w http.ResponseWriter, r *http.Request) {
-	log.Debug("My name is Wang Kai ..")
+	log.Debugf("The request body is : %s", r.Context().Value("body"))
 
 	// receive component_verify_ticket from weixin
 	misc.RespondMessage(w, r, "success")

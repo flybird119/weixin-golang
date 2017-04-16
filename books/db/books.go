@@ -33,7 +33,7 @@ func GetBookInfoByISBN(book *pb.Book) error {
 	log.Debugf("select id, title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where isbn = '%s' %s order by level DESC limit 1", book.Isbn, condition)
 
 	// get book info by isbn, return level is most high
-	err = DB.QueryRow(query, book.Isbn).Scan(&book.Id, &book.Title, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &book.AuthorIntro)
+	err = DB.QueryRow(fmt.Sprintf(query, ""), book.Isbn).Scan(&book.Id, &book.Title, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &book.AuthorIntro)
 
 	if err != nil {
 		log.Error(err)
