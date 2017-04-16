@@ -63,6 +63,5 @@ func SetRouterV1() *m.Router {
 	v1.Register("/topic/del_item", m.Wrap(c.DelTopicItem))
 	v1.Register("/topic/search", m.Wrap(c.SearchTopics))
 	v1.Register("/topic/topics_info", m.Wrap(c.TopicsInfo))
-
 	return v1
 }
