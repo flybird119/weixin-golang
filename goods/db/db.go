@@ -179,11 +179,11 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		args = append(args, goods.Isbn)
 		condition += fmt.Sprintf(" and b.isbn=$%d", len(args))
 	}
-	if goods.SearchAmount != -100 {
+	/**if goods.SearchAmount != 0 {
 		args = append(args, goods.SearchAmount)
 		condition += fmt.Sprintf(" and (g.new_book_amount=$%d or g.old_book_amount=$%d)", len(args), len(args)+1)
-		args = append(args, goods.SearchAmount)
-	}
+		args = append(args, goods.SearchAmount),
+	}*/
 	if goods.Author != "" {
 		args = append(args, misc.FazzyQuery(goods.Author))
 		condition += fmt.Sprintf(" and b.author like $%d", len(args))
@@ -192,15 +192,44 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		args = append(args, misc.FazzyQuery(goods.Publisher))
 		condition += fmt.Sprintf(" and b.publisher like $%d", len(args))
 	}
+
 	if goods.SearchType != -100 {
 		if goods.SearchType == 0 {
-			condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0)"
+			if goods.SearchAmount != 0 {
+				if goods.SearchAmount == 1 {
+					condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount<=0"
+				} else {
+					condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount>0"
+				}
+			} else {
+				condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0)"
+			}
+
 		} else {
-			condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =1)"
+			if goods.SearchAmount != 0 {
+				if goods.SearchAmount == 1 {
+					condition += "  and exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount<=0"
+				} else {
+					condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount>0"
+				}
+			} else {
+				condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =1)"
+			}
+
 		}
 	} else {
-		condition += " and exists (select * from goods_location gl where gl.goods_id=g.id)"
+		if goods.SearchAmount != 0 {
+			if goods.SearchAmount == 1 {
+				condition += "  and ((exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount<=0) or (exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount<=0))"
+			} else {
+				condition += "  and ((exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount>0) or (exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount>0))"
+			}
+		} else {
+			condition += " and exists (select * from goods_location gl where gl.goods_id=g.id)"
+		}
+
 	}
+
 	if goods.SearchPicture != -100 {
 		if goods.SearchPicture == 0 {
 			condition += " and b.image<>''"

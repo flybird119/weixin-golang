@@ -150,10 +150,10 @@ func (s *TopicServiceServer) TopicsInfo(ctx context.Context, in *pb.Topic) (*pb.
 			item.Isbn = book.Isbn
 			item.Title = book.Title
 			item.Author = book.Author
-			item.Puhlisher = book.Publisher
+			item.Publisher = book.Publisher
 			item.Image = book.Image
 			item.BookPrice = book.Price
-			log.Debugf("=====================data=%+v", book)
+			item.Stock = goodsResp.Data.NewBookAmount + goodsResp.Data.OldBookAmount
 
 		}
 	}

@@ -40,7 +40,7 @@ message TopicItem{
     string isbn = 3;            //isbn
     string title = 4;           //标题
     string author = 5;          //作者
-    string puhlisher = 6;        //出版社
+    string publisher = 6;        //出版社
     string image = 7;            //图片
     int64 book_price = 8;        //原价
     int64 stock = 9;             //库存量

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 
@@ -173,6 +174,9 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 
 	log.Debugf(query+" args:%s", args)
 	rows, err := DB.Query(query, args...)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		misc.LogErr(err)
 		return nil, err
@@ -203,6 +207,9 @@ func GetTopicItemsByTopic(topic_id string) (items []*pb.TopicItem, err error) {
 
 	rows, err := DB.Query(query, topic_id)
 
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		misc.LogErr(err)
 		return nil, err
