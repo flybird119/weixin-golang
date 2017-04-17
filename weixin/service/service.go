@@ -3,7 +3,8 @@ package service
 import (
 	"errors"
 	"fmt"
-	"gsb/misc"
+
+	"github.com/goushuyun/weixin-golang/misc"
 
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/pb"

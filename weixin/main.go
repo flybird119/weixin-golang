@@ -18,7 +18,6 @@ var svcNames = []string{}
 func main() {
 	m := db.NewMicro(svcName, port)
 	m.RegisterPG()
-	m.RegisterRedis()
 	m.ReferServices(svcNames...)
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
