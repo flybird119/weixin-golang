@@ -11,7 +11,6 @@ func SetRouterV1() *m.Router {
 
 	// weixin
 	v1.Register("/weixin/receive_verify_ticket", m.Wrap(c.ReceiveTicket))
-	v1.Register("/weixin/get_auth_url", m.Wrap(c.GetAuthURL))
 
 	return v1
 }

@@ -9,6 +9,9 @@ import (
 func SetRouterV1() *m.Router {
 	v1 := m.NewWithPrefix("/v1")
 
+	// weixin
+	v1.Register("/weixin/get_auth_url", m.Wrap(c.GetAuthURL))
+
 	// books
 	v1.Register("/books/get_book_info_by_isbn", m.Wrap(c.GetBookInfoByISBN))
 

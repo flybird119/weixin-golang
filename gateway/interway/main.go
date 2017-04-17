@@ -27,6 +27,7 @@ var serviceNames = []string{
 	"bc_books",
 	"bc_goods",
 	"bc_topic",
+	"bc_weixin",
 }
 
 func main() {
