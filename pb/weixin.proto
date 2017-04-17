@@ -3,5 +3,15 @@ syntax = "proto3";
 package pb;
 
 service WeixinService {
+    rpc GetAuthURL (WeixinReq) returns (GetAuthURLResp);
+}
 
+message WeixinReq {
+
+}
+
+message GetAuthURLResp{
+    string code = 1;
+    string message = 2;
+    string url = 3;
 }
