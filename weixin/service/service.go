@@ -77,7 +77,7 @@ func (s *WeixinServer) GetAuthURL(ctx context.Context, req *pb.WeixinReq) (*pb.G
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	// get auth url
-	redirect_uri := "http://weixin.goushuyun.com/#/auth_redirect_page"
+	redirect_uri := "http://weixin.goushuyun.com/#/auth_redirect_page/"
 	uri := "https://mp.weixin.qq.com/cgi-bin/componentloginpage?component_appid=%s&pre_auth_code=%s&redirect_uri=%s"
 	uri = fmt.Sprintf(uri, conf.AppID, pre_auth_code, redirect_uri)
 
