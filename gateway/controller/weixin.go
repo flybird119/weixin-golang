@@ -6,12 +6,29 @@ import (
 	"net/http"
 	"wechat_component/lib"
 
+	"github.com/goushuyun/weixin-golang/misc/token"
+
+	"github.com/goushuyun/weixin-golang/errs"
+
 	"github.com/coreos/etcd/client"
 	"github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 )
+
+func GetApiQueryAuth(w http.ResponseWriter, r *http.Request) {
+	req := &pb.WeixinReq{}
+	if c := token.Get(r); c != nil {
+		req.StoreId = c.StoreId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_weixin", "GetOfficialAccountInfo", req, "auth_code")
+}
 
 func GetAuthURL(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
