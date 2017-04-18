@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+import "pb/goods.proto";
+
+service CartService{
+    rpc CartAdd (Cart) returns (NormalResp); //增加购物车
+    rpc CartList (Cart) returns (CartListResp); //购物车列表
+    rpc CartUpdate (CartUpdateReq) returns (NormalResp); //更改购物车
+    rpc CartDel (Cart) returns (NormalResp);    //删除购物车
+}
+
+//购物车model
+message Cart{
+    int64 id = 1;           //订单编号
+    string user_id = 2;     //用户编号
+    string store_id = 3;    //云店铺id
+    string goods_id = 4;    //商品id
+    int64 type = 5;         //类型 0 新书 1旧书
+    int64 amount = 6;       //购买数量
+    int64 create_at = 7;    //创建时间
+    TypeGoods goods_detail = 8; //商品详情
+}
+
+message CartUpdateReq{
+    repeated Cart carts = 1; //购物车集合
+}
+// 🛒 购物车列表
+message CartListResp{
+    string code = 1;         //操作码
+    string message =2;       //响应消息
+    repeated Cart data = 3;  //data集合
+}
