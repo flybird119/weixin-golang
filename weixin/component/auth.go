@@ -40,11 +40,16 @@ func ComponentAccessToken() (string, error) {
 	resp, err := db.GetEtcdConn().Get(context.Background(), "/bookcloud/weixin/component/access_token", nil)
 	if err != nil {
 		if client.IsKeyNotFound(err) {
+
+			log.Debug("access_token not found")
+
 			ticket := Ticket()
 			token, _ := component.GetRegularApi().GetAccessToken(ticket)
-			_, err = db.GetEtcdConn().Set(context.Background(), "/bookcloud/weixin/component/access_token", token, &client.SetOptions{TTL: time.Minute * 90})
-			if err != nil {
-				return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
+			if token != "" {
+				_, err = db.GetEtcdConn().Set(context.Background(), "/bookcloud/weixin/component/access_token", token, &client.SetOptions{TTL: time.Minute * 90})
+				if err != nil {
+					return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
+				}
 			}
 			return token, nil
 		} else {

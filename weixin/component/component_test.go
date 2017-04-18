@@ -3,7 +3,7 @@ package component
 import "testing"
 
 func TestAccessToken(t *testing.T) {
-	access_token, err := PreAuthCode()
+	access_token, err := ComponentAccessToken()
 	if err != nil {
 		t.Fatal(err)
 	}
