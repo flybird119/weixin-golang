@@ -17,6 +17,11 @@ import (
 	"github.com/wothing/log"
 )
 
+func GetWeixinInfo(w http.ResponseWriter, r *http.Request) {
+	req := &pb.WeixinReq{}
+	misc.CallWithResp(w, r, "bc_weixin", "GetWeixinInfo", req, "store_id", "code")
+}
+
 func GetApiQueryAuth(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
 	if c := token.Get(r); c != nil {

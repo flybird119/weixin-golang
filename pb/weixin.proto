@@ -6,11 +6,21 @@ import "pb/common.proto";
 service WeixinService {
     rpc GetAuthURL (WeixinReq) returns (GetAuthURLResp);
     rpc GetOfficialAccountInfo (WeixinReq) returns (NormalResp);
+    rpc GetWeixinInfo (WeixinReq) returns (GetWeixinInfoResp);
+}
+
+message GetWeixinInfoResp {
+    string code = 1;
+    string message = 2;
+    WeixinInfo weixin_info = 3;
+    string user_id = 4;
 }
 
 message WeixinReq {
     string store_id = 1;
     string auth_code = 2;
+    string code = 3;
+    string appid = 4;
 }
 
 message GetAuthURLResp{

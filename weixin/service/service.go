@@ -19,6 +19,23 @@ import (
 
 type WeixinServer struct{}
 
+func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetWeixinInfoResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetWeixinInfo", "%#v", req))
+
+	// get weixin info
+	weixinInfo, err := component.GetWeixinInfo(req)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// save weixin info to db
+	misc.CallSVC(ctx, "bc_user", method, req, resp)
+
+	return &pb.GetWeixinInfoResp{Code: errs.Ok, Message: "Ok"}, nil
+}
+
 func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.WeixinReq) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetOfficialAccountInfo", "%#v", req))

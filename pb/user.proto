@@ -1,0 +1,13 @@
+syntax = "proto3";
+package pb;
+import "pb/common.proto";
+
+service UserService {
+    rpc SaveUser (User) returns (User);
+}
+
+message User {
+    string user_id = 1;
+    WeixinInfo weixin_info = 2;
+    string store_id = 3;
+}
