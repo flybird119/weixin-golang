@@ -1,7 +1,45 @@
 syntax = "proto3";
 
 package pb;
+import "pb/common.proto";
 
 service WeixinService {
+    rpc GetAuthURL (WeixinReq) returns (GetAuthURLResp);
+    rpc GetOfficialAccountInfo (WeixinReq) returns (NormalResp);
+}
 
+message WeixinReq {
+    string store_id = 1;
+    string auth_code = 2;
+}
+
+message GetAuthURLResp{
+    string code = 1;
+    string message = 2;
+    string url = 3;
+}
+
+// get api_query_auth resp
+message GetApiQueryAuth {
+    AuthorizationInfo authorization_info = 1;
+    message AuthorizationInfo {
+        string authorizer_appid = 1;
+        string authorizer_access_token = 2;
+    }
+}
+
+// 授权授权方基本信息响应
+message GetAuthBaseInfoResp {
+    message authorizer_info {
+        string nick_name = 1;
+        string head_img = 2;
+        message service_type_info {
+            string id = 1;
+        }
+        message verify_type_info {
+            string id = 1;
+        }
+        string user_name = 3;
+        string principal_name = 4;
+    }
 }

@@ -11,7 +11,10 @@ CREATE TABLE store(
 	expire_at timestamptz  not null,
 	address text default '',
 	map_address text ,
-	business_license text
+	business_license text,
+
+	-- add by Wang Kai 4.18
+	appid text not null default ''
 )
 -- COMMENT ON COLUMN "public"."bc_info_store"."name" IS '店铺名称';
 -- COMMENT ON COLUMN "public"."bc_info_store"."logo" IS '店铺logo';

@@ -6,6 +6,7 @@ create table users (
     sex int not null default 3,               --1男 2女 其他：未知
     avatar text not null,
     status int default 1,           --1正常 2 异常
+    store_id text not null,
     create_at timestamptz not null default now(),
     update_at timestamptz not null default now()
 );

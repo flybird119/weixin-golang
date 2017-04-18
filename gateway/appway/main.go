@@ -9,7 +9,7 @@ import (
 	"github.com/wothing/log"
 
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/goushuyun/weixin-golang/gateway/interway/router"
+	"github.com/goushuyun/weixin-golang/gateway/appway/router"
 	m "github.com/goushuyun/weixin-golang/gateway/middleware"
 )
 
@@ -27,6 +27,7 @@ var serviceNames = []string{
 	"bc_books",
 	"bc_goods",
 	"bc_topic",
+	"bc_weixin",
 }
 
 func main() {

@@ -10,7 +10,7 @@ import (
 
 const (
 	svcName = "bc_weixin"
-	port    = 8858
+	port    = 8859
 )
 
 var svcNames = []string{}
