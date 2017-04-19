@@ -2,6 +2,7 @@ syntax = "proto3";
 
 package pb;
 import "pb/common.proto";
+import "pb/user.proto";
 
 service WeixinService {
     rpc GetAuthURL (WeixinReq) returns (GetAuthURLResp);
@@ -12,8 +13,7 @@ service WeixinService {
 message GetWeixinInfoResp {
     string code = 1;
     string message = 2;
-    WeixinInfo weixin_info = 3;
-    string user_id = 4;
+    User data = 3;
 }
 
 message WeixinReq {

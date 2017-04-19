@@ -22,7 +22,7 @@ func GetWeixinInfo(req *pb.WeixinReq) (*pb.WeixinInfo, error) {
 
 	access_token_url = fmt.Sprintf(access_token_url, req.Appid, req.Code, config.AppID, component_access_token)
 	getAcessTokenResp := &GetAcessTokenResp{}
-	err = http.GETWithUnmarshal(url, getAcessTokenResp)
+	err = http.GETWithUnmarshal(access_token_url, getAcessTokenResp)
 	if err != nil {
 		log.Error(err)
 		return nil, err
@@ -32,7 +32,7 @@ func GetWeixinInfo(req *pb.WeixinReq) (*pb.WeixinInfo, error) {
 	get_user_info_url := "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN"
 	get_user_info_url = fmt.Sprintf(get_user_info_url, getAcessTokenResp.AccessToken, getAcessTokenResp.Openid)
 	weixinInfo := &pb.WeixinInfo{}
-	err = http.GETWithUnmarshal(url, weixinInfo)
+	err = http.GETWithUnmarshal(get_user_info_url, weixinInfo)
 	if err != nil {
 		log.Error(err)
 		return nil, err

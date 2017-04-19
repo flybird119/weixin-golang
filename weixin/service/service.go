@@ -31,9 +31,20 @@ func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*p
 	}
 
 	// save weixin info to db
-	misc.CallSVC(ctx, "bc_user", method, req, resp)
+	userReq := &pb.User{WeixinInfo: weixinInfo, StoreId: req.StoreId}
+	userResp := &pb.User{}
+	err = misc.CallSVC(ctx, "bc_user", "SaveUser", userReq, userResp)
 
-	return &pb.GetWeixinInfoResp{Code: errs.Ok, Message: "Ok"}, nil
+	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.")
+	log.JSON(userResp)
+	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.")
+
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.GetWeixinInfoResp{Code: errs.Ok, Message: "Ok", Data: userResp}, nil
 }
 
 func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.WeixinReq) (*pb.NormalResp, error) {
