@@ -10,4 +10,5 @@ message User {
     string user_id = 1;
     WeixinInfo weixin_info = 2;
     string store_id = 3;
+    int64 status = 4;
 }
