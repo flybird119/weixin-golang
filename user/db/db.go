@@ -22,6 +22,7 @@ func SaveUser(user *pb.User) error {
 		}
 	} else {
 		query := "insert into users(openid, nickname, sex, avatar, store_id) values($1, $2, $3, $4, $5) returning id"
+		log.Debugf("insert into users(openid, nickname, sex, avatar, store_id) values('%s', '%s', %d, '%s', '%s') returning id", user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, user.StoreId)
 
 		err = DB.QueryRow(query, user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, user.StoreId).Scan(&user.UserId)
 
@@ -37,6 +38,7 @@ func SaveUser(user *pb.User) error {
 func isExist(user *pb.User) (bool, error) {
 	query := "select count(*) from users where openid = $1"
 	var total int64
+	log.Debugf("select count(*) from users where openid = '%s'", user.WeixinInfo.Openid)
 	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&total)
 	if err != nil {
 		log.Error(err)
@@ -47,6 +49,7 @@ func isExist(user *pb.User) (bool, error) {
 
 func GetUserInfo(user *pb.User) error {
 	query := "select id, nickname, sex, avatar, status, store_id from users where openid = $1"
+	log.Debugf("select id, nickname, sex, avatar, status, store_id from users where openid = '%s'", user.WeixinInfo.Openid)
 
 	DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &user.StoreId)
 
