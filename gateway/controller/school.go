@@ -54,6 +54,6 @@ func StoreSchools(w http.ResponseWriter, r *http.Request) {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.School{StoreId: c.StoreId, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
+	req := &pb.School{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_school", "StoreSchools", req)
 }
