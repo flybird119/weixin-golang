@@ -31,6 +31,6 @@ create table statistic_goods_sales(
     statistic_day                   TIMESTAMP WITH TIME ZONE NOT NULL,                          --改数据统计所属天
     statistic_month                 TIMESTAMP WITH TIME ZONE NOT NULL,                          --改数据统计所属月份
     statistic_year                  TIMESTAMP WITH TIME ZONE NOT NULL                           --改数据统计所属年
-)
+);
 CREATE UNIQUE INDEX IF NOT EXISTS statistic_goods_school ON statistic_goods_sales(school_id);
 CREATE UNIQUE INDEX IF NOT EXISTS statistic_goods_store ON statistic_goods_sales(store_id);

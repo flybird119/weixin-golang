@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+
+//CircularService 轮播图service
+service CircularService{
+    rpc AddCircular (Circular) returns (NormalResp); //增加轮播图
+    rpc DelCircular (Circular) returns (NormalResp); //删除轮播图
+    rpc UpdateCircular (Circular) returns (NormalResp); //更新轮播图
+    rpc CircularList (Circular) returns (CircularListResp);   //轮播图列表
+    rpc CircularInit (Circular) returns (Void);
+}
+
+//Circular 轮播图模型
+message Circular{
+    string id = 1;
+    string store_id =2;
+    int64 type = 3;         //轮播图类型 0 默认轮播图，不可点击  1 商品推荐  2 话题推荐
+    string source_title = 4;
+    string source_id = 5;
+    string profile = 6;
+    string image = 7;
+    int64 create_at = 8;
+    int64 update_at = 9;
+    string seller_id = 10;
+}
+
+//CircularListResp 轮播图集合列表
+message CircularListResp{
+    string code = 1;
+    string message = 2;
+    repeated Circular data = 3;
+}

@@ -1,15 +1,15 @@
 -- 订单表
-create SEQUENCE order_id_seq;
+CREATE SEQUENCE IF NOT EXISTS order_id_seq;
 
 create table orders (
-    "id" text primary key not null default to_char(now() AT TIME ZONE 'cct', 'yymmdd') || trim(to_char(nextval('order_id_seq'), '00000000')),
+    id text primary key not null default to_char(now() AT TIME ZONE 'cct', 'yymmdd') || trim(to_char(nextval('order_id_seq'), '00000000')),
     order_status smallint default 0,    -- 订单状态
 
     -- 金额数据
     total_fee int not null,             --用户支付费用
     freight int default 0,              --运费
     goods_fee int not null,             --商品费用
-    withdrawal_amount int not null      --可体现金额
+    withdrawal_amount int not null ,    --可体现金额
 
     -- 关联信息
     user_id text not null,              --用户id
@@ -48,3 +48,6 @@ create table orders (
     update_at timestamptz not null default now()    --更新时间
 
 );
+
+CREATE UNIQUE INDEX orders_store ON orders(store_id);
+CREATE UNIQUE INDEX orders_school ON orders(school_id);

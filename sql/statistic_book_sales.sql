@@ -19,4 +19,7 @@ create table statistic_book_sales(
     statistic_month                 TIMESTAMP WITH TIME ZONE NOT NULL,                              --改数据统计所属月份
     statistic_year                  TIMESTAMP WITH TIME ZONE NOT NULL                               --改数据统计所属年
 
-)
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS statistic_books_store ON statistic_book_sales(store_id);
+CREATE UNIQUE INDEX IF NOT EXISTS statistic_books_goods ON statistic_book_sales(goods_id);

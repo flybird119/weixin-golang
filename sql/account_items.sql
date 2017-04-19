@@ -12,5 +12,5 @@ create table account_item(
  create_at   TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now(),
  create_day  TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now(),
  update_at   TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now()
-)
+);
 CREATE UNIQUE INDEX IF NOT EXISTS account_item_store_id ON account (store_id);
