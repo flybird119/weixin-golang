@@ -8,3 +8,10 @@ message NormalResp {
     string code    = 1;
     string message = 2;
 }
+
+message WeixinInfo {
+    string openid = 1;
+    string nickname = 2;
+    int64 sex = 3;
+    string headimgurl = 4;
+}

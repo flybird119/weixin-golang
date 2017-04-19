@@ -2,15 +2,15 @@ package main
 
 import (
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/goushuyun/weixin-golang/location/service"
 	"github.com/goushuyun/weixin-golang/pb"
+	"github.com/goushuyun/weixin-golang/user/service"
 	"github.com/wothing/worpc"
 	"google.golang.org/grpc"
 )
 
 const (
-	svcName = "bc_location"
-	port    = 8854
+	svcName = "bc_user"
+	port    = 8861
 )
 
 func main() {
@@ -18,6 +18,6 @@ func main() {
 	m.RegisterPG()
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
-	pb.RegisterLocationServiceServer(s, &service.LocationServiceServer{})
+	pb.RegisterUserServiceServer(s, &service.UserService{})
 	s.Serve(m.CreateListener())
 }

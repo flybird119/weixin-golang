@@ -11,9 +11,10 @@ import (
 
 //AddCircular 增加轮播图
 func AddCircular(circular *pb.Circular) error {
-	query := "insert into circular (store_id,type,source_title,source_id,profile,image) values($1,$2,$3,$4,%5,$6)"
-	log.Debugf("insert into circular (store_id,type,source_title,source_id,profile,image) values(%s,%d,%s,%s,%s,%s)", circular.StoreId, circular.Type, circular.SourceTitle, circular.Id, circular.Profile, circular.Image)
-	_, err := DB.Exec(query, circular.StoreId, circular.Type, circular.SourceTitle, circular.Id, circular.Profile, circular.Image)
+	query := "insert into circular (store_id,type,image) values($1,$2,$3)"
+	log.Debugf("insert into circular (store_id,type,image) values(%s,%d,%s)", circular.StoreId, circular.Type, circular.Image)
+
+	_, err := DB.Exec(query, circular.StoreId, circular.Type, circular.Image)
 	if err != nil {
 		misc.LogErr(err)
 		return err
@@ -35,7 +36,7 @@ func DelCircular(circular *pb.Circular) error {
 
 //UpdateCircular 更新轮播图
 func UpdateCircular(circular *pb.Circular) error {
-	query := "update cicular set update_at=now()"
+	query := "update circular set update_at=now()"
 
 	var args []interface{}
 	var condition string
@@ -45,22 +46,52 @@ func UpdateCircular(circular *pb.Circular) error {
 		condition += fmt.Sprintf(",type=$%d", len(args))
 	}
 
-	if circular.SourceTitle != "" {
-		args = append(args, circular.SourceTitle)
-		condition += fmt.Sprintf(",source_title=$%d", len(args))
+	if circular.Title != "" {
+		args = append(args, circular.Title)
+		condition += fmt.Sprintf(",title=$%d", len(args))
 	}
 
-	if circular.SourceId != "" {
-
+	if circular.Profile != "" {
+		args = append(args, circular.Profile)
+		condition += fmt.Sprintf(",profile=$%d", len(args))
 	}
+	if circular.Image != "" {
+		args = append(args, circular.Image)
+		condition += fmt.Sprintf(",image=$%d", len(args))
+	}
+	args = append(args, circular.Id)
+	condition += fmt.Sprintf(" where id=$%d", len(args))
 	query += condition
 	log.Debugf(query+" args:%#v", args)
 
+	_, err := DB.Exec(query, args...)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
 	return nil
 }
 
 //CircularList 轮播图列表
 func CircularList(circular *pb.Circular) (circulars []*pb.Circular, err error) {
+	query := "select id,store_id,type,title,profile,image,extract(epoch from update_at)::integer from circular where store_id=$1"
 
-	return nil, nil
+	log.Debugf("select id,store_id,type,title,profile,image,extract(epoch from update_at)::integer from circular where store_id=%s", circular.StoreId)
+	rows, err := DB.Query(query, circular.StoreId)
+
+	if err != nil {
+		misc.LogErr(err)
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		next := &pb.Circular{}
+		circulars = append(circulars, next)
+		err = rows.Scan(&next.Id, &next.StoreId, &next.Type, &next.Title, &next.Profile, &next.Image, &next.UpdateAt)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+	}
+	return circulars, nil
 }

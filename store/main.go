@@ -15,6 +15,7 @@ const (
 
 var svcNames = []string{
 	"bc_sms",
+	"bc_circular",
 }
 
 func main() {

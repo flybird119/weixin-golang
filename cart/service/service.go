@@ -3,8 +3,9 @@ package service
 import (
 	"errors"
 
-	"github.com/goushuyun/weixin-golang/cart/db"
 	"github.com/goushuyun/weixin-golang/errs"
+
+	"github.com/goushuyun/weixin-golang/cart/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"

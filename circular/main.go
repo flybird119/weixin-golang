@@ -11,7 +11,7 @@ import (
 
 const (
 	svcName = "bc_circular"
-	port    = 8861
+	port    = 8862
 )
 
 var svcNames = []string{}

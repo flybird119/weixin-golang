@@ -2,7 +2,7 @@
 create SEQUENCE official_accounts_id_seq;
 
 create table official_accounts (
-    "id" text primary key not null default trim(to_char(nextval('location_id_seq'), '00000000')),
+    "id" text primary key not null default trim(to_char(nextval('official_accounts_id_seq'), '00000000')),
     appid text not null,
 
     /* 授权方 昵称*/
