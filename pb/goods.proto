@@ -10,7 +10,10 @@ service GoodsService{
     rpc UpdateGoods (Goods) returns (NormalResp);            //更新商品
     rpc SearchGoods (Goods) returns (GoodsDetailResp);      //查找商品
     rpc GetGoodsByIdOrIsbn (Goods) returns (NormalGoodsResp);//通过isbn获取商品
-    rpc SearchGoodsTypeInfo (TypeGoods) returns (TypeGoodsResp); //查询商品单类型
+    rpc GetGoodsTypeInfo (TypeGoods) returns (TypeGoodsResp); //查询商品单类型
+    rpc DelOrRemoveGoods (DelGoodsReq) returns (NormalResp);  //删除或者下架商品
+    rpc GoodsLocationOperate (GoodsLocation) returns (NormalResp); //书本货架操作
+    rpc AppSearchGoods (Goods) returns (GoodsDetailResp);   //手机端查找商品 ,去除location
 }
 
 
@@ -46,13 +49,15 @@ message TypeGoods{
     string store_id = 3;
     string isbn = 4;
     string title = 5;
-    string is_selling = 6;
-    string type = 7;
-    string price = 8;
-    string amount = 9;
+    bool is_selling = 6;
+    int64 type = 7;
+    int64 price = 8;
+    int64 amount = 9;
     string author = 10;
     string publisher = 11;
     string goods_image = 12;
+    int64 selling_price = 13;
+
 }
 
 message TypeGoodsResp{
@@ -88,6 +93,17 @@ message GoodsLocation{
     int64 update_at = 8;
     int64 amount = 9;
     int64 price = 10;
+    int64 operate_type =11; // 0 update 1 del  2 add
+}
+
+message DelGoodsReq{
+    repeated DelGoodsModel data = 1;
+}
+
+message DelGoodsModel{
+    string id = 1;
+    int64 new_or_old = 2;
+    int64 operate_type = 3; //0 下架 1 删除
 }
 
 message GoodsDetailResp{

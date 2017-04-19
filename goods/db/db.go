@@ -35,7 +35,7 @@ func AddGoods(goods *pb.Goods) error {
 	//遍历location
 	for i := 0; i < len(goods.Location); i++ {
 		goods.Location[i].GoodsId = goods.Id
-		err = AddGoodsLoaction(goods.Location[i])
+		err = AddGoodsLocation(goods.Location[i])
 		if err != nil {
 			log.Errorf("%+v", err)
 			return err
@@ -46,7 +46,7 @@ func AddGoods(goods *pb.Goods) error {
 }
 
 //AddGoodsLoaction 增加货架位 goods_id  type storehouse_id shelf_id floor_id amount
-func AddGoodsLoaction(loc *pb.GoodsLocation) error {
+func AddGoodsLocation(loc *pb.GoodsLocation) error {
 	//首先查找货架位
 	query := "select id from goods_location where goods_id=$1 and type=$2 and storehouse_id=$3 and shelf_id=$4 and floor_id=$5"
 	log.Debugf("select id from goods_location where goods_id=%s and type=%d and storehouse_id=%s and shelf_id=%s and floor_id=%s", loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
@@ -54,7 +54,9 @@ func AddGoodsLoaction(loc *pb.GoodsLocation) error {
 	//如果检查失败
 	if err == sql.ErrNoRows {
 		//如果用户没有上传过货架位
+
 		query = "insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values($1,$2,$3,$4,$5)"
+
 		log.Debugf("insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values(%s,%d,%s,%s,%s)", loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
 		_, err = DB.Exec(query, loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
 		if err != nil {
@@ -70,11 +72,11 @@ func AddGoodsLoaction(loc *pb.GoodsLocation) error {
 	debugQuery := "update goods"
 
 	if loc.Type == 0 {
-		query = query + " set new_book_amount=new_book_amount+$1,new_book_price=$2"
-		debugQuery = debugQuery + " set new_book_amount=new_book_amount+%d,new_book_price=%d"
+		query = query + " set new_book_amount=new_book_amount+$1,new_book_price=$2, has_new_book=true"
+		debugQuery = debugQuery + " set new_book_amount=new_book_amount+%d,new_book_price=%d, has_new_book=true"
 	} else if loc.Type == 1 {
-		query = query + " set old_book_amount=old_book_amount+$1,old_book_price=$2"
-		debugQuery = debugQuery + " set old_book_amount=old_book_amount+%d,old_book_price=%d"
+		query = query + " set old_book_amount=old_book_amount+$1,old_book_price=$2, has_old_book=true"
+		debugQuery = debugQuery + " set old_book_amount=old_book_amount+%d,old_book_price=%d,has_old_book=true"
 	}
 	updateTime := time.Now()
 	//打开销售状态
@@ -179,11 +181,6 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		args = append(args, goods.Isbn)
 		condition += fmt.Sprintf(" and b.isbn=$%d", len(args))
 	}
-	/**if goods.SearchAmount != 0 {
-		args = append(args, goods.SearchAmount)
-		condition += fmt.Sprintf(" and (g.new_book_amount=$%d or g.old_book_amount=$%d)", len(args), len(args)+1)
-		args = append(args, goods.SearchAmount),
-	}*/
 	if goods.Author != "" {
 		args = append(args, misc.FazzyQuery(goods.Author))
 		condition += fmt.Sprintf(" and b.author like $%d", len(args))
@@ -197,35 +194,35 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		if goods.SearchType == 0 {
 			if goods.SearchAmount != 0 {
 				if goods.SearchAmount == 1 {
-					condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount<=0"
+					condition += " and has_new_book=true and g.new_book_amount<=0"
 				} else {
-					condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount>0"
+					condition += " and has_new_book=true and g.new_book_amount>0"
 				}
 			} else {
-				condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =0)"
+				condition += " and has_new_book=true"
 			}
 
 		} else {
 			if goods.SearchAmount != 0 {
 				if goods.SearchAmount == 1 {
-					condition += "  and exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount<=0"
+					condition += "  and has_old_book=true and g.old_book_amount<=0"
 				} else {
-					condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount>0"
+					condition += " and has_old_book=true and g.old_book_amount>0"
 				}
 			} else {
-				condition += " and exists (select * from goods_location gl where gl.goods_id=g.id and type =1)"
+				condition += " and has_old_book=true"
 			}
 
 		}
 	} else {
 		if goods.SearchAmount != 0 {
 			if goods.SearchAmount == 1 {
-				condition += "  and ((exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount<=0) or (exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount<=0))"
+				condition += "  and ((has_new_book=true and g.new_book_amount<=0) or (has_old_book=true and g.old_book_amount<=0))"
 			} else {
-				condition += "  and ((exists (select * from goods_location gl where gl.goods_id=g.id and type =0) and g.new_book_amount>0) or (exists (select * from goods_location gl where gl.goods_id=g.id and type =1) and g.old_book_amount>0))"
+				condition += "  and ((has_new_book=true and g.new_book_amount>0) or (has_old_book=true and g.old_book_amount>0))"
 			}
 		} else {
-			condition += " and exists (select * from goods_location gl where gl.goods_id=g.id)"
+			condition += " and (has_old_book=true or has_new_book=true)"
 		}
 
 	}
@@ -318,6 +315,90 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 	return r, nil
 }
 
+//SearchGoods 搜索图书 isbn 用于用户端搜索
+func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
+	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true and (has_new_book=true or has_old_book=true)"
+	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling,g.has_new_book,g.has_old_book"
+	query = fmt.Sprintf(query, param)
+	//动态拼接参数
+	var args []interface{}
+	var condition string
+
+	if goods.Isbn != "" {
+		args = append(args, goods.Isbn)
+		condition += fmt.Sprintf(" and b.isbn=$%d", len(args))
+	}
+	if goods.Author != "" {
+		args = append(args, misc.FazzyQuery(goods.Author))
+		condition += fmt.Sprintf(" or b.author like $%d", len(args))
+	}
+	if goods.Publisher != "" {
+		args = append(args, misc.FazzyQuery(goods.Publisher))
+		condition += fmt.Sprintf(" or b.publisher like $%d", len(args))
+	}
+
+	args = append(args, goods.StoreId)
+	condition += fmt.Sprintf(" and g.store_id=$%d", len(args))
+
+	if goods.Id != "" {
+		args = append(args, goods.Id)
+		condition += fmt.Sprintf(" and g.id=$%d", len(args))
+	}
+
+	if goods.Page <= 0 {
+		goods.Page = 1
+	}
+	if goods.Size <= 0 {
+		goods.Size = 20
+	}
+
+	if goods.Title != "" {
+		//查找有库存的图书
+		condition += " and ((has_new_book=ture and new_book_amount>0) or (has_old_book=true and old_book_amount>0))"
+		args = append(args, misc.FazzyQuery(goods.Title))
+		condition += fmt.Sprintf(" or b.title like $%d", len(args))
+		args = append(args, goods.Title)
+		condition += fmt.Sprintf(" order by  title <-> '$%d' ,g.id", len(args))
+	} else {
+		condition += " order by g.id"
+		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
+	}
+	query += condition
+	log.Debugf(query+"%+v", args)
+	rows, err := DB.Query(query, args...)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		book := &pb.Book{}
+		searchGoods := &pb.Goods{}
+
+		var newbookModel *pb.GoodsSalesModel
+		var oldbookModel *pb.GoodsSalesModel
+		var hasNewBook bool
+		var hasOldBook bool
+		//遍历数据
+		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &hasNewBook, &hasOldBook)
+		if err != nil {
+			return nil, err
+		}
+
+		if hasNewBook {
+			newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount}
+		}
+		if hasOldBook {
+			oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount}
+		}
+
+		r = append(r, &pb.GoodsSearchResult{Book: book, NewBook: newbookModel, OldBook: oldbookModel})
+
+	}
+	return r, nil
+}
+
 //SearchGoodsLoaction 搜索图书的货架位
 func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation, err error) {
 	query := "select id,goods_id,type,storehouse_id,shelf_id,floor_id,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from goods_location where 1=1"
@@ -333,14 +414,14 @@ func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation
 	log.Debug(query)
 	rows, err := DB.Query(query)
 	if err != nil {
-		log.Debugf("==========《《《==========>%+v", err)
+
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		location := &pb.GoodsLocation{}
 		l = append(l, location)
-		log.Debugf("====================>%+v", l)
+
 		err = rows.Scan(&location.Id, &location.GoodsId, &location.Type, &location.StorehouseId, &location.ShelfId, &location.FloorId, &location.CreateAt, &location.UpdateAt)
 		if err != nil {
 			return nil, err
@@ -372,6 +453,109 @@ func GetGoodsByIdOrIsbn(goods *pb.Goods) error {
 	err := DB.QueryRow(query, args...).Scan(&goods.Id, &goods.BookId, &goods.StoreId, &goods.Isbn, &goods.NewBookAmount, &goods.OldBookAmount, &goods.NewBookPrice, &goods.OldBookPrice, &goods.CreateAt, &goods.UpdateAt, &goods.IsSelling)
 	if err != nil {
 		misc.LogErr(err)
+		return err
+	}
+	return nil
+}
+
+//DelGoods 删除商品
+func DelGoods(delModel *pb.DelGoodsModel) error {
+	//首先删除货架位置
+	query := "delete from goods_location where goods_id=$1 and type=$2"
+	log.Debugf("delete goods_location where goods_id=%s and type=%d", delModel.Id, delModel.NewOrOld)
+	_, err := DB.Exec(query, delModel.Id, delModel.NewOrOld)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	if delModel.NewOrOld == 0 {
+		query = "update goods set has_new_book=false,update_at=now(),new_book_amount=0 where id=$1"
+		log.Debugf("update goods set has_new_book=false,update_at=now(),new_book_amount=0 where id=%s", delModel.Id)
+		_, err = DB.Exec(query, delModel.Id)
+		if err != nil {
+			misc.LogErr(err)
+			return err
+		}
+	} else {
+		query = "update goods set has_old_book=false,update_at=now(),old_book_amount=0 where id=$1"
+		log.Debugf("update goods set has_old_book=false,update_at=now(),old_book_amount=0 where id=%s", delModel.Id)
+		_, err = DB.Exec(query, delModel.Id)
+		if err != nil {
+			misc.LogErr(err)
+			return err
+		}
+	}
+	return nil
+}
+
+//DelGoods 下架商品
+func RemoveGoods(delModel *pb.DelGoodsModel) error {
+	if delModel.NewOrOld == 0 {
+		query := "update goods set update_at=now(),new_book_amount=0 where id=$1"
+		log.Debugf("update goods set update_at=now(),new_book_amount=0 where id=%s", delModel.Id)
+		_, err := DB.Exec(query, delModel.Id)
+		if err != nil {
+			misc.LogErr(err)
+			return err
+		}
+	} else {
+		query := "update goods set update_at=now(),old_book_amount=0 where id=$1"
+		log.Debugf("update goods set update_at=now(),old_book_amount=0 where id=%s", delModel.Id)
+		_, err := DB.Exec(query, delModel.Id)
+		if err != nil {
+			misc.LogErr(err)
+			return err
+		}
+	}
+	return nil
+}
+
+//更新货架位信息
+func UpdateGoodsLocation(goodsLocation *pb.GoodsLocation) error {
+	//更新货架位置
+	query := "update goods_location set storehouse_id=$1,shelf_id=$2,floor_id=$3 where id=$4 and goods_id=$5 "
+	log.Debugf("update goods_location set storehouse_id=%s,shelf_id=%s,floor_id=%s where id=%s and goods_id=%s", goodsLocation.StorehouseId, goodsLocation.ShelfId, goodsLocation.FloorId, goodsLocation.Id, goodsLocation.GoodsId)
+	_, err := DB.Exec(query, goodsLocation.StorehouseId, goodsLocation.ShelfId, goodsLocation.FloorId, goodsLocation.Id, goodsLocation.GoodsId)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	return nil
+}
+
+//删除货架位置
+func DelGoodsLocation(goodsLocation *pb.GoodsLocation) error {
+	//删除货架位置
+	query := "delete from goods_location where goods_id=$1 and id=$2"
+	log.Debugf("delete from goods_location where goods_id=%s and id=%s", goodsLocation.GoodsId, goodsLocation.Id)
+	_, err := DB.Query(query, goodsLocation.GoodsId, goodsLocation.Id)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	return nil
+}
+
+//InsertGoodsLocation 插入货架位置
+func InsertGoodsLocation(loc *pb.GoodsLocation) error {
+	//首先查找货架位
+	query := "select id from goods_location where goods_id=$1 and type=$2 and storehouse_id=$3 and shelf_id=$4 and floor_id=$5"
+	log.Debugf("select id from goods_location where goods_id=%s and type=%d and storehouse_id=%s and shelf_id=%s and floor_id=%s", loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
+	err := DB.QueryRow(query, loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId).Scan(&loc.Id)
+	//如果检查失败
+	if err == sql.ErrNoRows {
+		//如果用户没有上传过货架位
+
+		query = "insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values($1,$2,$3,$4,$5)"
+
+		log.Debugf("insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values(%s,%d,%s,%s,%s)", loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
+		_, err = DB.Exec(query, loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
+		if err != nil {
+			log.Errorf("%+v", err)
+			return err
+		}
+	} else if err != nil {
+		log.Errorf("%+v", err)
 		return err
 	}
 	return nil

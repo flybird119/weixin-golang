@@ -58,6 +58,8 @@ func SetRouterV1() *m.Router {
 	v1.Register("/goods/add", m.Wrap(c.AddGoods))
 	v1.Register("/goods/update", m.Wrap(c.UpdateGoods))
 	v1.Register("/goods/search", m.Wrap(c.SearchGoods))
+	v1.Register("/goods/del_or_remove_goods", m.Wrap(c.DelOrRemoveGoods))
+	v1.Register("/goods/goods_location_operate", m.Wrap(c.GoodsLocationOperate))
 
 	//topic
 	v1.Register("/topic/add", m.Wrap(c.AddTopic))
