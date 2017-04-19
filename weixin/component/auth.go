@@ -6,9 +6,9 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/arstd/log"
 	"github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/wothing/log"
 
 	"github.com/coreos/etcd/client"
 	"github.com/goushuyun/weixin-golang/weixin/config"

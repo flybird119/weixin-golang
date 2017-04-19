@@ -2,11 +2,10 @@ package main
 
 import (
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/wothing/worpc"
-	"google.golang.org/grpc"
-
 	"github.com/goushuyun/weixin-golang/location/service"
 	"github.com/goushuyun/weixin-golang/pb"
+	"github.com/wothing/worpc"
+	"google.golang.org/grpc"
 )
 
 const (

@@ -1,4 +1,4 @@
-package user
+package main
 
 import (
 	"github.com/goushuyun/weixin-golang/db"

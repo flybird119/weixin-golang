@@ -21,7 +21,7 @@ func SaveUser(user *pb.User) error {
 			return nil
 		}
 	} else {
-		query := "insert into users(openid, nickname, sex, avatar, store_id) values($1, $2, $3, $4, $5) returing id"
+		query := "insert into users(openid, nickname, sex, avatar, store_id) values($1, $2, $3, $4, $5) returning id"
 
 		err = DB.QueryRow(query, user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, user.StoreId).Scan(&user.UserId)
 
