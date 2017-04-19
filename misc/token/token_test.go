@@ -17,7 +17,7 @@ var tokenStr string
 var session string
 
 func TestSignAppToken(t *testing.T) {
-	tokenStr = SignUserToken(AppToken, "0000000001", "170411000002")
+	tokenStr = SignUserToken(AppToken, "0000000001", "170405000004")
 	t.Log(tokenStr)
 
 	claims, err := Check(tokenStr)
@@ -35,7 +35,6 @@ func TestSign(t *testing.T) {
 	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
 	claims, err := Check(tokenStr)
-
 	if err != nil {
 		t.Error(err)
 		return

@@ -113,6 +113,8 @@ message GoodsDetailResp{
 }
 message GoodsSearchResult{
     Book book = 1;
-    GoodsSalesModel new_book = 2;
-    GoodsSalesModel old_book = 3;
+    string goods_id = 2;
+    string store_id = 3;
+    GoodsSalesModel new_book = 4;
+    GoodsSalesModel old_book = 5;
 }

@@ -122,12 +122,15 @@ func (s *TopicServiceServer) TopicsInfo(ctx context.Context, in *pb.Topic) (*pb.
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+
 	for i := 0; i < len(topics); i++ {
 		topic := topics[i]
 		for j := 0; j < len(topic.Items); j++ {
 			item := topic.Items[j]
 			goods := &pb.Goods{StoreId: in.TokenStoreId, Id: item.GoodsId}
+			log.Debugf("++++++++++++++++++++++++++++++%+v", goods)
 			data, err := misc.CallRPC(ctx, "bc_goods", "GetGoodsByIdOrIsbn", goods)
+			log.Debugf("++++++++++++++++++++++++++++++%#v", data)
 			if err != nil {
 				log.Debug(err)
 				return nil, errs.Wrap(errors.New(err.Error()))

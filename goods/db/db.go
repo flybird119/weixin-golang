@@ -80,11 +80,12 @@ func AddGoodsLocation(loc *pb.GoodsLocation) error {
 	}
 	updateTime := time.Now()
 	//打开销售状态
-	query = query + ",update_at=$3,is_selling=true"
-	debugQuery = debugQuery + ",update_at=%f,is_selling=true"
+	query = query + ",update_at=$3,is_selling=true where id=$4"
+	debugQuery = debugQuery + ",update_at=%f,is_selling=true where id=%s"
+
 	//修改时间
-	log.Debugf(debugQuery, loc.Amount, loc.Price, updateTime)
-	_, err = DB.Exec(query, loc.Amount, loc.Price, updateTime)
+	log.Debugf(debugQuery, loc.Amount, loc.Price, updateTime, loc.GoodsId)
+	_, err = DB.Exec(query, loc.Amount, loc.Price, updateTime, loc.GoodsId)
 	if err != nil {
 		log.Errorf("%+v", err)
 		return err
@@ -385,7 +386,6 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 		if err != nil {
 			return nil, err
 		}
-
 		if hasNewBook {
 			newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount}
 		}
@@ -393,7 +393,7 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 			oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount}
 		}
 
-		r = append(r, &pb.GoodsSearchResult{Book: book, NewBook: newbookModel, OldBook: oldbookModel})
+		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.GetId(), StoreId: searchGoods.StoreId, NewBook: newbookModel, OldBook: oldbookModel})
 
 	}
 	return r, nil

@@ -33,11 +33,12 @@ func SignUserToken(from TokenType, user_id, store_id string) string {
 		panic(err)
 	}
 	c := Claims{
-		Scope:   from,
-		Session: session,
-		UserId:  user_id,
-		StoreId: store_id,
-		Version: currentVersion,
+		Scope:    from,
+		Session:  session,
+		UserId:   user_id,
+		StoreId:  store_id,
+		Version:  currentVersion,
+		IssuedAt: time.Now().Unix(),
 	}
 	token = sign(c)
 	return token
