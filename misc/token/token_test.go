@@ -16,6 +16,18 @@ import (
 var tokenStr string
 var session string
 
+func TestSignAppToken(t *testing.T) {
+	tokenStr = SignUserToken(AppToken, "0000000001", "170411000002")
+	t.Log(tokenStr)
+
+	claims, err := Check(tokenStr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("%+v", claims)
+}
+
 func TestSign(t *testing.T) {
 	tokenStr = SignSellerToken(InterToken, "00000004", "18817953402", "170411000002", role.InterAdmin)
 	t.Log(">>>>>>>>>>>>>>>token>>>>>>>>>>>>>>")

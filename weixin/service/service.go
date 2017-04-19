@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/token"
 
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -34,17 +35,15 @@ func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*p
 	userReq := &pb.User{WeixinInfo: weixinInfo, StoreId: req.StoreId}
 	userResp := &pb.User{}
 	err = misc.CallSVC(ctx, "bc_user", "SaveUser", userReq, userResp)
-
-	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.")
-	log.JSON(userResp)
-	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>.")
-
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	return &pb.GetWeixinInfoResp{Code: errs.Ok, Message: "Ok", Data: userResp}, nil
+	// sign app token
+	appToken := token.SignUserToken(token.AppToken, userResp.UserId, userResp.StoreId)
+
+	return &pb.GetWeixinInfoResp{Code: errs.Ok, Message: "Ok", Data: userResp, Token: appToken}, nil
 }
 
 func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.WeixinReq) (*pb.NormalResp, error) {

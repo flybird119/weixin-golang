@@ -14,6 +14,7 @@ message GetWeixinInfoResp {
     string code = 1;
     string message = 2;
     User data = 3;
+    string token = 4;
 }
 
 message WeixinReq {
