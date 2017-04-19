@@ -11,4 +11,5 @@ create table orders_item (
     create_at timestamptz not null default now() --创建时间
 );
 
-CREATE INDEX order_items_index_order ON orders_item(orders_id);
+CREATE INDEX order_item_order ON orders_item(orders_id);
+CREATE INDEX order_item_goods ON orders_item(goods_id);

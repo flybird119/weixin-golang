@@ -14,3 +14,4 @@ CREATE TABLE IF NOT EXISTS account (
   update_at          TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now()    --更新时间
 );
 CREATE UNIQUE INDEX IF NOT EXISTS account_type ON account (type);
+CREATE UNIQUE INDEX IF NOT EXISTS account_store ON account (store_id);
