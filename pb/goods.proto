@@ -41,6 +41,8 @@ message Goods{
     bool is_selling = 20;
     string author = 21;
     string publisher = 22;
+    bool has_new_book = 23;
+    bool has_old_book = 24;
 }
 
 message TypeGoods{
@@ -113,6 +115,8 @@ message GoodsDetailResp{
 }
 message GoodsSearchResult{
     Book book = 1;
-    GoodsSalesModel new_book = 2;
-    GoodsSalesModel old_book = 3;
+    string goods_id = 2;
+    string store_id = 3;
+    GoodsSalesModel new_book = 4;
+    GoodsSalesModel old_book = 5;
 }

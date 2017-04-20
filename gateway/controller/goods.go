@@ -97,7 +97,7 @@ func AppSearchGoods(w http.ResponseWriter, r *http.Request) {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Goods{SellerId: c.SellerId, StoreId: c.StoreId}
+	req := &pb.Goods{StoreId: c.StoreId}
 	// call RPC to handle request
 	misc.CallWithResp(w, r, "bc_goods", "AppSearchGoods", req)
 }

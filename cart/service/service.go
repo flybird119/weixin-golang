@@ -40,8 +40,10 @@ func (s *CartServiceServer) CartList(ctx context.Context, in *pb.Cart) (*pb.Cart
 	}
 	//CallRPC
 	for i := 0; i < len(carts); i++ {
-		req := &pb.TypeGoods{Id: in.GoodsId, Type: in.Type}
+		req := &pb.TypeGoods{Id: carts[i].GoodsId, Type: carts[i].Type, StoreId: in.StoreId}
+
 		data, err := misc.CallRPC(ctx, "bc_goods", "GetGoodsTypeInfo", req)
+
 		if err != nil {
 			log.Error(err)
 			return nil, errs.Wrap(errors.New(err.Error()))
@@ -52,6 +54,7 @@ func (s *CartServiceServer) CartList(ctx context.Context, in *pb.Cart) (*pb.Cart
 			log.Error("断言失败")
 			return nil, errs.Wrap(errors.New("something is error"))
 		}
+
 		typeGoods := typeGoodsResp.Data
 		carts[i].GoodsDetail = typeGoods
 
@@ -66,7 +69,9 @@ func (s *CartServiceServer) CartUpdate(ctx context.Context, in *pb.CartUpdateReq
 	defer log.TraceOut(log.TraceIn(tid, "CartUpdate", "%#v", in))
 	carts := in.Carts
 	for i := 0; i < len(carts); i++ {
-		err := db.CartUpdate(carts[i])
+		nextCart := carts[i]
+		nextCart.UserId = in.UserId
+		err := db.CartUpdate(nextCart)
 		if err != nil {
 			log.Error(err)
 			return nil, errs.Wrap(errors.New(err.Error()))
