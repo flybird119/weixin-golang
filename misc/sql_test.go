@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -80,8 +81,28 @@ func update1(mobile, nickname, id string) {
 		return
 	}
 }
-func TestUpdate(t *testing.T) {
-	var nihao bool
-	fmt.Print(nihao)
-	log.Debug(nihao)
+func TestString(t *testing.T) {
+	var (
+		args []interface{}
+	)
+
+	ids := strings.FieldsFunc("5f1c7395-c45a-481f-b342-9acff50b1da2,9c21c854-d0d3-4586-9331-dfe087377d9c", split)
+
+	if len(ids) > 0 {
+		stmt := `and category in (${ids})  `
+		stmt = strings.Replace(stmt, "${"+"ids"+"}",
+			strings.Repeat(",'$%s'", len(ids))[1:], -1)
+		for _, s := range ids {
+			args = append(args, s)
+		}
+		condition := fmt.Sprintf(stmt, args...)
+		fmt.Print(condition)
+	}
+
+}
+func split(s rune) bool {
+	if s == ',' {
+		return true
+	}
+	return false
 }

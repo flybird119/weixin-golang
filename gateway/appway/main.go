@@ -29,6 +29,7 @@ var serviceNames = []string{
 	"bc_topic",
 	"bc_weixin",
 	"bc_circular",
+	"bc_cart",
 }
 
 func main() {

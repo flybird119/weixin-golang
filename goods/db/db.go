@@ -318,7 +318,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 
 //SearchGoods 搜索图书 isbn 用于用户端搜索
 func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
-	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true and (has_new_book=true or has_old_book=true)"
+	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true and (g.has_new_book=true or g.has_old_book=true)"
 	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling,g.has_new_book,g.has_old_book"
 	query = fmt.Sprintf(query, param)
 	//动态拼接参数
@@ -328,14 +328,6 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 	if goods.Isbn != "" {
 		args = append(args, goods.Isbn)
 		condition += fmt.Sprintf(" and b.isbn=$%d", len(args))
-	}
-	if goods.Author != "" {
-		args = append(args, misc.FazzyQuery(goods.Author))
-		condition += fmt.Sprintf(" or b.author like $%d", len(args))
-	}
-	if goods.Publisher != "" {
-		args = append(args, misc.FazzyQuery(goods.Publisher))
-		condition += fmt.Sprintf(" or b.publisher like $%d", len(args))
 	}
 
 	args = append(args, goods.StoreId)
@@ -355,11 +347,14 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 
 	if goods.Title != "" {
 		//查找有库存的图书
-		condition += " and ((has_new_book=ture and new_book_amount>0) or (has_old_book=true and old_book_amount>0))"
+		condition += " and ((g.new_book_amount>0) or (g.old_book_amount>0))"
 		args = append(args, misc.FazzyQuery(goods.Title))
-		condition += fmt.Sprintf(" or b.title like $%d", len(args))
+		condition += fmt.Sprintf(" and (b.title like $%d or b.author like $%d or b.publisher like $%d)", len(args), len(args)+1, len(args)+2)
+		args = append(args, misc.FazzyQuery(goods.Title))
+		args = append(args, misc.FazzyQuery(goods.Title))
+
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  title <-> '$%d' ,g.id", len(args))
+		condition += fmt.Sprintf(" order by  b.title <-> $%d ,g.id", len(args))
 	} else {
 		condition += " order by g.id"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
@@ -432,7 +427,7 @@ func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation
 
 //获取图书信息 精确搜索
 func GetGoodsByIdOrIsbn(goods *pb.Goods) error {
-	query := "select id,book_id,store_id,isbn,new_book_amount,old_book_amount,new_book_price,old_book_price,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer,is_selling from goods where 1=1"
+	query := "select id,book_id,store_id,isbn,new_book_amount,old_book_amount,new_book_price,old_book_price,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer,is_selling,has_new_book,has_old_book from goods where 1=1"
 
 	var args []interface{}
 	var condition string
@@ -450,7 +445,8 @@ func GetGoodsByIdOrIsbn(goods *pb.Goods) error {
 	condition += fmt.Sprintf(" and store_id=$%d limit 1", len(args))
 
 	query += condition
-	err := DB.QueryRow(query, args...).Scan(&goods.Id, &goods.BookId, &goods.StoreId, &goods.Isbn, &goods.NewBookAmount, &goods.OldBookAmount, &goods.NewBookPrice, &goods.OldBookPrice, &goods.CreateAt, &goods.UpdateAt, &goods.IsSelling)
+	log.Debugf(query+"%#v", args)
+	err := DB.QueryRow(query, args...).Scan(&goods.Id, &goods.BookId, &goods.StoreId, &goods.Isbn, &goods.NewBookAmount, &goods.OldBookAmount, &goods.NewBookPrice, &goods.OldBookPrice, &goods.CreateAt, &goods.UpdateAt, &goods.IsSelling, &goods.HasNewBook, &goods.HasOldBook)
 	if err != nil {
 		misc.LogErr(err)
 		return err

@@ -24,7 +24,10 @@ func SetRouterV1() *m.Router {
 	//circular
 	v1.Register("/circular/list", m.Wrap(c.CircularList))
 	//cart
-
+	v1.Register("/cart/add", m.Wrap(c.CartAdd))
+	v1.Register("/cart/list", m.Wrap(c.CartList))
+	v1.Register("/cart/update", m.Wrap(c.CartUpdate))
+	v1.Register("/cart/del", m.Wrap(c.CartDel))
 	//topic
 	v1.Register("/topic/list", m.Wrap(c.TopicsInfo))
 	return v1

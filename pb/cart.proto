@@ -14,7 +14,7 @@ service CartService{
 
 //购物车model
 message Cart{
-    int64 id = 1;           //订单编号
+    string id = 1;           //订单编号
     string user_id = 2;     //用户编号
     string store_id = 3;    //云店铺id
     string goods_id = 4;    //商品id
@@ -22,10 +22,13 @@ message Cart{
     int64 amount = 6;       //购买数量
     int64 create_at = 7;    //创建时间
     TypeGoods goods_detail = 8; //商品详情
+    string ids = 9;         //ids
 }
 
 message CartUpdateReq{
     repeated Cart carts = 1; //购物车集合
+    string store_id = 2;
+    string user_id = 3;
 }
 // 🛒 购物车列表
 message CartListResp{

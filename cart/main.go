@@ -14,7 +14,9 @@ const (
 	port    = 8860
 )
 
-var svcNames = []string{}
+var svcNames = []string{
+	"bc_goods",
+}
 
 func main() {
 	m := db.NewMicro(svcName, port)

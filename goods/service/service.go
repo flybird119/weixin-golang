@@ -72,7 +72,7 @@ func (s *GoodsServiceServer) GetGoodsTypeInfo(ctx context.Context, in *pb.TypeGo
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "SearchGoodsTypeInfoByBookId", "%#v", in))
 	//首先先获取商品的基本信息
-	goods := &pb.Goods{Id: in.Id}
+	goods := &pb.Goods{Id: in.Id, StoreId: in.StoreId}
 	err := db.GetGoodsByIdOrIsbn(goods)
 	if err != nil {
 		misc.LogErr(err)
@@ -95,24 +95,25 @@ func (s *GoodsServiceServer) GetGoodsTypeInfo(ctx context.Context, in *pb.TypeGo
 	in.StoreId = goods.StoreId
 	in.Isbn = book.Isbn
 	in.Title = book.Title
-	in.IsSelling = goods.IsSelling
 	in.Price = book.Price
 	if in.Type == 0 {
 		//新书
 		in.Amount = goods.NewBookAmount
 		in.SellingPrice = goods.NewBookPrice
+		in.IsSelling = goods.HasNewBook
 
 	} else {
 		//二手书
 		in.Amount = goods.OldBookAmount
 		in.SellingPrice = goods.OldBookPrice
+		in.IsSelling = goods.HasOldBook
 
 	}
 	in.Author = book.Author
 	in.Publisher = book.Publisher
 	in.GoodsImage = book.Image
 
-	return &pb.TypeGoodsResp{Code: "00000", Message: "ok"}, nil
+	return &pb.TypeGoodsResp{Code: "00000", Message: "ok", Data: in}, nil
 }
 
 //DelOrOffShelfGoods 删除或者下架商品

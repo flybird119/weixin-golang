@@ -41,6 +41,8 @@ message Goods{
     bool is_selling = 20;
     string author = 21;
     string publisher = 22;
+    bool has_new_book = 23;
+    bool has_old_book = 24;
 }
 
 message TypeGoods{
