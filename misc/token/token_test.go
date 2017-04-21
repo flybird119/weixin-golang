@@ -8,6 +8,9 @@
 package token
 
 import (
+	"fmt"
+	"log"
+	"reflect"
 	"testing"
 
 	"github.com/goushuyun/weixin-golang/seller/role"
@@ -15,6 +18,34 @@ import (
 
 var tokenStr string
 var session string
+
+func TestZeroValue(t *testing.T) {
+	x := struct {
+		Foo string
+		Bar int
+	}{"foo", 2}
+
+	v := reflect.ValueOf(x)
+	t.Log(">>>>>>>>>>>>>>>>>>>>>")
+
+	t.Logf("%+v\n", v)
+	values := make([]interface{}, v.NumField())
+
+	for i := 0; i < v.NumField(); i++ {
+		values[i] = v.Field(i).Interface()
+	}
+
+	fmt.Printf("%+v\n", values)
+
+	// val := ""
+	// t.Log(IsZeroOfUnderlyingType(val))
+}
+
+func IsZeroOfUnderlyingType(x interface{}) bool {
+	log.Println("------", reflect.TypeOf(x), "----------")
+
+	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
+}
 
 func TestSignAppToken(t *testing.T) {
 	tokenStr = SignUserToken(AppToken, "0000000001", "170405000004")

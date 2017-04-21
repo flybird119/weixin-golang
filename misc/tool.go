@@ -29,6 +29,10 @@ const (
 	KC_RAND_KIND_ALL   = 3 // 数字、大小写字母
 )
 
+func IsZeroOfUnderlyingType(x interface{}) bool {
+	return x == reflect.Zero(reflect.TypeOf(x)).Interface()
+}
+
 //returnNotToken 返回没找到token的错误提示
 func ReturnNotToken(w http.ResponseWriter, r *http.Request) {
 
