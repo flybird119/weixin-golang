@@ -62,6 +62,19 @@ func (s *CartServiceServer) CartList(ctx context.Context, in *pb.Cart) (*pb.Cart
 	return &pb.CartListResp{Code: "00000", Message: "ok", Data: carts}, nil
 }
 
+//CartList 购物车列表
+func (s *CartServiceServer) CartBaseList(ctx context.Context, in *pb.Cart) (*pb.CartListResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "CartList", "%#v", in))
+	carts, err := db.CartList(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.CartListResp{Code: "00000", Message: "ok", Data: carts}, nil
+}
+
 //CartUpdate 更改购物车
 func (s *CartServiceServer) CartUpdate(ctx context.Context, in *pb.CartUpdateReq) (*pb.NormalResp, error) {
 

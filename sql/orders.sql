@@ -9,7 +9,7 @@ create table orders (
     total_fee int not null,             --用户支付费用
     freight int default 0,              --运费
     goods_fee int not null,             --商品费用
-    withdrawal_amount int not null ,    --可体现金额
+    withdrawal_fee int not null ,    --可体现金额
 
     -- 关联信息
     user_id text not null,              --用户id
@@ -24,6 +24,7 @@ create table orders (
 
     -- 支付宝或微信信息
     trade_no text default '',           --第三方交易号
+    pay_channel text default '',        --alipay or wechat
 
     --订单时间信息
     order_at timestamptz not null default now(),    --下单时间
@@ -44,10 +45,12 @@ create table orders (
     after_sale_trad_no text,                        --售后交易号
     refund_fee int default 0,                       --退款金额
 
+    --团购
+    groupon_id text,                                --班级购id
 
     update_at timestamptz not null default now()    --更新时间
 
 );
 
-CREATE UNIQUE INDEX orders_store ON orders(store_id);
-CREATE UNIQUE INDEX orders_school ON orders(school_id);
+CREATE  INDEX orders_store ON orders(store_id);
+CREATE  INDEX orders_school ON orders(school_id);

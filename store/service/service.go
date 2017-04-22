@@ -44,12 +44,17 @@ func (s *StoreServiceServer) AddStore(ctx context.Context, in *pb.Store) (*pb.Ad
 	/**
 	*================
 	*	初始化操作
-	* 	1: account 初始化
+	* 	1: account 初始化 InitAccount
 	*	2: 轮播图初始化
 	*================
 	 */
+
+	account := &pb.Account{StoreId: in.Id, Type: 1}
+	misc.CallRPC(ctx, "bc_account", "InitAccount", account)
+
 	circular := &pb.Circular{StoreId: in.Id}
 	misc.CallRPC(ctx, "bc_circular", "CircularInit", circular)
+
 	/**
 	*================
 	*	记录日志

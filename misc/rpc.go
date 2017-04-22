@@ -35,6 +35,8 @@ var serviceList = map[string]interface{}{
 	"bc_user":       pb.NewUserServiceClient,
 	"bc_circular":   pb.NewCircularServiceClient,
 	"bc_cart":       pb.NewCartServiceClient,
+	"bc_order":      pb.NewOrderServiceClient,
+	"bc_account":    pb.NewAccountServiceClient,
 }
 
 func StartServiceConns(address string, serviceNames []string) {

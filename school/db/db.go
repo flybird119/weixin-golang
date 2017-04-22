@@ -69,3 +69,17 @@ func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
 	}
 	return s, nil
 }
+
+//获取学校信息
+func GetSchoolById(schoolId string) (school *pb.School, err error) {
+	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where id=$1"
+	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where id='%s'", schoolId)
+	school = &pb.School{}
+	err = DB.QueryRow(query, schoolId).Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt)
+	if err != nil {
+		log.Debugf("%#v", err)
+		return nil, err
+	}
+
+	return school, nil
+}

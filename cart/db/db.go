@@ -52,22 +52,18 @@ func CartList(cart *pb.Cart) (carts []*pb.Cart, err error) {
 	var args []interface{}
 	var condition string
 	var idArray []interface{}
-	if cart.Ids != "" {
-		ids := strings.FieldsFunc(cart.Ids, split)
-		log.Debug("=============")
-		log.Debug(ids)
-		log.Debug("=============")
-		if len(ids) > 0 {
-			condition += " and id in (${ids})"
-			condition = strings.Replace(condition, "${"+"ids"+"}",
-				strings.Repeat(",'%s'", len(ids))[1:], -1)
-			for _, s := range ids {
-				idArray = append(idArray, s)
-			}
-			condition = fmt.Sprintf(condition, idArray...)
-			log.Debug(condition)
+
+	if len(cart.Ids) > 0 {
+		condition += " and id in (${ids})"
+		condition = strings.Replace(condition, "${"+"ids"+"}",
+			strings.Repeat(",'%s'", len(cart.Ids))[1:], -1)
+		for _, s := range cart.Ids {
+			idArray = append(idArray, s)
 		}
+		condition = fmt.Sprintf(condition, idArray...)
+		log.Debug(condition)
 	}
+
 	args = append(args, cart.UserId)
 	condition += fmt.Sprintf(" and user_id=$%d", len(args))
 	args = append(args, cart.StoreId)
@@ -110,6 +106,25 @@ func CartUpdate(cart *pb.Cart) error {
 
 //CartDel 删除购物车
 func CartDel(cart *pb.Cart) error {
+	//检查是不是批量删除订单
+	if len(cart.Ids) > 0 {
+		var idArray []interface{}
+		query := "delete from cart where id in (${ids}) and user_id=$1"
+		query = strings.Replace(query, "${"+"ids"+"}",
+			strings.Repeat(",'%s'", len(cart.Ids))[1:], -1)
+		for _, s := range cart.Ids {
+			idArray = append(idArray, s)
+		}
+		query = fmt.Sprintf(query, idArray...)
+		log.Debug(query)
+		_, err := DB.Exec(query, cart.UserId)
+		if err != nil {
+			misc.LogErr(err)
+			return err
+		}
+		return nil
+	}
+
 	query := "delete from cart where id=$1 and user_id=$2"
 	log.Debugf("delete from cart where id=%s and user_id=%s", cart.Id, cart.UserId)
 	_, err := DB.Exec(query, cart.Id, cart.UserId)

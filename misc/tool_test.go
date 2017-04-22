@@ -51,3 +51,13 @@ func TestBinary(t *testing.T) {
 	fmt.Printf("shifting:%d\n", (3 << 1))
 	fmt.Printf("shifting:%d\n", ((5 << 1) & 1))
 }
+
+func TestNumFormat(t *testing.T) {
+	price := 051
+	discount := 0.02
+	totalFee := float64(price) * discount
+	fmt.Println(totalFee)
+	totalPriceStr := fmt.Sprintf("%0.0f", totalFee)
+	fmt.Println(totalPriceStr)
+
+}

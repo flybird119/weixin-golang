@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+import "pb/order.proto";
+service AccountService {
+    //初始化account
+    rpc InitAccount (Account) returns (Void);
+    //增加什么AccountItem
+    rpc  AddAccountItem (AccountItem) returns (Void);
+    //order Account handle
+    rpc OrderAccountHandle (Order) returns (Void);
+    //每日统计销售情况 1 每日统计销售 2 每日统计销量
+}
+
+message Account{
+    string id = 1;
+    int64 type = 2;
+    int64 balance = 3;
+    int64 unsettled_balance = 4;
+    string store_id = 5;
+    int64 online_income = 6;
+    int64 offline_income = 7;
+    int64 expenses = 8;
+    int64 create_at = 9;
+    int64 update_at = 10;
+}
+
+message BooksSalesStatistic{
+    string  id = 1;
+    string  store_id = 2;
+    string  goods_id = 3;
+    int64   online_new_book_sales_num = 4;
+    int64   online_old_book_sales_num = 5;
+    int64   offline_new_book_sales_num = 6;
+    int64   offline_old_book_sales_num = 7;
+    int64   new_book_remove_num = 8;
+    int64   new_book_upload_num = 9;
+    int64   old_book_remove_num = 10;
+    int64   old_book_upload_num = 11;
+    int64   create_at = 12;
+    int64   statistic_day = 13;
+    int64   statistic_month = 14;
+    int64   statistic_year = 15;
+}
+message GoodsSalesStatistic{
+    string  id = 1;
+    string  store_id = 2;
+    string  school_id = 3;
+    int64   alipay_order_num = 4;
+    int64   alipay_order_fee = 5;
+    int64   wechat_order_num = 6;
+    int64   wechat_order_fee = 7;
+    int64   online_new_book_sales_fee = 8;
+    int64   online_old_book_sales_fee = 9;
+    int64   online_new_book_sales_num = 10;
+    int64   online_old_book_sales_num = 11;
+    int64   send_order_num = 12;
+    int64   after_sale_num = 13;
+    int64   after_sale_handled_num = 14;
+    int64   after_sale_handled_fee = 15;
+    int64   offline_new_book_sales_fee = 16;
+    int64   offline_old_book_sales_fee = 17;
+    int64   offline_new_book_sales_num = 18;
+    int64   offline_old_book_sales_num = 19;
+    int64   create_at = 20;
+    int64   statistic_day = 21;
+    int64   statistic_month = 22;
+    int64   statistic_year = 23;
+}
+
+message AccountItem{
+    string id = 1;
+    int64 user_type = 2;
+    string store_id = 3;
+    string order_id = 4;
+    string remark = 5;
+    int64   item_type = 6;
+    int64   item_fee = 7;
+    int64   account_balance = 8;
+    int64   create_at = 9;
+    int64   create_day = 10;
+    int64   update_at = 11;
+}

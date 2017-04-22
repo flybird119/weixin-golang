@@ -2,33 +2,28 @@ package main
 
 import (
 	"github.com/goushuyun/weixin-golang/db"
+	"github.com/goushuyun/weixin-golang/order/service"
 	"github.com/goushuyun/weixin-golang/pb"
-	"github.com/goushuyun/weixin-golang/store/service"
 	"github.com/wothing/worpc"
 	"google.golang.org/grpc"
 )
 
 const (
-	svcName = "bc_store"
-	port    = 8851
+	svcName = "bc_order"
+	port    = 8863
 )
 
 var svcNames = []string{
-	"bc_sms",
-	"bc_circular",
-	"bc_account",
+	"bc_cart",
 }
 
 func main() {
 	m := db.NewMicro(svcName, port)
 	m.RegisterPG()
 	m.ReferServices(svcNames...)
-	// 注册redis
-	db.InitRedis(svcName)
-	defer db.CloseRedis()
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
-	pb.RegisterStoreServiceServer(s, &service.StoreServiceServer{})
+	pb.RegisterOrderServiceServer(s, &service.OrderServiceServer{})
 
 	s.Serve(m.CreateListener())
 }

@@ -14,10 +14,7 @@ create table statistic_book_sales(
     old_book_remove_num             INT                     NOT NULL                DEFAULT 0,      --旧书下架量
     old_book_upload_num             INT                     NOT NULL                DEFAULT 0,      --旧书上架量
     --时间字段
-    create_at                       TIMESTAMP WITH TIME ZONE NOT NULL               DEFAULT now(),  --创建时间
-    statistic_day                   TIMESTAMP WITH TIME ZONE NOT NULL,                              --改数据统计所属天
-    statistic_month                 TIMESTAMP WITH TIME ZONE NOT NULL,                              --改数据统计所属月份
-    statistic_year                  TIMESTAMP WITH TIME ZONE NOT NULL                               --改数据统计所属年
+    create_at                       TIMESTAMP WITH TIME ZONE NOT NULL               DEFAULT now()  --创建时间
 
 );
 
