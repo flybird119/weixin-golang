@@ -62,25 +62,22 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "CartList", "%#v", in))
 	//成功支付 准确记录值，如果其中一步发生错误,事务不会滚，
-	//1 更改订单状态,填写支付方式和交易号， --异常，下面的事务不执行，写入操作异常  1 2 3 记录错误日志
+	//1 更改订单状态,填写支付方式和交易号， --异常，下面的事务不执行，写入操作异常
 	isChanged, err := orderDB.PaySuccess(in)
 	if err != nil {
-		//--异常，下面的事务不执行，写入操作异常  1 2 3 记录错误日志
-
+		//--异常，下面的事务不执行，写入操作异常
+		log.Error(err)
+		misc.LogErrOrder(in, "更改订单支付状态时发生错误，影响商户支入支出记录和管理员余额修改异常及管理员入账记录", err)
+		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	//1.2检查这个订单有没有被修改过
 	if isChanged {
 		log.Warn("order:%s hasChanged", in.Id)
 		return &pb.NormalResp{Code: "00000", Message: "isChanged"}, nil
 	}
-	//手续费
-	serviceFee := in.TotalFee - in.WithdrawalFee
-	//2	更改商户账户的值
+	//2 修改商家账户和管理员账户 以及记录交易记录
+	misc.CallRPC(ctx, "bc_account", "PayOverOrderAccountHandle", in)
 
-	//3 更改管理员账户的值
-
-	misc.LogErrOrder(in, "impact", errors.New("err"))
-
-	//4 异步通知商家
 	return &pb.NormalResp{}, nil
 }
 

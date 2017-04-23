@@ -48,9 +48,9 @@ func AddAccountItem(item *pb.AccountItem) error {
 		return err
 	}
 	defer tx.Rollback()
-	query := "insert into account_item (user_type,store_id,order_id,remark,item_type,item_fee,account_balance) value ($1,$2,$3,$4,$5,$6,$7)"
-	log.Debugf("insert into account_item (user_type,store_id,order_id,remark,item_type,item_fee,account_balance) value (%d,'%s','%s','%s',%d,%d,%d)", item.UserType, item.StoreId, item.OrderId, item.Remark, item.ItemType, item.ItemFee, item.AccountBalance)
-	_, err := tx.Exec(query, item.UserType, item.StoreId, item.OrderId, item.Remark, item.ItemType, item.ItemFee, item.AccountBalance)
+	query = "insert into account_item (user_type,store_id,order_id,remark,item_type,item_fee,account_balance) values ($1,$2,$3,$4,$5,$6,$7)"
+	log.Debugf("insert into account_item (user_type,store_id,order_id,remark,item_type,item_fee,account_balance) values (%d,'%s','%s','%s',%d,%d,%d)", item.UserType, item.StoreId, item.OrderId, item.Remark, item.ItemType, item.ItemFee, item.AccountBalance)
+	_, err = tx.Exec(query, item.UserType, item.StoreId, item.OrderId, item.Remark, item.ItemType, item.ItemFee, item.AccountBalance)
 	if err != nil {
 		misc.LogErr(err)
 		return err
@@ -59,6 +59,26 @@ func AddAccountItem(item *pb.AccountItem) error {
 	return nil
 }
 
+//检查账户是否存在
 func hasExistAcoount(item *pb.AccountItem) {
+
+}
+
+//store_id unsettled_balance
+func ChangeAccountWithdrawalFee(account *pb.Account) error {
+	query := "update account set unsettled_balance=unsettled_balance+$1,update_at=now() where store_id=$2 returning unsettled_balance ,id"
+	tx, err := DB.Begin()
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	defer tx.Rollback()
+	err = tx.QueryRow(query, account.UnsettledBalance, account.StoreId).Scan(&account.UnsettledBalance, &account.Id)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	tx.Commit()
+	return nil
 
 }

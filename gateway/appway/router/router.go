@@ -32,5 +32,6 @@ func SetRouterV1() *m.Router {
 	v1.Register("/topic/list", m.Wrap(c.TopicsInfo))
 	//order
 	v1.Register("/order/submit", m.Wrap(c.OrderSubmit))
+	v1.Register("/order/pay_success", m.Wrap(c.PaySuccess))
 	return v1
 }
