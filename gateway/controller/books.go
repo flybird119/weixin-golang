@@ -10,6 +10,11 @@ import (
 	"github.com/goushuyun/weixin-golang/pb"
 )
 
+func ModifyBookInfo(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Book{}
+	misc.CallWithResp(w, r, "bc_books", "ModifyBookInfo", req, "id")
+}
+
 func GetBookInfoByISBN(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Book{}
 
