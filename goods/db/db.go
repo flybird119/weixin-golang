@@ -254,7 +254,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		args = append(args, misc.FazzyQuery(goods.Title))
 		condition += fmt.Sprintf(" and b.title like $%d", len(args))
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  title <-> '$%d' ,g.id", len(args))
+		condition += fmt.Sprintf(" order by  title <-> $%d ,g.id", len(args))
 	} else {
 		condition += " order by g.id"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
@@ -310,7 +310,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 			}
 		}
 
-		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, NewBook: newbookModel, OldBook: oldbookModel})
+		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
 	}
 
 	return r, nil
@@ -388,7 +388,7 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 			oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount}
 		}
 
-		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.GetId(), StoreId: searchGoods.StoreId, NewBook: newbookModel, OldBook: oldbookModel})
+		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.GetId(), StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
 
 	}
 	return r, nil

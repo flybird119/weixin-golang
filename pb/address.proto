@@ -19,7 +19,7 @@ message AddressResp {
 
 message AddressReq {
     string user_id = 1;
-    repeated AddressInfo infos  = 2;
+    repeated AddressInfo infos = 2;
 }
 
 message AddressInfo {

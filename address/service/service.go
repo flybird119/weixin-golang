@@ -23,6 +23,7 @@ func (s *AddressServiceServer) AddAddress(ctx context.Context, in *pb.AddressReq
 
 	//add operation
 	for i := 0; i < len(in.Infos); i++ {
+		in.Infos[i].UserId = in.UserId
 		err := db.AddAddress(in.Infos[i])
 		if err != nil {
 			log.Error(err)
@@ -30,7 +31,7 @@ func (s *AddressServiceServer) AddAddress(ctx context.Context, in *pb.AddressReq
 		}
 	}
 
-	return &pb.AddressResp{}, nil
+	return &pb.AddressResp{Code: "00000", Message: "ok", Data: in.Infos}, nil
 }
 
 //更新地址
@@ -38,8 +39,15 @@ func (s *AddressServiceServer) UpdateAddress(ctx context.Context, in *pb.Address
 
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "AddGoods", "%#v", in))
-
-	return &pb.AddressResp{}, nil
+	//update operation
+	err := db.UpdateAddress(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	infos := []*pb.AddressInfo{}
+	infos = append(infos, in)
+	return &pb.AddressResp{Code: "00000", Message: "ok", Data: infos}, nil
 }
 
 //我的地址
@@ -47,8 +55,12 @@ func (s *AddressServiceServer) MyAddresses(ctx context.Context, in *pb.AddressIn
 
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "AddGoods", "%#v", in))
-
-	return &pb.AddressResp{}, nil
+	infos, err := db.FindAddressByUser(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.AddressResp{Code: "00000", Message: "ok", Data: infos}, nil
 }
 
 //删除我的地址
@@ -56,6 +68,12 @@ func (s *AddressServiceServer) DeleteAddress(ctx context.Context, in *pb.Address
 
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "AddGoods", "%#v", in))
+	err := db.DelAddress(in.Infos, in.UserId)
 
-	return &pb.NormalResp{}, nil
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }

@@ -8,7 +8,7 @@ import (
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
-	log "qiniupkg.com/x/log.v7"
+	"github.com/wothing/log"
 )
 
 //增加用户地址
@@ -68,7 +68,7 @@ func UpdateAddress(address *pb.AddressInfo) error {
 	if address.SetDefault == 1 {
 		query1 := fmt.Sprintf("update address set is_default=false where user_id='%s'", address.UserId)
 		log.Debug(query1)
-		_, err := DB.Exec(query1, nil)
+		_, err := DB.Exec(query1)
 		if err != nil {
 			misc.LogErr(err)
 			return err
@@ -78,6 +78,8 @@ func UpdateAddress(address *pb.AddressInfo) error {
 	}
 	args = append(args, address.UserId)
 	condition += fmt.Sprintf(" where user_id=$%d", len(args))
+	args = append(args, address.Id)
+	condition += fmt.Sprintf(" and id=$%d", len(args))
 
 	query += condition
 	log.Debugf(query+" args:%#v", args)
@@ -90,9 +92,8 @@ func UpdateAddress(address *pb.AddressInfo) error {
 }
 
 //删除用户地址
-func DelAddress(addresses []*pb.AddressInfo) error {
-	query := "delete from address where id in (${ids})"
-
+func DelAddress(addresses []*pb.AddressInfo, userId string) error {
+	query := fmt.Sprintf("delete from address where id in (${ids}) and user_id='%s'", userId)
 	var idArray []interface{}
 	if len(addresses) > 0 {
 		query = strings.Replace(query, "${"+"ids"+"}",
@@ -103,7 +104,8 @@ func DelAddress(addresses []*pb.AddressInfo) error {
 		query = fmt.Sprintf(query, idArray...)
 		log.Debug(query)
 	}
-	_, err := DB.Exec(query, nil)
+
+	_, err := DB.Exec(query)
 	if err != nil {
 		misc.LogErr(err)
 		return err

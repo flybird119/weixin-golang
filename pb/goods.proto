@@ -125,4 +125,5 @@ message GoodsSearchResult{
     string store_id = 3;
     GoodsSalesModel new_book = 4;
     GoodsSalesModel old_book = 5;
+    int64 update_at = 6;
 }
