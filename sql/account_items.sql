@@ -1,6 +1,6 @@
 create table account_item(
  id          UUID PRIMARY KEY         NOT NULL                 DEFAULT gen_random_uuid(),
- user_type          INT                 NOT NULL,                             --类型 0 商家店铺 1 平台
+ user_type          INT                 NOT NULL,                             --类型 1 商家店铺 2 平台
  store_id           TEXT                NOT NULL                 DEFAULT '',  --云店铺id
  order_id           TEXT                NOT NULL                 DEFAULT '',  --订单id
  remark             TEXT                NOT NULL                 DEFAULT '',  --备注
@@ -12,4 +12,4 @@ create table account_item(
  create_at   TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now(),
  update_at   TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS account_item_store_id ON account_item (store_id);
+CREATE INDEX IF NOT EXISTS account_item_store_id ON account_item (store_id);

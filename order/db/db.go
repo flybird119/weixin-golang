@@ -43,6 +43,13 @@ func OrderSubmit(tx *sql.Tx, carts []*pb.Cart, orderModel *pb.OrderSubmitModel) 
 			return nil, "noStock", nil
 		}
 	}
+	query = "select order_status,total_fee,freight,goods_fee,user_id,mobile,name,address,remark,store_id,school_id,groupon_id from orders where id=$1"
+	log.Debugf("select order_status,total_fee,freight,goods_fee,user_id,mobile,name,address,remark,store_id,school_id,groupon_id from orders where id='%s'", order.Id)
+	err = tx.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.UserId, &order.Mobile, &order.Name, &order.Address, &order.Remark, &order.StoreId, &order.SchoolId, &order.GrouponId)
+	if err != nil {
+		misc.LogErr(err)
+		return nil, "", err
+	}
 	return
 }
 
@@ -105,13 +112,14 @@ func AddOrderItem(tx *sql.Tx, order *pb.Order, cart *pb.Cart, nowTime time.Time)
 func PaySuccess(order *pb.Order) (isChange bool, err error) {
 	isChange = false
 	var serviceDiscount = 0.02
-	searchOrder := &pb.Order{Id: order.Id}
-	err = GetOrderById(searchOrder)
+	query := "select order_status,total_fee, freight,goods_fee,store_id,school_id from orders where id=$1"
+	log.Debugf("select order_status,total_fee, freight,goods_fee,store_id,school_id from orders where id=%s", order.Id)
+	err = DB.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.StoreId, &order.SchoolId)
 	if err != nil {
 		misc.LogErr(err)
 		return
 	}
-	if searchOrder.OrderStatus != 0 {
+	if order.OrderStatus != 0 {
 		//已经付过款了
 		isChange = true
 		return
@@ -133,7 +141,7 @@ func PaySuccess(order *pb.Order) (isChange bool, err error) {
 		return
 	}
 	defer tx.Rollback()
-	query := "update orders set order_status=$1,withdrawal_fee=$2,trade_no=$3,pay_channel=$4,pay_at=now(),update_at=now() where id=$5"
+	query = "update orders set order_status=$1,withdrawal_fee=$2,trade_no=$3,pay_channel=$4,pay_at=now(),update_at=now() where id=$5"
 	log.Debugf("update orders set order_status=%d,withdrawal_fee=%d,trade_no='%s',pay_channel='%s',pay_at=now(),update_at=now() where id='%s'", 1, order.WithdrawalFee, order.TradeNo, order.PayChannel, order.Id)
 	_, err = tx.Exec(query, 1, order.WithdrawalFee, order.TradeNo, order.PayChannel, order.Id)
 	if err != nil {
@@ -142,17 +150,4 @@ func PaySuccess(order *pb.Order) (isChange bool, err error) {
 	}
 	tx.Commit()
 	return
-}
-
-//根据id获取订单
-func GetOrderById(order *pb.Order) error {
-	query := "select order_status,total_fee,freight,goods_fee,withdrawal_fee,user_id,mobile,name,address,remark,store_id,school_id,trade_no,pay_channel,extract(epoch from order_at)::integer,extract(epoch from pay_at)::integer,extract(epoch from delivery_at)::integer,extract(epoch from print_at)::integer,extract(epoch from complete_at)::integer,print_staff_id,deliver_staff_id,after_sale_staff_id,extract(epoch from after_sale_apply_at)::integer,extract(epoch from   after_sale_end_at)::integer,after_sale_status,after_sale_trad_no,refund_fee,groupon_id from orders where id=$1"
-	log.Debugf("select order_status,total_fee,freight,goods_fee,withdrawal_fee,user_id,mobile,name,address,remark,store_id,school_id,trade_no,pay_channel,extract(epoch from order_at)::integer,extract(epoch from pay_at)::integer,extract(epoch from delivery_at)::integer,extract(epoch from print_at)::integer,extract(epoch from complete_at)::integer,print_staff_id,deliver_staff_id,after_sale_staff_id,extract(epoch from after_sale_apply_at)::integer,extract(epoch from   after_sale_end_at)::integer,after_sale_status,after_sale_trad_no,refund_fee,groupon_id from orders where id='%s'", order.Id)
-	err := DB.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.WithdrawalFee, &order.UserId, &order.Mobile, &order.Name, &order.Address, &order.Address, &order.StoreId, &order.SchoolId, &order.TradeNo, &order.PayChannel, &order.OrderAt, &order.PayAt, &order.DeliverAt, &order.PrintAt, &order.CompleteAt, &order.PrintStaffId, &order.DeliverStaffId, &order.AfterSaleStaffId, &order.AfterSaleApplyAt, &order.AfterSaleEndAt, &order.AfterSaleStatus, &order.AfterSaleTradeNo, &order.RefundFee, &order.GrouponId)
-
-	if err != nil {
-		misc.LogErr(err)
-		return err
-	}
-	return nil
 }

@@ -29,7 +29,7 @@ func LogErrOrder(order *pb.Order, impact string, err error) {
 	io.WriteString(file, wireteString) //写入文件(字符串)
 
 }
-func LogErrOrder(account *pb.AccountItem, impact string, err error) {
+func LogErrAccount(account *pb.AccountItem, impact string, err error) {
 	line := "time:%#v, account insert Error occurred ,order'id is %s,store's id is %s ,the impact is %s !!!. err reason is %#v \n"
 	wireteString := fmt.Sprintf(line, time.Now(), account.OrderId, account.StoreId, impact, err)
 	var file *os.File

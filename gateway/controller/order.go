@@ -25,3 +25,8 @@ func OrderSubmit(w http.ResponseWriter, r *http.Request) {
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderSubmit", req, "mobile", "name", "address", "school_id")
 }
+
+func PaySuccess(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	misc.CallWithResp(w, r, "bc_order", "PaySuccess", req)
+}

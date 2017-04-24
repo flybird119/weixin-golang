@@ -12,9 +12,9 @@ create table orders (
     withdrawal_fee int not null ,    --可体现金额
 
     -- 关联信息
-    user_id text not null,              --用户id
-    mobile text not null,               --联系人手机号
-    name text not null,                 --联系人手机号
+    user_id text not null default '',              --用户id
+    mobile text not null  default '',               --联系人手机号
+    name text not null default '',                 --联系人手机号
     address text not null,              --联系人地址
     remark text default '',             --订单备注
 
@@ -31,12 +31,12 @@ create table orders (
     pay_at timestamptz,                             --付款时间
     deliver_at timestamptz,                         --发货时间
     print_at timestamptz,                           --打印时间
-    complete_at timestamptz,                        --完成时间
+    complete_at timestamptz ,                        --完成时间
 
     --操作人
-    print_staff_id text,                            --打印员工id
-    deliver_staff_id text,                          --发货负责人
-    after_sale_staff_id text,                       --售后负责人
+    print_staff_id text default '',                            --打印员工id
+    deliver_staff_id text default '',                          --发货负责人
+    after_sale_staff_id text default '',                       --售后负责人
 
     --售后
     after_sale_apply_at timestamptz,                --售后开始时间
@@ -46,7 +46,7 @@ create table orders (
     refund_fee int default 0,                       --退款金额
 
     --团购
-    groupon_id text,                                --班级购id
+    groupon_id text  default '',                                --班级购id
 
     update_at timestamptz not null default now()    --更新时间
 
