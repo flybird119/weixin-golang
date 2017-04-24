@@ -172,7 +172,7 @@ func UpdateGoods(goods *pb.Goods) error {
 //SearchGoods 搜索图书 isbn SearchAmount
 func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true "
-	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling"
+	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling,g.has_new_book,g.has_old_book"
 	query = fmt.Sprintf(query, param)
 	//动态拼接参数
 	var args []interface{}
@@ -278,7 +278,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		/**	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling"
 		 */
 		//遍历数据
-		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling)
+		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &searchGoods.HasNewBook, &searchGoods.HasOldBook)
 		if err != nil {
 			return nil, err
 		}
@@ -287,30 +287,30 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 			newLocations, _ := SearchGoodsLoaction(searchGoods.Id, 0)
 			oldLocations, _ := SearchGoodsLoaction(searchGoods.Id, 1)
 
-			if newLocations != nil {
+			if searchGoods.HasNewBook {
 				newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
 			}
-			if oldLocations != nil {
+			if searchGoods.HasOldBook {
 				oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
 			}
 
 		} else {
 			if goods.SearchType == 0 {
 				newLocations, _ := SearchGoodsLoaction(searchGoods.Id, 0)
-				if newLocations != nil {
+				if searchGoods.HasNewBook {
 					newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
 
 				}
 			} else {
 				oldLocations, _ := SearchGoodsLoaction(searchGoods.Id, 1)
-				if oldLocations != nil {
+				if searchGoods.HasOldBook {
 					oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
 
 				}
 			}
 		}
 
-		r = append(r, &pb.GoodsSearchResult{Book: book, NewBook: newbookModel, OldBook: oldbookModel})
+		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, NewBook: newbookModel, OldBook: oldbookModel})
 	}
 
 	return r, nil
@@ -408,6 +408,9 @@ func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation
 
 	log.Debug(query)
 	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return l, nil
+	}
 	if err != nil {
 
 		return nil, err
@@ -542,10 +545,10 @@ func InsertGoodsLocation(loc *pb.GoodsLocation) error {
 	if err == sql.ErrNoRows {
 		//如果用户没有上传过货架位
 
-		query = "insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values($1,$2,$3,$4,$5)"
+		query = "insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values($1,$2,$3,$4,$5) returning id"
 
-		log.Debugf("insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values(%s,%d,%s,%s,%s)", loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
-		_, err = DB.Exec(query, loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
+		log.Debugf("insert into goods_location (goods_id,type,storehouse_id,shelf_id,floor_id) values(%s,%d,%s,%s,%s) returning id", loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId)
+		err = DB.QueryRow(query, loc.GoodsId, loc.Type, loc.StorehouseId, loc.ShelfId, loc.FloorId).Scan(&loc.Id)
 		if err != nil {
 			log.Errorf("%+v", err)
 			return err
