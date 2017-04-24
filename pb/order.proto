@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+
+service OrderService {
+    //提交订单
+    rpc OrderSubmit (OrderSubmitModel) returns (OrderSubmitResp);
+    //订单支付完成 -->待发货
+    rpc PaySuccess (Order) returns (NormalResp);
+    //订单发货
+    rpc DeliverOrder (Order) returns (NormalResp);
+    //订单配送
+    rpc DistributeOrder (Order) returns (NormalResp);
+    //确认订单（微信端）
+    rpc ConfirmOrder (Order) returns (NormalResp);
+    //获取订单详情
+    rpc OrderDetail (Order) returns (OrderDetailResp);
+    //获取订单列表 用户 云店铺 状态
+    rpc OrderList (Order) returns (OrderListResp);
+    //关闭订单
+    rpc CloseOrder (Order) returns (Void);
+}
+
+//订单model
+message Order{
+    string id = 1;
+    int64 order_status = 2;
+    int64 total_fee = 3;
+    int64 freight  = 4;
+    int64 goods_fee = 5;
+    int64 withdrawal_fee = 6;
+    string user_id = 7;
+    string mobile = 8;
+    string name = 9;
+    string address = 10;
+    string remark = 11;
+    string store_id = 12;
+    string school_id = 13;
+    string trade_no = 14;
+    int64 order_at = 15;
+    int64 pay_at = 16;
+    int64 deliver_at = 17;
+    int64 print_at =18;
+    int64 complete_at = 19;
+    string print_staff_id   = 20;
+    string deliver_staff_id = 21;
+    string after_sale_status = 22;
+    string after_sale_trade_no = 23;
+    int64 refund_fee = 24;
+    int64 update_at = 25;
+    string pay_channel = 26;
+    string after_sale_staff_id = 27;
+    int64 after_sale_apply_at = 28;
+    int64 after_sale_end_at = 29;
+    string groupon_id = 30;
+
+}
+
+//订单详情model
+message OrderDetail{
+    Order order = 1;
+    repeated OrderItem items = 2;
+}
+//订单详情列表
+message OrderDetailResp{
+    string code = 1;
+    string message = 2;
+    OrderDetail data = 3;
+}
+message OrderListResp{
+    string code =1;
+    string message =2;
+    repeated OrderDetail data = 3;
+}
+//订单提交model
+message OrderSubmitModel{
+    string user_id = 1;
+    string store_id = 2;
+    string mobile = 3;
+    string name = 4;
+    string address = 5;
+    string remark = 6;
+    string school_id = 7;
+    repeated string cart_ids = 8;
+}
+message OrderSubmitResp{
+    string code = 1;
+    string message =2;
+    Order data = 3;
+}
+//订单项
+message OrderItem{
+    string id = 1;
+    string goods_id = 2;
+    int64 type = 3;
+    int64 amount = 4;
+    int64 price = 5;
+    string book_image = 6;
+    string book_isbn = 7;
+    string book_title = 8;
+}

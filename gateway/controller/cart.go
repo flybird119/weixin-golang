@@ -83,6 +83,6 @@ func CartDel(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	misc.CallWithResp(w, r, "bc_cart", "CartDel", req, "id")
+	misc.CallWithResp(w, r, "bc_cart", "CartDel", req)
 
 }

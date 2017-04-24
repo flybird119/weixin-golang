@@ -51,9 +51,6 @@ func (s *BooksServer) ModifyBookInfo(ctx context.Context, req *pb.Book) (*pb.Get
 	old_book_v := reflect.ValueOf(old_book).Elem()
 
 	for i := 0; i < new_book_v.NumField(); i++ {
-
-		log.Debugf(">>>>>>>>>>>%s>>>>>>>>>>>>>>>\n", new_book_t.Field(i).Name)
-
 		if new_book_t.Field(i).Name == "Id" {
 
 			log.Debugf("The ignore field is %s", new_book_t.Field(i).Name)

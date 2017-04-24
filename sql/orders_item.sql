@@ -3,7 +3,7 @@ create table orders_item (
     id uuid primary key default gen_random_uuid(),
 
     -- 关联项
-    goods_id uuid not null,     --商品id
+    goods_id text not null,     --商品id
     orders_id text,             --订单id
     type int not null,          --图书类型
     amount int not null,        --购买数量

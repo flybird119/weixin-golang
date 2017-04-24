@@ -30,5 +30,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/cart/del", m.Wrap(c.CartDel))
 	//topic
 	v1.Register("/topic/list", m.Wrap(c.TopicsInfo))
+	//order
+	v1.Register("/order/submit", m.Wrap(c.OrderSubmit))
 	return v1
 }

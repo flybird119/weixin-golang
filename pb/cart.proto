@@ -10,6 +10,7 @@ service CartService{
     rpc CartList (Cart) returns (CartListResp); //购物车列表
     rpc CartUpdate (CartUpdateReq) returns (NormalResp); //更改购物车
     rpc CartDel (Cart) returns (NormalResp);    //删除购物车
+    rpc CartBaseList (Cart) returns(CartListResp);//基本列表
 }
 
 //购物车model
@@ -22,7 +23,7 @@ message Cart{
     int64 amount = 6;       //购买数量
     int64 create_at = 7;    //创建时间
     TypeGoods goods_detail = 8; //商品详情
-    string ids = 9;         //ids
+    repeated string ids = 9;         //ids
 }
 
 message CartUpdateReq{

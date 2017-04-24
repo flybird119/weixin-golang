@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package pb;
+// import "pb/common.proto";
+
+service PaymentService {
+
+}
