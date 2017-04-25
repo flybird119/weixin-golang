@@ -20,6 +20,7 @@ message AddressResp {
 message AddressReq {
     string user_id = 1;
     repeated AddressInfo infos = 2;
+    string store_id = 3;
 }
 
 message AddressInfo {
@@ -30,4 +31,6 @@ message AddressInfo {
     string id = 5;
     int64 set_default = 6; //1设置成默认状态
     string user_id = 7;
+    string store_id = 8;
+    string school_id = 9;
 }

@@ -24,7 +24,7 @@ func AddAddress(address *pb.AddressInfo) error {
 	for i := 0; i < len(addresses); i++ {
 		findAddress := addresses[i]
 		//查看是否有相同的地址
-		if address.Name == findAddress.Name && address.Tel == findAddress.Tel && address.Address == findAddress.Address {
+		if address.Name == findAddress.Name && address.Tel == findAddress.Tel && address.Address == findAddress.Address && address.SchoolId == findAddress.SchoolId {
 			hasEquelsAddr = true
 		}
 		isDefault = false
@@ -33,9 +33,9 @@ func AddAddress(address *pb.AddressInfo) error {
 	if hasEquelsAddr {
 		return nil
 	}
-	query := "insert into address (name,tel,address,user_id,is_default) values($1,$2,$3,$4,$5) returning id"
-	log.Debugf("insert into address (name,tel,address,user_id,is_default) values('%s','%s','%s','%s',%s)", address.Name, address.Tel, address.Address, address.UserId, isDefault)
-	err = DB.QueryRow(query, address.Name, address.Tel, address.Address, address.UserId, isDefault).Scan(&address.Id)
+	query := "insert into address (name,tel,address,user_id,is_default,store_id,school_id) values($1,$2,$3,$4,$5,$6,$7) returning id"
+	log.Debugf("insert into address (name,tel,address,user_id,is_default,store_id,school_id) values('%s','%s','%s','%s',%s,'%s','%s')", address.Name, address.Tel, address.Address, address.UserId, isDefault, address.StoreId, address.SchoolId)
+	err = DB.QueryRow(query, address.Name, address.Tel, address.Address, address.UserId, isDefault, address.StoreId, address.SchoolId).Scan(&address.Id)
 	if err != nil {
 		misc.LogErr(err)
 		return err
@@ -62,6 +62,10 @@ func UpdateAddress(address *pb.AddressInfo) error {
 
 	if address.Address != "" {
 		args = append(args, address.Address)
+		condition += fmt.Sprintf(",address=$%d", len(args))
+	}
+	if address.SchoolId != "" {
+		args = append(args, address.SchoolId)
 		condition += fmt.Sprintf(",address=$%d", len(args))
 	}
 
@@ -93,7 +97,7 @@ func UpdateAddress(address *pb.AddressInfo) error {
 
 //删除用户地址
 func DelAddress(addresses []*pb.AddressInfo, userId string) error {
-	query := fmt.Sprintf("delete from address where id in (${ids}) and user_id='%s'", userId)
+	query := fmt.Sprintf("delete from address where id in (${ids}) and user_id='%s' returning is_default", userId)
 	var idArray []interface{}
 	if len(addresses) > 0 {
 		query = strings.Replace(query, "${"+"ids"+"}",
@@ -110,14 +114,15 @@ func DelAddress(addresses []*pb.AddressInfo, userId string) error {
 		misc.LogErr(err)
 		return err
 	}
+
 	return nil
 }
 
 //获取用户的地址
 func FindAddressByUser(address *pb.AddressInfo) (addresses []*pb.AddressInfo, err error) {
-	query := "select id,name,tel,address,user_id,is_default from address where user_id=$1"
-	log.Debugf("select id,name,tel,address,user_id,is_default from address where user_id='%s'", address.UserId)
-	rows, err := DB.Query(query, address.UserId)
+	query := "select id,name,tel,address,user_id,is_default,school_id ,store_id from address where user_id=$1 and store_id=$2"
+	log.Debugf("select id,name,tel,address,user_id,is_default,school_id ,store_id from address where user_id='%s' and store_id='%s'", address.UserId, address.StoreId)
+	rows, err := DB.Query(query, address.UserId, address.StoreId)
 	if err == sql.ErrNoRows {
 
 		return addresses, nil
@@ -130,7 +135,7 @@ func FindAddressByUser(address *pb.AddressInfo) (addresses []*pb.AddressInfo, er
 	for rows.Next() {
 		searchAddress := &pb.AddressInfo{}
 		addresses = append(addresses, searchAddress)
-		err = rows.Scan(&searchAddress.Id, &searchAddress.Name, &searchAddress.Tel, &searchAddress.Address, &searchAddress.UserId, &searchAddress.IsDefault)
+		err = rows.Scan(&searchAddress.Id, &searchAddress.Name, &searchAddress.Tel, &searchAddress.Address, &searchAddress.UserId, &searchAddress.IsDefault, &searchAddress.SchoolId, &searchAddress.StoreId)
 		if err != nil {
 			misc.LogErr(err)
 			return nil, err

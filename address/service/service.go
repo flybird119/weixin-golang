@@ -24,6 +24,7 @@ func (s *AddressServiceServer) AddAddress(ctx context.Context, in *pb.AddressReq
 	//add operation
 	for i := 0; i < len(in.Infos); i++ {
 		in.Infos[i].UserId = in.UserId
+		in.Infos[i].StoreId = in.StoreId
 		err := db.AddAddress(in.Infos[i])
 		if err != nil {
 			log.Error(err)

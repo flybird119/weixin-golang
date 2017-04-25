@@ -9,6 +9,8 @@ create table address (
     -- 用户ID
     user_id text not null,
 
+    school_id text not null,    --学校id
+    store_id text not null,     --云店铺id
     --是否是默认状态
     is_default bool not null default false,
     create_at timestamptz not null default now(),

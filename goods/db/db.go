@@ -14,9 +14,9 @@ import (
 //增加商品 book_id store_id isbn  goods.location
 func AddGoods(goods *pb.Goods) error {
 	//首先根据isbn获取当前用户有没有保存goods
-	query := "select id from goods where isbn=$1"
-	log.Debugf("select id from goods where isbn=%s", goods.Isbn)
-	err := DB.QueryRow(query, goods.Isbn).Scan(&goods.Id)
+	query := "select id from goods where isbn=$1 and store_id=$2"
+	log.Debugf("select id from goods where isbn=%s and store_id=$2", goods.Isbn, goods.StoreId)
+	err := DB.QueryRow(query, goods.Isbn, goods.StoreId).Scan(&goods.Id)
 	//如果检查失败
 	if err == sql.ErrNoRows {
 		//如果用户没有上传过改商品
@@ -254,9 +254,9 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		args = append(args, misc.FazzyQuery(goods.Title))
 		condition += fmt.Sprintf(" and b.title like $%d", len(args))
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  title <-> $%d ,g.id", len(args))
+		condition += fmt.Sprintf(" order by  title <-> $%d ,g.update_at desc", len(args))
 	} else {
-		condition += " order by g.id"
+		condition += " order by g.update_at desc"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	}
 	query += condition
@@ -354,9 +354,9 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 		args = append(args, misc.FazzyQuery(goods.Title))
 
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  b.title <-> $%d ,g.id", len(args))
+		condition += fmt.Sprintf(" order by  b.title <-> $%d ,g.update_at desc", len(args))
 	} else {
-		condition += " order by g.id"
+		condition += " order by g.update_at desc"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	}
 	query += condition

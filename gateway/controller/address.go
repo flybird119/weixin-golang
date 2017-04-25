@@ -18,6 +18,7 @@ func AddAddress(w http.ResponseWriter, r *http.Request) {
 	// get store_id
 	if c != nil && c.StoreId != "" && c.UserId != "" {
 		req.UserId = c.UserId
+		req.StoreId = c.StoreId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,
@@ -35,6 +36,7 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 	// get store_id
 	if c != nil && c.StoreId != "" && c.UserId != "" {
 		req.UserId = c.UserId
+		req.StoreId = c.StoreId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,
@@ -42,7 +44,7 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 
-	misc.CallWithResp(w, r, "bc_address", "UpdateAddress", req)
+	misc.CallWithResp(w, r, "bc_address", "UpdateAddress", req, "id")
 
 }
 
@@ -53,6 +55,7 @@ func MyAddresses(w http.ResponseWriter, r *http.Request) {
 	// get store_id
 	if c != nil && c.StoreId != "" && c.UserId != "" {
 		req.UserId = c.UserId
+		req.StoreId = c.StoreId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,
@@ -70,6 +73,7 @@ func DeleteAddress(w http.ResponseWriter, r *http.Request) {
 	// get store_id
 	if c != nil && c.StoreId != "" && c.UserId != "" {
 		req.UserId = c.UserId
+		req.StoreId = c.StoreId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,
