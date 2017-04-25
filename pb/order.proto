@@ -55,7 +55,7 @@ message Order{
     int64 after_sale_apply_at = 28;
     int64 after_sale_end_at = 29;
     string groupon_id = 30;
-
+    int64 searchType = 31; //搜索类型 0 用户搜索 1商家搜索
 }
 
 //订单详情model
