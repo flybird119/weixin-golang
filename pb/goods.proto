@@ -12,7 +12,7 @@ service GoodsService{
     rpc GetGoodsByIdOrIsbn (Goods) returns (NormalGoodsResp);//通过isbn获取商品
     rpc GetGoodsTypeInfo (TypeGoods) returns (TypeGoodsResp); //查询商品单类型
     rpc DelOrRemoveGoods (DelGoodsReq) returns (NormalResp);  //删除或者下架商品
-    rpc GoodsLocationOperate (GoodsLocation) returns (NormalResp); //书本货架操作
+    rpc GoodsLocationOperate (GoodsLocation) returns (GoodsLocationResp); //书本货架操作
     rpc AppSearchGoods (Goods) returns (GoodsDetailResp);   //手机端查找商品 ,去除location
 }
 
@@ -75,6 +75,12 @@ message NormalGoodsResp{
     Goods data = 3;
 }
 
+message GoodsLocationResp{
+    string code = 1;
+    string message = 2;
+    GoodsLocation data = 3;
+}
+
 message GoodsSalesModel{            //当前云店商品数量统计
     string goods_id = 1;
     int64 type = 2;
@@ -119,4 +125,5 @@ message GoodsSearchResult{
     string store_id = 3;
     GoodsSalesModel new_book = 4;
     GoodsSalesModel old_book = 5;
+    int64 update_at = 6;
 }

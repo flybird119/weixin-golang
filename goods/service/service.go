@@ -147,7 +147,7 @@ func (s *GoodsServiceServer) DelOrRemoveGoods(ctx context.Context, in *pb.DelGoo
 }
 
 //GoodsLocationOperate 商品货架管理
-func (s *GoodsServiceServer) GoodsLocationOperate(ctx context.Context, in *pb.GoodsLocation) (*pb.NormalResp, error) {
+func (s *GoodsServiceServer) GoodsLocationOperate(ctx context.Context, in *pb.GoodsLocation) (*pb.GoodsLocationResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GoodsLocationOperate", "%#v", in))
 
@@ -176,8 +176,7 @@ func (s *GoodsServiceServer) GoodsLocationOperate(ctx context.Context, in *pb.Go
 			return nil, errs.Wrap(errors.New(err.Error()))
 		}
 	}
-
-	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+	return &pb.GoodsLocationResp{Code: "00000", Message: "ok", Data: in}, nil
 }
 
 //AppSearchGoods 搜索图书 isbn 用于用户端搜索

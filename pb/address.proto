@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+
+service AddressService {
+    rpc AddAddress (AddressReq) returns (AddressResp);
+    rpc UpdateAddress (AddressInfo) returns (AddressResp);
+    rpc MyAddresses (AddressInfo) returns (AddressResp);
+    rpc DeleteAddress (AddressReq) returns (NormalResp);
+}
+
+message AddressResp {
+    string code = 1;
+    string message = 2;
+    repeated AddressInfo data = 3;
+}
+
+message AddressReq {
+    string user_id = 1;
+    repeated AddressInfo infos = 2;
+    string store_id = 3;
+}
+
+message AddressInfo {
+    string name = 1;
+    string tel = 2;
+    string address = 3;
+    bool is_default = 4;
+    string id = 5;
+    int64 set_default = 6; //1设置成默认状态
+    string user_id = 7;
+    string store_id = 8;
+    string school_id = 9;
+}
