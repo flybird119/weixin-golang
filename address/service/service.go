@@ -1,8 +1,9 @@
 package service
 
 import (
-	"17mei/errs"
 	"errors"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/goushuyun/weixin-golang/address/db"
 	"github.com/goushuyun/weixin-golang/misc"
