@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
@@ -41,15 +43,29 @@ func SaveUser(user *pb.User) error {
 		}
 
 	} else {
-		query := "insert into users(openid, nickname, sex, avatar, store_id) values($1, $2, $3, $4, $5) returning id"
-		log.Debugf("insert into users(openid, nickname, sex, avatar, store_id) values('%s', '%s', %d, '%s', '%s') returning id", user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, user.StoreId)
-
-		err = DB.QueryRow(query, user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, user.StoreId).Scan(&user.UserId)
-
+		// insert user to DB
+		err = insertUser(user)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
+	}
+
+	return nil
+}
+
+func insertUser(user *pb.User) error {
+	store_ids := fmt.Sprintf("{\"%s\"}", user.StoreId)
+
+	log.Debug(">>>>>>>>>>>>>", store_ids, "<<<<<<<<<<<<<<<<")
+
+	query := "insert into users(openid, nickname, sex, avatar, store_ids) values('%s', '%s', %d, '%s', '%s') returning id"
+	err := DB.QueryRow(fmt.Sprintf(query, user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, store_ids)).Scan(&user.UserId)
+	log.Debug(fmt.Sprintf(query, user.WeixinInfo.Openid, user.WeixinInfo.Nickname, user.WeixinInfo.Sex, user.WeixinInfo.Headimgurl, store_ids))
+
+	if err != nil {
+		log.Error(err)
+		return err
 	}
 
 	return nil
