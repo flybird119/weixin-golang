@@ -187,5 +187,7 @@ func FazzyQuery(value string) string {
 
 //记录日志
 func LogErr(err error) {
+	log.Debug("<<<<<<< new error <<<<<<<<<<<")
 	log.Debugf("%+v", err)
+	log.Debug("<<<<<<<           <<<<<<<<<<<")
 }
