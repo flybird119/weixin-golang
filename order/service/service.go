@@ -81,39 +81,99 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 	return &pb.NormalResp{}, nil
 }
 
-// 订单配送
-func (s *OrderServiceServer) PrintOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
-	//填写操作人 并填写配送的时间并填写配送的时间和更改时间
-
-	return &pb.NormalResp{}, nil
-}
-
 // 订单发货
 func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
 	//更改订单状态 订单状态 +2
-
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "DeliverOrder", "%#v", in))
+	//首先检查发货前的订单状态
+	searchOrder := &pb.Order{Id: in.Id}
+	err := orderDB.GetOrderBaseInfo(searchOrder)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//开始检查订单的状态
+	if searchOrder.OrderStatus != 1 {
+		if err != nil {
+			return nil, errs.Wrap(errors.New("order status error"))
+		}
+	}
 	//填写操作人 并填写发送的时间和更改时间
+	in.DeliverStaffId = in.SellerId
+	in.DeliverAt = 1
+	in.OrderStatus = 3
+	err = orderDB.UpdateOrder(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 	return &pb.NormalResp{}, nil
 }
 
 // 订单配送
 func (s *OrderServiceServer) DistributeOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
-	//填写操作人 并填写配送的时间并填写配送的时间和更改时间
 
-	return &pb.NormalResp{}, nil
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "DistributeOrder", "%#v", in))
+	//填写操作人 并填写配送的时间并填写配送的时间和更改时间
+	in.DistributeStaffId = in.SellerId
+	in.DistributeAt = 1
+	err := orderDB.UpdateOrder(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 // 确认订单（微信端）
 func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
-	//用户确认订单，减短商户的资金的转化,修改更改时间,修改确认时间
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "PrintOrder", "%#v", in))
+	//1.0 首先要检验 订单的状态 未发货的订单不能点击成功
+	searchOrder := &pb.Order{Id: in.Id}
+	err := orderDB.GetOrderBaseInfo(searchOrder)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	if searchOrder.OrderStatus != 3 {
+		return nil, errs.Wrap(errors.New("order state error"))
+	}
+	//用户主动确认订单
+	//订单成功——>修改订单状态 +4
+	in.ConfirmAt = 1
+	err = orderDB.UpdateOrder(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//商家账户更改
+	misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", in)
 
-	return &pb.NormalResp{}, nil
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 // 申请售后（微信端）
 func (s *OrderServiceServer) AfterSaleApply(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
 	//更改订单壮体啊，修改after_sale_apply_at，after_sale_status，refund_fee
 	return &pb.NormalResp{}, nil
+}
+
+// 订单配送
+func (s *OrderServiceServer) PrintOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	//打印时间
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "PrintOrder", "%#v", in))
+	in.PrintAt = 1
+	in.PrintStaffId = in.SellerId
+	err := orderDB.UpdateOrder(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 // 获取订单详情

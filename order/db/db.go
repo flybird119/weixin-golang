@@ -367,10 +367,59 @@ func UpdateOrder(order *pb.Order) error {
 	condition += fmt.Sprintf(" where id=$%d", len(args))
 	query += condition
 	log.Debugf(query+" args:", args)
-	_, err := DB.Exec(query, args...)
+	//建立事务
+	tx, err := DB.Begin()
 	if err != nil {
 		misc.LogErr(err)
 		return err
 	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(query, args...)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+//获取订单的状态
+func GetOrderBaseInfo(order *pb.Order) error {
+	next := order
+	//需要的项
+	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at sql.NullString
+
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer"
+
+	query := fmt.Sprintf("select %s from orders o where id=$1 ", selectParam)
+
+	err := DB.QueryRow(query).Scan(&next.Id, &next.OrderStatus, &next.TotalFee, &next.Freight, &next.GoodsFee, &next.WithdrawalFee, &next.UserId, &next.Mobile, &next.Name, &next.Address, &next.Remark, &next.StoreId, &next.SchoolId, &next.TradeNo, &next.PayChannel, &next.OrderAt, &pay_at, &deliver_at, &print_at, &complete_at, &next.PrintStaffId, &next.DeliverStaffId, &next.AfterSaleStaffId, &after_sale_apply_at, &after_sale_end_at, &next.AfterSaleStatus, &next.AfterSaleTradeNo, &next.RefundFee, &next.GrouponId,
+		&next.UpdateAt)
+	if err != nil && err != sql.ErrNoRows {
+		misc.LogErr(err)
+		return err
+	}
+	//转换可能为空的值
+	if pay_at.Valid {
+		next.PayAt, _ = strconv.ParseInt(pay_at.String, 10, 64)
+	}
+	if deliver_at.Valid {
+		next.DeliverAt, _ = strconv.ParseInt(deliver_at.String, 10, 64)
+	}
+	if print_at.Valid {
+		next.PrintAt, _ = strconv.ParseInt(print_at.String, 10, 64)
+	}
+	if complete_at.Valid {
+		next.CompleteAt, _ = strconv.ParseInt(complete_at.String, 10, 64)
+	}
+	if after_sale_apply_at.Valid {
+		next.AfterSaleApplyAt, _ = strconv.ParseInt(after_sale_apply_at.String, 10, 64)
+	}
+	if after_sale_end_at.Valid {
+		next.AfterSaleEndAt, _ = strconv.ParseInt(after_sale_end_at.String, 10, 64)
+	}
+
 	return nil
 }

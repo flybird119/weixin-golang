@@ -68,6 +68,7 @@ message Order{
     int64 confirm_at = 37;
     int64 distribute_at = 38;
     string distribute_staff_id = 39;
+    string seller_id = 40;
 }
 
 //订单详情model

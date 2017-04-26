@@ -59,8 +59,9 @@ func OrderListSeller(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 
 	// get store_id
-	if c != nil && c.StoreId != "" && c.UserId != "" {
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
 		req.StoreId = c.StoreId
+		req.SellerId = c.SellerId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,
@@ -68,4 +69,61 @@ func OrderListSeller(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderList", req)
+}
+
+//打印订单
+func PrintOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
+		req.StoreId = c.StoreId
+		req.SellerId = c.SellerId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_order", "PrintOrder", req)
+}
+
+//配送订单
+func DistributeOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
+		req.StoreId = c.StoreId
+		req.SellerId = c.SellerId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_order", "DistributeOrder", req)
+}
+
+//确认订单
+func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
+		req.StoreId = c.StoreId
+		req.SellerId = c.SellerId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_order", "ConfirmOrder", req)
 }

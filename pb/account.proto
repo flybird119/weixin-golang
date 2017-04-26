@@ -9,8 +9,10 @@ service AccountService {
     rpc InitAccount (Account) returns (Void);
     //增加什么AccountItem
     rpc AddAccountItem (AccountItem) returns (Void);
-    //order Account handle
+    //order pay over Account handle
     rpc PayOverOrderAccountHandle (Order) returns (Void);
+    //order complete account handle
+    rpc OrderCompleteAccountHandle (Order) returns (Void);
     //每日统计销售情况 1 每日统计销售 2 每日统计销量
 }
 

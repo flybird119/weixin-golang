@@ -57,3 +57,15 @@ func StoreSchools(w http.ResponseWriter, r *http.Request) {
 	req := &pb.School{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_school", "StoreSchools", req)
 }
+
+//GetSchoolById 根据学校id获取学校信息
+func GetSchoolById(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.School{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_school", "GetSchoolById", req)
+}

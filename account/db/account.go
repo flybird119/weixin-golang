@@ -60,13 +60,24 @@ func AddAccountItem(item *pb.AccountItem) error {
 }
 
 //检查账户是否存在
-func hasExistAcoount(item *pb.AccountItem) {
-
+func HasExistAcoount(item *pb.AccountItem) (bool, error) {
+	item.Id = ""
+	query := "select id from account_item where store_id=$1 and order_id=$2 and item_type=$3"
+	log.Debugf("select id from account_item where store_id='%s' and order_id='%s' and item_type=%d", item.StoreId, item.OrderId, item.ItemType)
+	err := DB.QueryRow(query, item.StoreId, item.OrderId, item.ItemType).Scan(&item.Id)
+	if err == sql.ErrNoRows || item.Id == "" {
+		return false, nil
+	} else if err != nil {
+		misc.LogErr(err)
+		return false, err
+	}
+	return true, nil
 }
 
 //store_id unsettled_balance
 func ChangeAccountWithdrawalFee(account *pb.Account) error {
 	query := "update account set unsettled_balance=unsettled_balance+$1,update_at=now() where store_id=$2 returning unsettled_balance ,id"
+	//开启事务
 	tx, err := DB.Begin()
 	if err != nil {
 		misc.LogErr(err)
@@ -80,5 +91,23 @@ func ChangeAccountWithdrawalFee(account *pb.Account) error {
 	}
 	tx.Commit()
 	return nil
+}
 
+//修改账户可提现余额
+func ChangAccountBalance(account *pb.Account) error {
+	query := "update account set balance=balance+$1,update_at=now() where store_id=$2 returning balance,id"
+	//开启事务
+	tx, err := DB.Begin()
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	defer tx.Rollback()
+	err = tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	tx.Commit()
+	return nil
 }

@@ -5,11 +5,16 @@ package pb;
 import "pb/seller.proto";
 import "pb/common.proto";
 service SchoolService{
-
+    //增加学校
     rpc AddSchool (School) returns (SchoolResp);
+    //更新学校信息
     rpc UpdateSchool (School) returns (SchoolResp);
+    //更新学校运费
     rpc UpdateExpressFee (School) returns (NormalResp);
+    //获取云店铺的学校列表
     rpc StoreSchools (School) returns (SchoolsResp);
+    //根据学校的id获取学校信息
+    rpc GetSchoolById (School) returns (SchoolResp);
 
 }
 

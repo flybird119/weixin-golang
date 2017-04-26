@@ -47,7 +47,6 @@ create table orders (
     after_sale_status int default 0,                --售后单号、状态 1待处理 2 退款中 3退款失败 4退款成功
     after_sale_trad_no text default '',                        --售后交易号
     refund_fee int default 0,                       --退款金额
-
     --团购
     groupon_id text  default '',                                --班级购id
 
@@ -57,3 +56,21 @@ create table orders (
 
 CREATE  INDEX orders_store ON orders(store_id);
 CREATE  INDEX orders_school ON orders(school_id);
+
+-- >订单的状态由二进制来管理
+-- 解释：<br>
+--		 	 8  7  6  5  4  3  2  1 <br>
+--	        _  _  _  _  _  _  _  _ <br>
+--> 第一位: 是否支付 0 未支付 1 已支付 <br>
+--> 第二位: 是否发货 0 未发货 1 已发货 <br>
+--> 第三位: 是否完成 0 未完成 1 已完成 <br>
+--> 第四位: 是否关闭 0 未关闭 1 已关闭 <br>
+--> 第五位: 是否售后 0 未售后 1 售后状态 <br>
+--> 未支付订单 0
+--> 代发货订单 1
+--> 已发货订单 3
+--> 已完成订单 7
+--> 已关闭订单 16
+--> 售后订单 33 - 47 :<br>
+-->>当前订单的状态n ,查看售后的订单进行到哪一步 n-32 匹配上面的值:<br>
+-->>>如查找待发货售后订单 33-32 = 1,那么33为待发货售后订单

@@ -67,3 +67,14 @@ func (s *SchoolServiceServer) StoreSchools(ctx context.Context, in *pb.School) (
 	}
 	return &pb.SchoolsResp{Code: "00000", Message: "ok", Data: schools}, nil
 }
+
+//StoreSchools 店铺下的所有学校
+func (s *SchoolServiceServer) GetSchoolById(ctx context.Context, in *pb.School) (*pb.SchoolResp, error) {
+	//获取学校店铺
+	serchSchool, err := db.GetSchoolById(in.Id)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.SchoolResp{Code: "00000", Message: "ok", Data: serchSchool}, nil
+}

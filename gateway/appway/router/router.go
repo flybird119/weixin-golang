@@ -17,6 +17,7 @@ func SetRouterV1() *m.Router {
 
 	//school
 	v1.Register("/school/get_store_schools", m.Wrap(c.StoreSchools))
+	v1.Register("/school/get_school_info", m.Wrap(c.GetSchoolById))
 
 	//goods
 	v1.Register("/goods/search", m.Wrap(c.AppSearchGoods))
