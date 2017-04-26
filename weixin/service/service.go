@@ -20,6 +20,16 @@ import (
 
 type WeixinServer struct{}
 
+func (s *WeixinServer) TestWeixinDB(ctx context.Context, req *pb.WeixinReq) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "TestWeixinDB", "%#v", req))
+
+	// to operate db
+	db.TestDBOpe()
+
+	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
+}
+
 func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetWeixinInfoResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetWeixinInfo", "%#v", req))
@@ -39,6 +49,9 @@ func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*p
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+
+	// 修正 store_id 为当前云店铺的 store_id
+	userResp.StoreId = req.StoreId
 
 	// sign app token
 	appToken := token.SignUserToken(token.AppToken, userResp.UserId, userResp.StoreId)

@@ -134,11 +134,11 @@ func UpdateLocation(loc *pb.Location) error {
 }
 
 func AddLocation(location *pb.Location) error {
-	query := "insert into location(level, pid, store_id, name) values($1, $2, $3, $4)"
+	query := "insert into location(level, pid, store_id, name) values($1, $2, $3, $4) returning id"
 
-	log.Debugf("insert into location(level, pid, store_id, name) values(%d, '%s', '%s', '%s')", location.Level, location.Pid, location.StoreId, location.Name)
+	log.Debugf("insert into location(level, pid, store_id, name) values(%d, '%s', '%s', '%s') returning id", location.Level, location.Pid, location.StoreId, location.Name)
 
-	_, err := DB.Exec(query, location.Level, location.Pid, location.StoreId, location.Name)
+	err := DB.QueryRow(query, location.Level, location.Pid, location.StoreId, location.Name).Scan(&location.Id)
 	if err != nil {
 		log.Error(err)
 		return err

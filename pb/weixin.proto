@@ -8,6 +8,7 @@ service WeixinService {
     rpc GetAuthURL (WeixinReq) returns (GetAuthURLResp);
     rpc GetOfficialAccountInfo (WeixinReq) returns (NormalResp);
     rpc GetWeixinInfo (WeixinReq) returns (GetWeixinInfoResp);
+    rpc TestWeixinDB (WeixinReq) returns (NormalResp);
 }
 
 message GetWeixinInfoResp {

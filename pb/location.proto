@@ -4,11 +4,17 @@ package pb;
 import "pb/common.proto";
 
 service LocationService {
-    rpc AddLocation (Location) returns (NormalResp);
+    rpc AddLocation (Location) returns (AddLocationResp);
     rpc UpdateLocation (Location) returns (NormalResp);
     rpc ListLocation (Location) returns (listLocationResp);
     rpc GetChildrenLocation (Location) returns (GetChildrenLocationResp);
     rpc DelLocation (Location) returns (NormalResp);
+}
+
+message AddLocationResp {
+    string code = 1;
+    string message = 2;
+    Location data = 3;
 }
 
 message listLocationResp {

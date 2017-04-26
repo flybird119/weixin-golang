@@ -3,7 +3,6 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"strconv"
 	"testing"
@@ -11,6 +10,8 @@ import (
 
 	pingpp "github.com/pingplusplus/pingpp-go/pingpp"
 	"github.com/pingplusplus/pingpp-go/pingpp/charge"
+
+	"github.com/wothing/log"
 )
 
 var privity_key = `-----BEGIN RSA PRIVATE KEY-----
@@ -63,8 +64,8 @@ JJQ+j7DmVNnfcWVqVQJANmmsVdUjrVR97koRQhGnKjHq93fSC3PWNFD9bFssdO9S
 PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 -----END RSA PRIVATE KEY-----`
 	metadata := make(map[string]interface{})
-	metadata["color"] = "red"
 	extra := make(map[string]interface{})
+	extra["open_id"] = "oWg4qwSn0d3UM0kjZULRdb4SC2hw"
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	orderno := r.Intn(999999999999999)
@@ -73,7 +74,7 @@ PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 		Order_no:  strconv.Itoa(orderno),
 		App:       pingpp.App{Id: "app_4qnjLOWXbDKSPmbb"},
 		Amount:    1000,
-		Channel:   "alipay_wap",
+		Channel:   "wx_pub",
 		Currency:  "cny",
 		Client_ip: "127.0.0.1",
 		Subject:   "Your Subject",
@@ -81,6 +82,8 @@ PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 		Extra:     extra,
 		Metadata:  metadata,
 	}
+
+	fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>>>\n%+v\n", params)
 
 	//返回的第一个参数是 charge 对象，你需要将其转换成 json 给客户端，或者客户端接收后转换。
 	ch, err := charge.New(params)
@@ -91,6 +94,6 @@ PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 		return
 	}
 
-	fmt.Println(ch)
+	log.JSONIndent(ch)
 
 }
