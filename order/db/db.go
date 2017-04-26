@@ -321,8 +321,56 @@ func GetOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error) {
 
 //更改时间
 func UpdateOrder(order *pb.Order) error {
-	if order.OrderStatus != 0 {
+	query := "update orders set update_at=now()"
 
+	var args []interface{}
+	var condition string
+	if order.OrderStatus != 0 {
+		args = append(args, order.OrderStatus)
+		condition += fmt.Sprintf(",order_status=$%d", len(args))
+	}
+	if order.DeliverAt != 0 {
+		args = append(args, time.Now())
+		condition += fmt.Sprintf(",deliver_at=$%d", len(args))
+	}
+	if order.PrintAt != 0 {
+		args = append(args, time.Now())
+		condition += fmt.Sprintf(",print_at=$%d", len(args))
+	}
+	if order.CompleteAt != 0 {
+		args = append(args, time.Now())
+		condition += fmt.Sprintf(",complete_at=$%d", len(args))
+	}
+	if order.ConfirmAt != 0 {
+		args = append(args, time.Now())
+		condition += fmt.Sprintf(",confirm_at=$%d", len(args))
+	}
+	if order.DistributeAt != 0 {
+		args = append(args, time.Now())
+		condition += fmt.Sprintf(",distribute_at=$%d", len(args))
+	}
+	if order.PrintStaffId != "" {
+		args = append(args, order.PrintStaffId)
+		condition += fmt.Sprintf(",print_staff_id=$%d", len(args))
+	}
+	if order.DeliverStaffId != "" {
+		args = append(args, order.DeliverStaffId)
+		condition += fmt.Sprintf(",deliver_staff_id=$%d", len(args))
+	}
+	if order.DistributeStaffId != "" {
+		args = append(args, order.DistributeStaffId)
+		condition += fmt.Sprintf(",distribute_staff_id=$%d", len(args))
 	}
 
+	//order_id
+	args = append(args, order.Id)
+	condition += fmt.Sprintf(" where id=$%d", len(args))
+	query += condition
+	log.Debugf(query+" args:", args)
+	_, err := DB.Exec(query, args...)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
+	return nil
 }

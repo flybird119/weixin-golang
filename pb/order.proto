@@ -65,9 +65,9 @@ message Order{
     int64 page = 34;
     int64 size = 35;
     string isbn = 36;
-    int64 comfirm_at = 37;
+    int64 confirm_at = 37;
     int64 distribute_at = 38;
-    int64 distribute_staff_id = 39;
+    string distribute_staff_id = 39;
 }
 
 //订单详情model
