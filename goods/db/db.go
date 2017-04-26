@@ -15,8 +15,8 @@ import (
 func AddGoods(goods *pb.Goods) error {
 	var bookId, isbn string
 	//首先根据isbn获取当前用户有没有保存goods
-	query := "select id ,book_id,isbn,from goods where isbn=$1 and store_id=$2"
-	log.Debugf("select id ,book_id,isbn,from goods where isbn=%s and store_id=$2", goods.Isbn, goods.StoreId)
+	query := "select id ,book_id,isbn from goods where isbn=$1 and store_id=$2"
+	log.Debugf("select id ,book_id,isbn from goods where isbn=%s and store_id=$2", goods.Isbn, goods.StoreId)
 	err := DB.QueryRow(query, goods.Isbn, goods.StoreId).Scan(&goods.Id, &bookId, &isbn)
 	//如果检查失败
 	if err == sql.ErrNoRows {

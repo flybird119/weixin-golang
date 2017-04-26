@@ -13,8 +13,12 @@ service OrderService {
     rpc DeliverOrder (Order) returns (NormalResp);
     //订单配送
     rpc DistributeOrder (Order) returns (NormalResp);
-    //确认订单（微信端）
+    //确认订单（微信端）😳
     rpc ConfirmOrder (Order) returns (NormalResp);
+    //申请售后（微信端）😳
+    rpc AfterSaleApply (Order) returns (NormalResp);
+    //打印订单
+    rpc PrintOrder (Order) returns (NormalResp);
     //获取订单详情
     rpc OrderDetail (Order) returns (OrderDetailResp);
     //获取订单列表 用户 云店铺 状态
@@ -46,7 +50,7 @@ message Order{
     int64 complete_at = 19;
     string print_staff_id   = 20;
     string deliver_staff_id = 21;
-    string after_sale_status = 22;
+    int64 after_sale_status = 22;
     string after_sale_trade_no = 23;
     int64 refund_fee = 24;
     int64 update_at = 25;
@@ -56,6 +60,14 @@ message Order{
     int64 after_sale_end_at = 29;
     string groupon_id = 30;
     int64 searchType = 31; //搜索类型 0 用户搜索 1商家搜索
+    int64 start_at = 32;
+    int64 end_at = 33;
+    int64 page = 34;
+    int64 size = 35;
+    string isbn = 36;
+    int64 comfirm_at = 37;
+    int64 distribute_at = 38;
+    int64 distribute_staff_id = 39;
 }
 
 //订单详情model
