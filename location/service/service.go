@@ -69,7 +69,7 @@ func (s *LocationServiceServer) UpdateLocation(ctx context.Context, req *pb.Loca
 	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
 }
 
-func (s *LocationServiceServer) AddLocation(ctx context.Context, req *pb.Location) (*pb.NormalResp, error) {
+func (s *LocationServiceServer) AddLocation(ctx context.Context, req *pb.Location) (*pb.AddLocationResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "AddLocation", "%#v", req))
 
@@ -78,5 +78,5 @@ func (s *LocationServiceServer) AddLocation(ctx context.Context, req *pb.Locatio
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
+	return &pb.AddLocationResp{Code: errs.Ok, Message: "ok", Data: req}, nil
 }

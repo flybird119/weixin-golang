@@ -1,20 +1,12 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
-	"math/rand"
-	"strconv"
-	"testing"
-	"time"
 
-	pingpp "github.com/pingplusplus/pingpp-go/pingpp"
-	"github.com/pingplusplus/pingpp-go/pingpp/charge"
-
-	"github.com/wothing/log"
+	"github.com/pingplusplus/pingpp-go/pingpp"
 )
 
-func TestPay(t *testing.T) {
+func init() {
 	// LogLevel 是 Go SDK 提供的 debug 开关
 	pingpp.LogLevel = 2
 	//设置 API Key
@@ -25,7 +17,10 @@ func TestPay(t *testing.T) {
 	pingpp.AcceptLanguage = "zh-CN"
 
 	//设置商户的私钥 记得在Ping++上配置公钥
-	pingpp.AccountPrivateKey = `-----BEGIN RSA PRIVATE KEY-----
+	pingpp.AccountPrivateKey = privity_key
+}
+
+var privity_key = `-----BEGIN RSA PRIVATE KEY-----
 MIICWwIBAAKBgQC23/9KS+0uVJUGCW/ZFkaCOcBDoSWzQVD3wpOUyqOiKEk9Mpin
 fDRvJRKVMecHjMEThA503iWC+TuzcPITbyiSc94ZqNeowzRrKLMqgpXp8xf/iim2
 lK8uoz+iwSDA0TR96CYwgeluxgVSLTFQ8E2CD/J4uu61xc7647fVGIqKUwIDAQAB
@@ -40,37 +35,10 @@ a4xvhLFFlOhh6aK3JdehN4p6K3Y62o05FCkMjMmzBKiij5QBVmwOkXOUydKx5UH1
 JJQ+j7DmVNnfcWVqVQJANmmsVdUjrVR97koRQhGnKjHq93fSC3PWNFD9bFssdO9S
 PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 -----END RSA PRIVATE KEY-----`
-	metadata := make(map[string]interface{})
-	extra := make(map[string]interface{})
-	extra["open_id"] = "oWg4qwSn0d3UM0kjZULRdb4SC2hw"
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	orderno := r.Intn(999999999999999)
-
-	params := &pingpp.ChargeParams{
-		Order_no:  strconv.Itoa(orderno),
-		App:       pingpp.App{Id: "app_4qnjLOWXbDKSPmbb"},
-		Amount:    1000,
-		Channel:   "wx_pub",
-		Currency:  "cny",
-		Client_ip: "127.0.0.1",
-		Subject:   "Your Subject",
-		Body:      "Your Body",
-		Extra:     extra,
-		Metadata:  metadata,
-	}
-
-	fmt.Printf(">>>>>>>>>>>>>>>>>>>>>>>>\n%+v\n", params)
-
-	//返回的第一个参数是 charge 对象，你需要将其转换成 json 给客户端，或者客户端接收后转换。
-	ch, err := charge.New(params)
-	if err != nil {
-		errs, _ := json.Marshal(err)
-		fmt.Println(string(errs))
-		log.Fatal(err)
-		return
-	}
-
-	log.JSONIndent(ch)
-
-}
+var public_key = `-----BEGIN PUBLIC KEY-----
+MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC23/9KS+0uVJUGCW/ZFkaCOcBD
+oSWzQVD3wpOUyqOiKEk9MpinfDRvJRKVMecHjMEThA503iWC+TuzcPITbyiSc94Z
+qNeowzRrKLMqgpXp8xf/iim2lK8uoz+iwSDA0TR96CYwgeluxgVSLTFQ8E2CD/J4
+uu61xc7647fVGIqKUwIDAQAB
+-----END PUBLIC KEY-----`

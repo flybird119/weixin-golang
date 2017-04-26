@@ -17,6 +17,11 @@ import (
 	"github.com/wothing/log"
 )
 
+func WeixinDBTest(w http.ResponseWriter, r *http.Request) {
+	req := &pb.WeixinReq{}
+	misc.CallWithResp(w, r, "bc_weixin", "TestWeixinDB", req)
+}
+
 func GetWeixinInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
 	misc.CallWithResp(w, r, "bc_weixin", "GetWeixinInfo", req, "store_id", "code")
