@@ -81,6 +81,13 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 	return &pb.NormalResp{}, nil
 }
 
+// 订单配送
+func (s *OrderServiceServer) PrintOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	//填写操作人 并填写配送的时间并填写配送的时间和更改时间
+
+	return &pb.NormalResp{}, nil
+}
+
 // 订单发货
 func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
 	//更改订单状态 订单状态 +2
