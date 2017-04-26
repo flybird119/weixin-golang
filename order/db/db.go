@@ -151,3 +151,178 @@ func PaySuccess(order *pb.Order) (isChange bool, err error) {
 	tx.Commit()
 	return
 }
+
+//搜索订单列表
+func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error) {
+	//需要的项
+	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at sql.NullString
+
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer"
+
+	query := fmt.Sprintf("select %s from orders o where 1=1 ", selectParam)
+
+	var args []interface{}
+	var condition string
+
+	//检索条件
+	//1.0 根据状态
+	//1.1 根据状态 --> 在根据状态，还要考虑 搜索来源，区别app端搜索和seller端搜索
+	if order.OrderStatus != -1 {
+
+		if order.OrderStatus == 80 {
+			//1.1.1 如果是app端并且搜索全部的订单，那么显示该用户所有状态的订单
+			if order.SearchType != 0 {
+				//1.1.3 如果是seller端并且搜索全部的订单，那么显示不为 代付款 ：0 和 已关闭订单：16 状态的订单
+				condition += "and (o.order_status <> 0 and o.order_status <> 16) "
+			}
+			//查看待处理订单
+		} else if order.OrderStatus == 79 {
+			//所有售后
+			condition += fmt.Sprintf(" and o.after_sale_status >= 1")
+		} else if order.OrderStatus == 78 {
+			//已接受售后
+			condition += fmt.Sprintf(" and o.after_sale_status > 1")
+		} else if order.OrderStatus == 77 {
+			//待处理售后
+			condition += fmt.Sprintf(" and o.after_sale_status=1")
+		} else {
+			args = append(args, order.OrderStatus)
+			condition += fmt.Sprintf(" and o.order_status=$%d", len(args))
+		}
+	}
+	//2.0 根据用户
+	if order.UserId != "" {
+		args = append(args, order.UserId)
+		condition += fmt.Sprintf(" and o.user_id=$%d", len(args))
+	}
+	//3.0 根据云店铺
+	if order.StoreId != "" {
+		args = append(args, order.StoreId)
+		condition += fmt.Sprintf(" and o.store_id=$%d", len(args))
+	}
+	//4.0 根据学校
+	if order.SchoolId != "" {
+		args = append(args, order.SchoolId)
+		condition += fmt.Sprintf(" and o.school_id=$%d", len(args))
+	}
+	//5.0 根据付款时间 开始 - 结束
+	if order.StartAt != 0 && order.EndAt != 0 {
+		args = append(args, order.StartAt)
+		condition += fmt.Sprintf(" and extract(epoch from o.pay_at)::integer between $%d and $%d", len(args), len(args)+1)
+		args = append(args, order.EndAt)
+	}
+	//6.0 订单编号
+	if order.Id != "" {
+		args = append(args, order.Id)
+		condition += fmt.Sprintf(" and o.id=$%d", len(args))
+	}
+	//7.0 收货人手机号
+	if order.Mobile != "" {
+		args = append(args, order.Mobile)
+		condition += fmt.Sprintf(" and o.mobile=$%d", len(args))
+	}
+	//8.0 姓名
+	if order.Name != "" {
+		args = append(args, order.Name)
+		condition += fmt.Sprintf(" and o.name=$%d", len(args))
+	}
+	//9.0 isbn
+	if order.Isbn != "" {
+		args = append(args, order.Isbn)
+		condition += fmt.Sprintf(" and (exists (select * from orders_item oi join  goods g on oi.goods_id=g.id where oi.orders_id=o.id and g.isbn=$%d))", len(args))
+	}
+
+	condition += " order by o.update_at desc"
+	if order.Page <= 0 {
+		order.Page = 1
+	}
+	if order.Size <= 0 {
+		order.Size = 10
+	}
+	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (order.Page-1)*order.Size, order.Size)
+	query += condition
+	log.Debugf(query+" args :%#v", args)
+	rows, err := DB.Query(query, args...)
+	if err != nil && err != sql.ErrNoRows {
+		misc.LogErr(err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		next := &pb.Order{}
+		orderDetail := &pb.OrderDetail{}
+		err = rows.Scan(&next.Id, &next.OrderStatus, &next.TotalFee, &next.Freight, &next.GoodsFee, &next.WithdrawalFee, &next.UserId, &next.Mobile, &next.Name, &next.Address, &next.Remark, &next.StoreId, &next.SchoolId, &next.TradeNo, &next.PayChannel, &next.OrderAt, &pay_at, &deliver_at, &print_at, &complete_at, &next.PrintStaffId, &next.DeliverStaffId, &next.AfterSaleStaffId, &after_sale_apply_at, &after_sale_end_at, &next.AfterSaleStatus, &next.AfterSaleTradeNo, &next.RefundFee, &next.GrouponId,
+			&next.UpdateAt)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		orderitems, err := GetOrderItems(next)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		orderDetail.Order = next
+		orderDetail.Items = orderitems
+		details = append(details, orderDetail)
+		//转换可能为空的值
+		if pay_at.Valid {
+			next.PayAt, _ = strconv.ParseInt(pay_at.String, 10, 64)
+		}
+		if deliver_at.Valid {
+			next.DeliverAt, _ = strconv.ParseInt(deliver_at.String, 10, 64)
+		}
+		if print_at.Valid {
+			next.PrintAt, _ = strconv.ParseInt(print_at.String, 10, 64)
+		}
+		if complete_at.Valid {
+			next.CompleteAt, _ = strconv.ParseInt(complete_at.String, 10, 64)
+		}
+		if after_sale_apply_at.Valid {
+			next.AfterSaleApplyAt, _ = strconv.ParseInt(after_sale_apply_at.String, 10, 64)
+		}
+		if after_sale_end_at.Valid {
+			next.AfterSaleEndAt, _ = strconv.ParseInt(after_sale_end_at.String, 10, 64)
+		}
+
+	}
+
+	return
+}
+
+//根据订单获取订单项集合
+func GetOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error) {
+	query := "select oi.id,g.id,oi.type,oi.amount,oi.price,b.title,b.isbn,b.image from orders_item oi join goods g on oi.goods_id=g.id join books b on g.book_id=b.id where orders_id='%s'"
+	query = fmt.Sprintf(query, order.Id)
+	log.Debugf(query)
+	rows, err := DB.Query(query)
+	//如果出现无结果异常
+	if err == sql.ErrNoRows {
+		return orderitems, nil
+	}
+	if err != nil {
+		misc.LogErr(err)
+		return nil, err
+	}
+	defer rows.Close()
+	//遍历搜索结果
+	for rows.Next() {
+		orderItem := &pb.OrderItem{}
+		orderitems = append(orderitems, orderItem)
+		err = rows.Scan(&orderItem.Id, &orderItem.GoodsId, &orderItem.Type, &orderItem.Amount, &orderItem.Price, &orderItem.BookTitle, &orderItem.BookIsbn, &orderItem.BookImage)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+	}
+	return
+}
+
+//更改时间
+func UpdateOrder(order *pb.Order) error {
+	if order.OrderStatus != 0 {
+
+	}
+
+}

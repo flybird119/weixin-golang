@@ -40,6 +40,11 @@ func AddAddress(address *pb.AddressInfo) error {
 		misc.LogErr(err)
 		return err
 	}
+	err = UpdateAddress(&pb.AddressInfo{Id: address.Id, SetDefault: 1, UserId: address.UserId})
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
 	return nil
 }
 
@@ -66,7 +71,7 @@ func UpdateAddress(address *pb.AddressInfo) error {
 	}
 	if address.SchoolId != "" {
 		args = append(args, address.SchoolId)
-		condition += fmt.Sprintf(",address=$%d", len(args))
+		condition += fmt.Sprintf(",school_id=$%d", len(args))
 	}
 
 	if address.SetDefault == 1 {

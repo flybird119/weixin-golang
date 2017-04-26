@@ -18,7 +18,7 @@ type OrderServiceServer struct{}
 // 提交订单
 func (s *OrderServiceServer) OrderSubmit(ctx context.Context, in *pb.OrderSubmitModel) (*pb.OrderSubmitResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "CartList", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "OrderSubmit", "%#v", in))
 
 	//获取购物车
 	req := &pb.Cart{Ids: in.CartIds, StoreId: in.StoreId, UserId: in.UserId}
@@ -60,7 +60,7 @@ func (s *OrderServiceServer) OrderSubmit(ctx context.Context, in *pb.OrderSubmit
 // 订单支付完成 -->待发货
 func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "CartList", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "PaySuccess", "%#v", in))
 	//成功支付 准确记录值，如果其中一步发生错误,事务不会滚，
 	//1 更改订单状态,填写支付方式和交易号， --异常，下面的事务不执行，写入操作异常
 	isChanged, err := orderDB.PaySuccess(in)
@@ -83,33 +83,57 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 
 // 订单发货
 func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	//更改订单状态 订单状态 +2
 
+	//填写操作人 并填写发送的时间和更改时间
 	return &pb.NormalResp{}, nil
 }
 
 // 订单配送
 func (s *OrderServiceServer) DistributeOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	//填写操作人 并填写配送的时间并填写配送的时间和更改时间
+
 	return &pb.NormalResp{}, nil
 }
 
 // 确认订单（微信端）
 func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	//用户确认订单，减短商户的资金的转化,修改更改时间,修改确认时间
+
+	return &pb.NormalResp{}, nil
+}
+
+// 申请售后（微信端）
+func (s *OrderServiceServer) AfterSaleApply(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	//更改订单壮体啊，修改after_sale_apply_at，after_sale_status，refund_fee
 	return &pb.NormalResp{}, nil
 }
 
 // 获取订单详情
 func (s *OrderServiceServer) OrderDetail(ctx context.Context, in *pb.Order) (*pb.OrderDetailResp, error) {
 	return &pb.OrderDetailResp{}, nil
+
 }
+
+//订单成功
 
 // 获取订单列表 用户 云店铺 状态
 func (s *OrderServiceServer) OrderList(ctx context.Context, in *pb.Order) (*pb.OrderListResp, error) {
 
-	return &pb.OrderListResp{}, nil
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "OrderList", "%#v", in))
+	details, err := orderDB.FindOrders(in)
+	if err != nil {
+		log.Warn(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.OrderListResp{Code: "00000", Message: "ok", Data: details}, nil
 }
 
 //关闭订单
 func (s *OrderServiceServer) CloseOrder(ctx context.Context, in *pb.Order) (*pb.Void, error) {
 
 	return &pb.Void{}, nil
+	//释放图书资源，更改修改过时间 更改订单状态
 }

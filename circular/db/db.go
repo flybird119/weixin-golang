@@ -42,8 +42,17 @@ func UpdateCircular(circular *pb.Circular) error {
 	var condition string
 
 	if circular.Type != 0 {
-		args = append(args, circular.Type)
-		condition += fmt.Sprintf(",type=$%d", len(args))
+		if circular.Type == 1 {
+			condition += fmt.Sprintf(",type=1,url='',source_id=''")
+		} else {
+			if circular.SourceId != "" {
+				args = append(args, circular.Type)
+				condition += fmt.Sprintf(",type=$%d,source_id=$%d", len(args), len(args)+1)
+				args = append(args, circular.SourceId)
+				//生成URL地址
+			}
+		}
+
 	}
 
 	if circular.Title != "" {

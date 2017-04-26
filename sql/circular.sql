@@ -7,6 +7,8 @@ CREATE TABLE circular(
     title           TEXT                        NOT NULL            DEFAULT '', -- 来源名称 ：isbn 或者话题名称
     profile         TEXT                        NOT NULL            DEFAULT '',       --简介
     image           TEXT                        NOT NULL            DEFAULT '',         --图片url
+    source_id       TEXT                        NOT NULL            DEFAULT '',
+    url             TEXT                        NOT NULL            DEFAULT '',
     create_at       TIMESTAMP WITH TIME ZONE    NOT NULL            DEFAULT now(),    --更新时间
     update_at       TIMESTAMP WITH TIME ZONE    NOT NULL            DEFAULT now()    --更新时间
 );

@@ -32,17 +32,20 @@ create table orders (
     deliver_at timestamptz,                         --发货时间
     print_at timestamptz,                           --打印时间
     complete_at timestamptz ,                        --完成时间
+    comfirm_at timestamptz,                         --订单确认时间
+    distribute_at timestamptz,                      --配送时间
+    after_sale_apply_at timestamptz,                --售后开始时间
+    after_sale_end_at timestamptz,                  --售后结束时间
 
     --操作人
     print_staff_id text default '',                            --打印员工id
     deliver_staff_id text default '',                          --发货负责人
+    distribute_staff_id text default '',                       --配送人员
     after_sale_staff_id text default '',                       --售后负责人
 
     --售后
-    after_sale_apply_at timestamptz,                --售后开始时间
-    after_sale_end_at timestamptz,                  --售后结束时间
     after_sale_status int default 0,                --售后单号、状态 1待处理 2 退款中 3退款失败 4退款成功
-    after_sale_trad_no text,                        --售后交易号
+    after_sale_trad_no text default '',                        --售后交易号
     refund_fee int default 0,                       --退款金额
 
     --团购

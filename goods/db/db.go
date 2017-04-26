@@ -13,10 +13,11 @@ import (
 
 //增加商品 book_id store_id isbn  goods.location
 func AddGoods(goods *pb.Goods) error {
+	var bookId, isbn string
 	//首先根据isbn获取当前用户有没有保存goods
-	query := "select id from goods where isbn=$1 and store_id=$2"
-	log.Debugf("select id from goods where isbn=%s and store_id=$2", goods.Isbn, goods.StoreId)
-	err := DB.QueryRow(query, goods.Isbn, goods.StoreId).Scan(&goods.Id)
+	query := "select id ,book_id,isbn from goods where isbn=$1 and store_id=$2"
+	log.Debugf("select id ,book_id,isbn from goods where isbn=%s and store_id=$2", goods.Isbn, goods.StoreId)
+	err := DB.QueryRow(query, goods.Isbn, goods.StoreId).Scan(&goods.Id, &bookId, &isbn)
 	//如果检查失败
 	if err == sql.ErrNoRows {
 		//如果用户没有上传过改商品
@@ -31,6 +32,15 @@ func AddGoods(goods *pb.Goods) error {
 	} else if err != nil {
 		log.Errorf("%+v", err)
 		return err
+	} else {
+		//更改图书id
+		if goods.BookId != bookId && goods.BookId != "" {
+			err = UpdateGoods(&pb.Goods{Id: goods.Id, BookId: goods.BookId, Isbn: goods.Isbn})
+			if err != nil {
+				log.Errorf("%+v", err)
+				return err
+			}
+		}
 	}
 	//遍历location
 	for i := 0; i < len(goods.Location); i++ {

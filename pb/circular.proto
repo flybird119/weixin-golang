@@ -17,13 +17,15 @@ service CircularService{
 message Circular{
     string id = 1;
     string store_id =2;
-    int64 type = 3;         //轮播图类型 0 默认轮播图，不可点击  1 商品推荐  2 话题推荐
+    int64 type = 3;         //轮播图类型 1 默认轮播图，不可点击  2 商品推荐  3 话题推荐
     string title = 4;
     string profile = 5;
     string image = 6;
     int64 create_at = 7;
     int64 update_at = 8;
     string seller_id = 9;
+    string url = 10;
+    string source_id = 11;
 }
 
 //CircularListResp 轮播图集合列表
