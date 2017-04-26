@@ -4,5 +4,21 @@ package pb;
 // import "pb/common.proto";
 
 service PaymentService {
+    rpc GetCharge (GetChargeReq) returns (GetChargeResp);
+}
 
+message GetChargeReq {
+    int64 amount = 1;
+    string subject = 2;
+    string body = 3;
+    string order_no = 4;
+    string channel = 5;         //wx_pub	微信公众号支付
+    string openid = 6;
+    string ip = 7;
+}
+
+message GetChargeResp {
+    string code    = 1;
+    string message = 2;
+    string data     = 3;
 }
