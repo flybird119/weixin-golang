@@ -11,6 +11,7 @@ func SetRouterV1() *m.Router {
 
 	// payment
 	v1.Register("/payment/get_charge", m.Wrap(c.GetCharge))
+	v1.Register("/payment/pay_success_notify", m.Wrap(c.PaySuccessNotify))
 
 	// weixin
 	v1.Register("/weixin/receive_verify_ticket", m.Wrap(c.ReceiveTicket))

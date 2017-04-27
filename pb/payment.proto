@@ -1,10 +1,20 @@
 syntax = "proto3";
 
 package pb;
-// import "pb/common.proto";
+import "pb/common.proto";
+import "pb/order.proto";
 
 service PaymentService {
     rpc GetCharge (GetChargeReq) returns (GetChargeResp);
+    rpc PaySuccessNotify (Order) returns (NormalResp);
+}
+
+// 支付成功回调对象
+message PaySuccessCallbackPayload {
+    string order_no = 1;
+    string transaction_no = 2;
+    int64 time_paid = 3;
+    string channel = 4;
 }
 
 message GetChargeReq {
