@@ -41,7 +41,6 @@ message OfficialAccount {
     string appid = 10;
 }
 
-
 message GetWeixinInfoResp {
     string code = 1;
     string message = 2;
