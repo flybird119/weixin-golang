@@ -68,7 +68,6 @@ func (s *StoreServiceServer) UpdateStore(ctx context.Context, in *pb.Store) (*pb
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UpdateStore", "%#v", in))
 
-	log.Debugf("===========%s", in.Id)
 	err := db.UpdateStore(in)
 
 	/**
@@ -110,10 +109,6 @@ func (s *StoreServiceServer) UpdateRealStore(ctx context.Context, in *pb.RealSto
 	//记录踪迹
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UpdateRealStore", "%#v", in))
-
-	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>")
-	log.Debugf("%+v", in)
-	log.Debug(">>>>>>>>>>>>>>>>>>>>>>>>>>>")
 	err := db.UpdateRealStore(in)
 
 	if err != nil {

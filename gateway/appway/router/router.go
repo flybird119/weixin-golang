@@ -45,5 +45,8 @@ func SetRouterV1() *m.Router {
 	v1.Register("/address/del", m.Wrap(c.DeleteAddress))
 	v1.Register("/address/my_address", m.Wrap(c.MyAddresses))
 
+	//store
+	v1.Register("/store/info", m.Wrap(c.StoreInfo))
+
 	return v1
 }
