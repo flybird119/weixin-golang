@@ -75,6 +75,7 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 		log.Warn("order:%s hasChanged", in.Id)
 		return &pb.NormalResp{Code: "00000", Message: "isChanged"}, nil
 	}
+
 	//2 修改商家账户和管理员账户 以及记录交易记录
 	misc.CallRPC(ctx, "bc_account", "PayOverOrderAccountHandle", in)
 
@@ -108,7 +109,7 @@ func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*p
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	return &pb.NormalResp{}, nil
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 // 订单配送
@@ -138,7 +139,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	if searchOrder.OrderStatus != 3 {
+	if searchOrder.OrderStatus != 3 || searchOrder.ConfirmAt != 0 {
 		return nil, errs.Wrap(errors.New("order state error"))
 	}
 	//用户主动确认订单
@@ -150,7 +151,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	//商家账户更改
-	misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", in)
+	misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", searchOrder)
 
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }

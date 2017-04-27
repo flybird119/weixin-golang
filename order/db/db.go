@@ -155,9 +155,9 @@ func PaySuccess(order *pb.Order) (isChange bool, err error) {
 //搜索订单列表
 func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error) {
 	//需要的项
-	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at sql.NullString
+	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at, distribute_at, confirm_at sql.NullString
 
-	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer"
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer, &distribute_at, &next.DistributeStaffId, &confirm_at"
 
 	query := fmt.Sprintf("select %s from orders o where 1=1 ", selectParam)
 
@@ -285,7 +285,12 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error) {
 		if after_sale_end_at.Valid {
 			next.AfterSaleEndAt, _ = strconv.ParseInt(after_sale_end_at.String, 10, 64)
 		}
-
+		if distribute_at.Valid {
+			next.DistributeAt, _ = strconv.ParseInt(distribute_at.String, 10, 64)
+		}
+		if confirm_at.Valid {
+			next.ConfirmAt, _ = strconv.ParseInt(confirm_at.String, 10, 64)
+		}
 	}
 
 	return
@@ -389,14 +394,14 @@ func UpdateOrder(order *pb.Order) error {
 func GetOrderBaseInfo(order *pb.Order) error {
 	next := order
 	//需要的项
-	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at sql.NullString
+	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at, distribute_at, confirm_at sql.NullString
 
-	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer"
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer,extract(epoch from o.distribute_at)::integer,distribute_staff_id,extract(epoch from o.confirm_at)::integer"
 
 	query := fmt.Sprintf("select %s from orders o where id=$1 ", selectParam)
 
-	err := DB.QueryRow(query).Scan(&next.Id, &next.OrderStatus, &next.TotalFee, &next.Freight, &next.GoodsFee, &next.WithdrawalFee, &next.UserId, &next.Mobile, &next.Name, &next.Address, &next.Remark, &next.StoreId, &next.SchoolId, &next.TradeNo, &next.PayChannel, &next.OrderAt, &pay_at, &deliver_at, &print_at, &complete_at, &next.PrintStaffId, &next.DeliverStaffId, &next.AfterSaleStaffId, &after_sale_apply_at, &after_sale_end_at, &next.AfterSaleStatus, &next.AfterSaleTradeNo, &next.RefundFee, &next.GrouponId,
-		&next.UpdateAt)
+	err := DB.QueryRow(query, order.Id).Scan(&next.Id, &next.OrderStatus, &next.TotalFee, &next.Freight, &next.GoodsFee, &next.WithdrawalFee, &next.UserId, &next.Mobile, &next.Name, &next.Address, &next.Remark, &next.StoreId, &next.SchoolId, &next.TradeNo, &next.PayChannel, &next.OrderAt, &pay_at, &deliver_at, &print_at, &complete_at, &next.PrintStaffId, &next.DeliverStaffId, &next.AfterSaleStaffId, &after_sale_apply_at, &after_sale_end_at, &next.AfterSaleStatus, &next.AfterSaleTradeNo, &next.RefundFee, &next.GrouponId,
+		&next.UpdateAt, &distribute_at, &next.DistributeStaffId, &confirm_at)
 	if err != nil && err != sql.ErrNoRows {
 		misc.LogErr(err)
 		return err
@@ -419,6 +424,12 @@ func GetOrderBaseInfo(order *pb.Order) error {
 	}
 	if after_sale_end_at.Valid {
 		next.AfterSaleEndAt, _ = strconv.ParseInt(after_sale_end_at.String, 10, 64)
+	}
+	if distribute_at.Valid {
+		next.DistributeAt, _ = strconv.ParseInt(distribute_at.String, 10, 64)
+	}
+	if confirm_at.Valid {
+		next.ConfirmAt, _ = strconv.ParseInt(confirm_at.String, 10, 64)
 	}
 
 	return nil

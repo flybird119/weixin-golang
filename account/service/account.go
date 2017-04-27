@@ -115,7 +115,7 @@ func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, i
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "PayOverOrderAccountHandle", "%#v", in))
 	//首先查看相对应的记录
-	hasSellerWithdrwalAccountItem, err := db.HasExistAcoount(&pb.AccountItem{StoreId: in.StoreId, OrderId: in.Id, ItemType: 4})
+	hasSellerWithdrwalAccountItem, err := db.HasExistAcoount(&pb.AccountItem{StoreId: in.StoreId, OrderId: in.Id, ItemType: 1})
 	if err != nil {
 		go misc.LogErrOrder(in, "订单完成-检查记录是否存在发生错误,影响商户可提现和待结算的转换问题", err)
 		log.Error(err)
@@ -134,7 +134,14 @@ func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, i
 	//1 需要更改两个值 1 ：待体现金额  2 可提现金额
 	//2 需要记录两条记录 1 ：待体现金额资金流向记录  2 ： 可提现金额资金流入记录
 	//1.1	待体现金额
+	log.Debug("===============")
+	log.Debug(in)
+	log.Debug("===============")
+
 	sellerAccountWithdrawal := &pb.Account{StoreId: in.StoreId, UnsettledBalance: -in.WithdrawalFee}
+	log.Debug("===============")
+	log.Debug(sellerAccountWithdrawal)
+	log.Debug("===============")
 	err = db.ChangeAccountWithdrawalFee(sellerAccountWithdrawal)
 	if err != nil {
 		go misc.LogErrOrder(in, "订单完成-待体现转化成可提现发生错误 ,影响商户可提现和待结算的转换", err)
@@ -151,6 +158,9 @@ func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, i
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	sellerAccountBalance := &pb.Account{StoreId: in.StoreId, Balance: in.WithdrawalFee}
+	log.Debug("===============")
+	log.Debug(sellerAccountBalance)
+	log.Debug("===============")
 	//2.1：	待体现金额资金流向记录
 	err = db.ChangAccountBalance(sellerAccountBalance)
 	if err != nil {

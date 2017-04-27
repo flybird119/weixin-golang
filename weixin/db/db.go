@@ -26,9 +26,9 @@ func GetAccountInfoByStoreId(store_id string) (*pb.OfficialAccount, error) {
 func SaveAccount(accout *pb.GetAuthBaseInfoResp) error {
 	query := "insert into official_accounts(nick_name, head_img, user_name, principal_name, qrcode_url, service_type_info, verify_type_info, appid) values($1, $2, $3, $4, $5, $6, $7, $8)"
 
-	log.Debugf("insert into official_accounts(nick_name, head_img, user_name, principal_name, qrcode_url, service_type_info, verify_type_info, appid) values('%s', '%s', '%s', '%s', '%s', %d, %d, '%s')", accout.AuthorizerInfo.NickName, accout.AuthorizerInfo.HeadImg, accout.AuthorizerInfo.UserName, accout.AuthorizerInfo.PrincipalName, accout.AuthorizerInfo.QrcodeUrl, accout.AuthorizerInfo.ServiceTypeInfo, accout.AuthorizerInfo.VerifyTypeInfo, accout.AuthorizationInfo.AuthorizerAppid)
+	log.Debugf("insert into official_accounts(nick_name, head_img, user_name, principal_name, qrcode_url, service_type_info, verify_type_info, appid) values('%s', '%s', '%s', '%s', '%s', %d, %d, '%s')", accout.AuthorizerInfo.NickName, accout.AuthorizerInfo.HeadImg, accout.AuthorizerInfo.UserName, accout.AuthorizerInfo.PrincipalName, accout.AuthorizerInfo.QrcodeUrl, accout.AuthorizerInfo.ServiceTypeInfo.Id, accout.AuthorizerInfo.VerifyTypeInfo.Id, accout.AuthorizationInfo.AuthorizerAppid)
 
-	_, err := DB.Exec(query, accout.AuthorizerInfo.NickName, accout.AuthorizerInfo.HeadImg, accout.AuthorizerInfo.UserName, accout.AuthorizerInfo.PrincipalName, accout.AuthorizerInfo.QrcodeUrl, accout.AuthorizerInfo.ServiceTypeInfo, accout.AuthorizerInfo.VerifyTypeInfo, accout.AuthorizationInfo.AuthorizerAppid)
+	_, err := DB.Exec(query, accout.AuthorizerInfo.NickName, accout.AuthorizerInfo.HeadImg, accout.AuthorizerInfo.UserName, accout.AuthorizerInfo.PrincipalName, accout.AuthorizerInfo.QrcodeUrl, accout.AuthorizerInfo.ServiceTypeInfo.Id, accout.AuthorizerInfo.VerifyTypeInfo.Id, accout.AuthorizationInfo.AuthorizerAppid)
 
 	if err != nil {
 		log.Error(err)

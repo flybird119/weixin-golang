@@ -65,9 +65,11 @@ func HasExistAcoount(item *pb.AccountItem) (bool, error) {
 	query := "select id from account_item where store_id=$1 and order_id=$2 and item_type=$3"
 	log.Debugf("select id from account_item where store_id='%s' and order_id='%s' and item_type=%d", item.StoreId, item.OrderId, item.ItemType)
 	err := DB.QueryRow(query, item.StoreId, item.OrderId, item.ItemType).Scan(&item.Id)
+
 	if err == sql.ErrNoRows || item.Id == "" {
 		return false, nil
 	} else if err != nil {
+		log.Error(err)
 		misc.LogErr(err)
 		return false, err
 	}
@@ -80,12 +82,14 @@ func ChangeAccountWithdrawalFee(account *pb.Account) error {
 	//开启事务
 	tx, err := DB.Begin()
 	if err != nil {
+		log.Error(err)
 		misc.LogErr(err)
 		return err
 	}
 	defer tx.Rollback()
 	err = tx.QueryRow(query, account.UnsettledBalance, account.StoreId).Scan(&account.UnsettledBalance, &account.Id)
 	if err != nil {
+		log.Error(err)
 		misc.LogErr(err)
 		return err
 	}
@@ -99,12 +103,14 @@ func ChangAccountBalance(account *pb.Account) error {
 	//开启事务
 	tx, err := DB.Begin()
 	if err != nil {
+		log.Error(err)
 		misc.LogErr(err)
 		return err
 	}
 	defer tx.Rollback()
 	err = tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
 	if err != nil {
+		log.Error(err)
 		misc.LogErr(err)
 		return err
 	}
