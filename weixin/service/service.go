@@ -27,15 +27,15 @@ func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq)
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "WeChatJsApiTicket", "%#v", req))
 
-	// 获取js_ticket
-	ticket, err := component.JsTicket()
+	// 获取对应公众号的 appid, refresh_token
+	offical_account, err := db.GetAccountInfoByStoreId(req.StoreId)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	// 获取对应公众号的 appid
-	offical_account, err := db.GetAccountInfoByStoreId(req.StoreId)
+	// 获取js_ticket
+	ticket, err := component.JsTicket(offical_account.Appid, offical_account.RefreshToken)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
@@ -117,7 +117,7 @@ func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.Weixi
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	// 解析res, 获取数据授权方 appid, 并存入数据库
+	// 解析res, 获取数据授权方 appid、authorizer_refresh_token , 并存入数据库
 	GetApiQueryAuthResp := &pb.GetApiQueryAuth{}
 	err = res.Body.FromJsonTo(GetApiQueryAuthResp)
 	if err != nil {
@@ -125,7 +125,14 @@ func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.Weixi
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	err = db.SaveAppidToStore(req.StoreId, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid)
+	err = db.SaveAuthorizerInfoToStore(req.StoreId, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerRefreshToken)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// 将API 授权 token 存入etcd
+	err = saveAuthorizerAccessTokenToEtcd(GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerRefreshToken)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))

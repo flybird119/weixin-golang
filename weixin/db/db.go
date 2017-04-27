@@ -10,9 +10,9 @@ import (
 func GetAccountInfoByStoreId(store_id string) (*pb.OfficialAccount, error) {
 	account := &pb.OfficialAccount{}
 
-	query := "select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at from official_accounts as oa, store where store.id = $1 and store.appid = oa.appid"
+	query := "select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at, store.authorizer_refresh_token from official_accounts as oa, store.authorizer_refresh_token where store.id = $1 and store.appid = oa.appid"
 
-	log.Debugf("select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at from official_accounts as oa, store where store.id = '%s' and store.appid = oa.appid", store_id)
+	log.Debugf("select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at, store.authorizer_refresh_token from official_accounts as oa,  store where store.id = '%s' and store.appid = oa.appid", store_id)
 
 	err := DB.QueryRow(query, store_id).Scan(&account.Id, &account.Appid, &account.NickName, &account.HeadImg, &account.UserName, &account.PrincipalName, &account.QrcodeUrl, &account.ServiceTypeInfo, &account.VerifyTypeInfo, &account.CreateAt)
 	if err != nil {
@@ -38,11 +38,11 @@ func SaveAccount(accout *pb.GetAuthBaseInfoResp) error {
 	return nil
 }
 
-func SaveAppidToStore(store_id, app_id string) error {
-	query := "update store set appid = $1 where id = $2"
-	log.Debugf("update store set appid = '%s' where id = '%s'", app_id, store_id)
+func SaveAuthorizerInfoToStore(store_id, app_id, token string) error {
+	query := "update store set appid = $1, authorizer_refresh_token = $2 where id = $3"
+	log.Debugf("update store set appid = '%s', authorizer_refresh_token = '%s' where id = '%s'", app_id, token, store_id)
 
-	_, err := DB.Exec(query, app_id, store_id)
+	_, err := DB.Exec(query, app_id, token, store_id)
 	if err != nil {
 		log.Error(err)
 		return err

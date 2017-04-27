@@ -39,6 +39,7 @@ message OfficialAccount {
     int64 verify_type_info = 8;
     int64 create_at = 9;
     string appid = 10;
+    string refresh_token = 11;
 }
 
 message GetWeixinInfoResp {
@@ -68,6 +69,7 @@ message GetApiQueryAuth {
     message AuthorizationInfo {
         string authorizer_appid = 1;
         string authorizer_access_token = 2;
+        string authorizer_refresh_token = 3;
     }
 }
 

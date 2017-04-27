@@ -25,6 +25,44 @@ func init() {
 	component = com.New(conf.AppID, conf.AppSecret, conf.AESKey, conf.Token)
 }
 
+func ApiAuthorizerToken(appid, refresh_token string) (string, error) {
+	// get from etcd
+	key := "/bookcloud/weixin/component/AuthorizerAccessToken/" + appid
+	resp, err := db.GetEtcdConn().Get(context.Background(), key, nil)
+	if err != nil {
+		if client.IsKeyNotFound(err) {
+			/*
+				token not found at etcd
+			*/
+			access_token, err := ComponentAccessToken()
+			if err != nil {
+				log.Error(err)
+				return "", err
+			}
+			publicToken, err := component.GetNormalApi().GetAuthAccessToken(access_token, appid, refresh_token)
+			if err != nil {
+				log.Error(err)
+				return "", err
+			}
+
+			// save authorizer token to etcd
+			if publicToken.AccessToken != "" {
+				_, err = db.GetEtcdConn().Set(context.Background(), key, publicToken.AccessToken, &client.SetOptions{TTL: time.Minute * 90})
+				if err != nil {
+					return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
+				}
+			}
+
+			return publicToken.AccessToken, nil
+		} else {
+			// other error
+			log.Error(err)
+			return "", err
+		}
+	}
+	return resp.Node.Value, nil
+}
+
 func PreAuthCode() (string, error) {
 	access_token, err := ComponentAccessToken()
 	if err != nil {

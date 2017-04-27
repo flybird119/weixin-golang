@@ -13,9 +13,9 @@ type ticket_callback struct {
 	Ticket  string `json:"ticket"`
 }
 
-func JsTicket() (string, error) {
+func JsTicket(appid, refresh_token string) (string, error) {
 	// get access_token
-	access_token, err := ComponentAccessToken()
+	access_token, err := ApiAuthorizerToken(appid, refresh_token)
 	if err != nil {
 		log.Error(err)
 		return "", err

@@ -2,12 +2,26 @@ package service
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/coreos/etcd/client"
 	"github.com/franela/goreq"
+	globalDB "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/goushuyun/weixin-golang/weixin/db"
 	"github.com/wothing/log"
+	"golang.org/x/net/context"
 )
+
+func saveAuthorizerAccessTokenToEtcd(appid, token string) error {
+	key := "/bookcloud/weixin/component/AuthorizerAccessToken/" + appid
+	_, err := globalDB.GetEtcdConn().Set(context.Background(), key, token, &client.SetOptions{TTL: time.Minute * 90})
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
 
 func getandSaveAuthorizerAccountInfo(access_token, component_appid, authorizer_appid string) error {
 	type req struct {
