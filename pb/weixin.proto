@@ -28,6 +28,20 @@ message JsApiTicketResp {
     }
 }
 
+// 公众号信息
+message OfficialAccount {
+    string id = 1;
+    string nick_name = 2;
+    string head_img = 3;
+    string user_name = 4;
+    string principal_name = 5;
+    string qrcode_url = 6;
+    int64 service_type_info = 7;
+    int64 verify_type_info = 8;
+    int64 create_at = 9;
+    string appid = 10;
+}
+
 
 message GetWeixinInfoResp {
     string code = 1;

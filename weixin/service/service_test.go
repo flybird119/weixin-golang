@@ -8,10 +8,6 @@ import (
 	"github.com/goushuyun/weixin-golang/pb"
 )
 
-func TestGetAccountInfo(t *testing.T) {
-	GetandSaveAuthorizerAccountInfo("eebxHSnIFylljYPieCwi-Lx8BY4gjkOzPXv3aPlVTvQjnJ-hvKib265SRTj9dobfCpiKicfcpvfRZiAhV3iXChxh6SZWsTXR6HSc2OwqyweP75wPX1xd0IQxgXJi33XQXAMgAAAEHT", "wx1c2695469ae47724", "wx6d36779ce4dd3dfa")
-}
-
 func TestReq(t *testing.T) {
 	uri := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/component/api_query_auth?component_access_token=%s", "XttAxdfXvyItNvhH5UX4JQSXe3viDrnhvPiEnCMdD7wUu9VYl0sVvjGdvnXn6NWWXjRIPQ7EN1lZZxFyAbFbkwQgavqx2yty_l-Gda0spMcVWQhAAAGHB")
 

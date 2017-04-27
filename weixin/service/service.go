@@ -3,6 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
+	"ilhpay/ilhpay-golang/wechat/util"
+	"strconv"
+	"time"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"
@@ -25,27 +28,34 @@ func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq)
 	defer log.TraceOut(log.TraceIn(tid, "WeChatJsApiTicket", "%#v", req))
 
 	// 获取js_ticket
-	// ticket, err := component.JsTicket()
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return nil, errs.Wrap(errors.New(err.Error()))
-	// }
-	//
-	// timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	// nonceStr := util.GetRandomString(16)
-	//
-	// text := fmt.Sprintf(`jsapi_ticket=%v&noncestr=%v&timestamp=%v&url=%v`, ticket, nonceStr, timestamp, req.Url)
-	//
-	// signature := util.Sha1Str(text)
-	//
-	// return &pb.WeChatConfig{
-	// 	AppId:     config.GetConfig().WebAppId,
-	// 	Signature: signature,
-	// 	Timestamp: timestamp,
-	// 	NonceStr:  nonceStr,
-	// }, nil
+	ticket, err := component.JsTicket()
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 
-	return &pb.JsApiTicketResp{}, nil
+	// 获取对应公众号的 appid
+	offical_account, err := db.GetAccountInfoByStoreId(req.StoreId)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	nonceStr := util.GetRandomString(16)
+
+	text := fmt.Sprintf(`jsapi_ticket=%v&noncestr=%v&timestamp=%v&url=%v`, ticket, nonceStr, timestamp, req.Url)
+
+	signature := util.Sha1Str(text)
+
+	data := &pb.JsApiTicketResp_JsApiTicket{
+		Appid:     offical_account.Appid,
+		Signature: signature,
+		Timestamp: timestamp,
+		NonceStr:  nonceStr,
+	}
+
+	return &pb.JsApiTicketResp{Code: errs.Ok, Message: "ok", Data: data}, nil
 }
 
 func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetWeixinInfoResp, error) {
