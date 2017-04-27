@@ -59,8 +59,15 @@ func PaySuccessNotify(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debugf("The order obj is %+v\n", order)
-
-	misc.CallWithResp(w, r, "bc_payment", "PaySuccessNotify", order, "id", "trade_no", "pay_channel")
+	_, err = misc.CallRPC(misc.GenContext(r), "bc_order", "PaySuccess", order)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("500 - Something bad happened!"))
+	}
+	misc.RespondMessage(w, r, map[string]interface{}{
+		"code":    errs.Ok,
+		"message": "ok",
+	})
 }
 
 func GetCharge(w http.ResponseWriter, r *http.Request) {
