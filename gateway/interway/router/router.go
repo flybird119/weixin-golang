@@ -78,5 +78,11 @@ func SetRouterV1() *m.Router {
 	v1.Register("/circular/list", m.Wrap(c.CircularList))
 	v1.Register("/circular/init", m.Wrap(c.CircularInit))
 
+	//order
+	v1.Register("/order/print", m.Wrap(c.PrintOrder))
+	v1.Register("/order/deliver", m.Wrap(c.DeliverOrder))
+	v1.Register("/order/distribute", m.Wrap(c.DistributeOrder))
+	v1.Register("/order/search", m.Wrap(c.OrderListSeller))
+
 	return v1
 }
