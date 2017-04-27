@@ -19,6 +19,14 @@ import (
 
 func GetJsTicket(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
+	if c := token.Get(r); c != nil {
+		req.StoreId = c.StoreId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
 	misc.CallWithResp(w, r, "bc_weixin", "WeChatJsApiTicket", req, "store_id", "url")
 }
 
