@@ -17,6 +17,20 @@ import (
 
 type PaymentService struct{}
 
+func (s *PaymentService) PaySuccessNotify(ctx context.Context, req *pb.Order) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetCharge", "%#v", req))
+
+	// call rpc to notify pay success
+	_, err := misc.CallRPC(ctx, "bc_order", "PaySuccess", req)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
+}
+
 func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*pb.GetChargeResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetCharge", "%#v", req))
