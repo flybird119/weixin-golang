@@ -20,14 +20,32 @@ import (
 
 type WeixinServer struct{}
 
-func (s *WeixinServer) TestWeixinDB(ctx context.Context, req *pb.WeixinReq) (*pb.NormalResp, error) {
+func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq) (*pb.JsApiTicketResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "TestWeixinDB", "%#v", req))
+	defer log.TraceOut(log.TraceIn(tid, "WeChatJsApiTicket", "%#v", req))
 
-	// to operate db
-	db.TestDBOpe()
+	// 获取js_ticket
+	// ticket, err := component.JsTicket()
+	// if err != nil {
+	// 	log.Error(err)
+	// 	return nil, errs.Wrap(errors.New(err.Error()))
+	// }
+	//
+	// timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	// nonceStr := util.GetRandomString(16)
+	//
+	// text := fmt.Sprintf(`jsapi_ticket=%v&noncestr=%v&timestamp=%v&url=%v`, ticket, nonceStr, timestamp, req.Url)
+	//
+	// signature := util.Sha1Str(text)
+	//
+	// return &pb.WeChatConfig{
+	// 	AppId:     config.GetConfig().WebAppId,
+	// 	Signature: signature,
+	// 	Timestamp: timestamp,
+	// 	NonceStr:  nonceStr,
+	// }, nil
 
-	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
+	return &pb.JsApiTicketResp{}, nil
 }
 
 func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetWeixinInfoResp, error) {
@@ -98,6 +116,13 @@ func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.Weixi
 	}
 
 	err = db.SaveAppidToStore(req.StoreId, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// 获取并存入微信公众号信息
+	err = getandSaveAuthorizerAccountInfo(accessToken, config.AppID, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
