@@ -3,6 +3,9 @@ package service
 import (
 	"errors"
 	"fmt"
+	"ilhpay/ilhpay-golang/wechat/util"
+	"strconv"
+	"time"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"
@@ -20,14 +23,39 @@ import (
 
 type WeixinServer struct{}
 
-func (s *WeixinServer) TestWeixinDB(ctx context.Context, req *pb.WeixinReq) (*pb.NormalResp, error) {
+func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq) (*pb.JsApiTicketResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "TestWeixinDB", "%#v", req))
+	defer log.TraceOut(log.TraceIn(tid, "WeChatJsApiTicket", "%#v", req))
 
-	// to operate db
-	db.TestDBOpe()
+	// 获取对应公众号的 appid, refresh_token
+	offical_account, err := db.GetAccountInfoByStoreId(req.StoreId)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 
-	return &pb.NormalResp{Code: errs.Ok, Message: "ok"}, nil
+	// 获取js_ticket
+	ticket, err := component.JsTicket(offical_account.Appid, offical_account.RefreshToken)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+	nonceStr := util.GetRandomString(16)
+
+	text := fmt.Sprintf(`jsapi_ticket=%v&noncestr=%v&timestamp=%v&url=%v`, ticket, nonceStr, timestamp, req.Url)
+
+	signature := util.Sha1Str(text)
+
+	data := &pb.JsApiTicketResp_JsApiTicket{
+		Appid:     offical_account.Appid,
+		Signature: signature,
+		Timestamp: timestamp,
+		NonceStr:  nonceStr,
+	}
+
+	return &pb.JsApiTicketResp{Code: errs.Ok, Message: "ok", Data: data}, nil
 }
 
 func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetWeixinInfoResp, error) {
@@ -89,7 +117,7 @@ func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.Weixi
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	// 解析res, 获取数据授权方 appid, 并存入数据库
+	// 解析res, 获取数据授权方 appid、authorizer_refresh_token , 并存入数据库
 	GetApiQueryAuthResp := &pb.GetApiQueryAuth{}
 	err = res.Body.FromJsonTo(GetApiQueryAuthResp)
 	if err != nil {
@@ -97,7 +125,21 @@ func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.Weixi
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	err = db.SaveAppidToStore(req.StoreId, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid)
+	err = db.SaveAuthorizerInfoToStore(req.StoreId, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerRefreshToken)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// 将API 授权 token 存入etcd
+	err = saveAuthorizerAccessTokenToEtcd(GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerRefreshToken)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// 获取并存入微信公众号信息
+	err = getandSaveAuthorizerAccountInfo(accessToken, config.AppID, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))

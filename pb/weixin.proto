@@ -8,7 +8,38 @@ service WeixinService {
     rpc GetAuthURL (WeixinReq) returns (GetAuthURLResp);
     rpc GetOfficialAccountInfo (WeixinReq) returns (NormalResp);
     rpc GetWeixinInfo (WeixinReq) returns (GetWeixinInfoResp);
-    rpc TestWeixinDB (WeixinReq) returns (NormalResp);
+
+    // get wechat jsapi ticket
+    rpc WeChatJsApiTicket (WeixinReq) returns (JsApiTicketResp);
+}
+
+message JsApiTicketResp {
+    string code = 1;
+    string message = 2;
+    JsApiTicket data = 3;
+
+    // js api 必要字段
+    message JsApiTicket {
+        string appid = 1;
+        string timestamp = 2;
+        string nonceStr = 3;
+        string signature = 4;
+    }
+}
+
+// 公众号信息
+message OfficialAccount {
+    string id = 1;
+    string nick_name = 2;
+    string head_img = 3;
+    string user_name = 4;
+    string principal_name = 5;
+    string qrcode_url = 6;
+    int64 service_type_info = 7;
+    int64 verify_type_info = 8;
+    int64 create_at = 9;
+    string appid = 10;
+    string refresh_token = 11;
 }
 
 message GetWeixinInfoResp {
@@ -23,6 +54,7 @@ message WeixinReq {
     string auth_code = 2;
     string code = 3;
     string appid = 4;
+    string url = 5;
 }
 
 message GetAuthURLResp{
@@ -37,21 +69,35 @@ message GetApiQueryAuth {
     message AuthorizationInfo {
         string authorizer_appid = 1;
         string authorizer_access_token = 2;
+        string authorizer_refresh_token = 3;
     }
 }
 
 // 授权授权方基本信息响应
 message GetAuthBaseInfoResp {
-    message authorizer_info {
-        string nick_name = 1;
-        string head_img = 2;
-        message service_type_info {
-            string id = 1;
-        }
-        message verify_type_info {
-            string id = 1;
-        }
-        string user_name = 3;
-        string principal_name = 4;
-    }
+    AuthorizerInfo authorizer_info = 1;
+    AuthorizationInfo authorization_info = 2;
+}
+
+message AuthorizerInfo {
+    string nick_name = 1;   //公众号昵称
+    string head_img = 2;    //授权方头像
+    string user_name = 3;   //公众号原始ID
+    string principal_name = 4;  //公众号主题查看
+    string qrcode_url = 5;
+    string alias = 6;   //微信号
+
+    ServiceTypeInfo service_type_info  = 7;
+    VerifyTypeInfo verify_type_info = 8;
+}
+
+message ServiceTypeInfo {
+    int64 id = 1;
+}
+message VerifyTypeInfo {
+    int64 id = 1;
+}
+
+message AuthorizationInfo {
+    string authorizer_appid = 1;
 }

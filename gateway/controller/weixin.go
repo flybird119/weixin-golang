@@ -17,9 +17,17 @@ import (
 	"github.com/wothing/log"
 )
 
-func WeixinDBTest(w http.ResponseWriter, r *http.Request) {
+func GetJsTicket(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
-	misc.CallWithResp(w, r, "bc_weixin", "TestWeixinDB", req)
+	if c := token.Get(r); c != nil {
+		req.StoreId = c.StoreId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_weixin", "WeChatJsApiTicket", req, "store_id", "url")
 }
 
 func GetWeixinInfo(w http.ResponseWriter, r *http.Request) {

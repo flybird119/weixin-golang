@@ -14,7 +14,8 @@ CREATE TABLE store(
 	business_license text,
 
 	-- add by Wang Kai 4.18
-	appid text not null default ''
+	appid text not null default '',
+	authorizer_refresh_token text not null default ''
 )
 -- COMMENT ON COLUMN "public"."bc_info_store"."name" IS '店铺名称';
 -- COMMENT ON COLUMN "public"."bc_info_store"."logo" IS '店铺logo';
