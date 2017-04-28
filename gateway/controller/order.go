@@ -156,7 +156,26 @@ func OrderDetail(w http.ResponseWriter, r *http.Request) {
 	// get store_id
 	if c != nil && c.StoreId != "" && c.UserId != "" {
 		req.StoreId = c.StoreId
-		req.UserId = c.SellerId
+		req.UserId = c.UserId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_order", "OrderDetail", req)
+}
+
+//确认订单
+func OrderDetailSeller(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
+		req.StoreId = c.StoreId
+		req.SellerId = c.SellerId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,

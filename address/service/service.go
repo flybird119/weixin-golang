@@ -56,7 +56,7 @@ func (s *AddressServiceServer) UpdateAddress(ctx context.Context, in *pb.Address
 func (s *AddressServiceServer) MyAddresses(ctx context.Context, in *pb.AddressInfo) (*pb.AddressResp, error) {
 
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "AddGoods", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "MyAddresses", "%#v", in))
 	infos, err := db.FindAddressByUser(in)
 	if err != nil {
 		log.Error(err)
