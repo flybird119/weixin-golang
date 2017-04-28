@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"time"
 
 	"github.com/goushuyun/weixin-golang/errs"
 
@@ -103,7 +104,7 @@ func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*p
 	//填写操作人 并填写发送的时间和更改时间
 	in.DeliverStaffId = in.SellerId
 	in.DeliverAt = 1
-	in.OrderStatus = 3
+	in.OrderStatus = 2
 	err = orderDB.UpdateOrder(in)
 	if err != nil {
 		log.Error(err)
@@ -131,7 +132,7 @@ func (s *OrderServiceServer) DistributeOrder(ctx context.Context, in *pb.Order) 
 // 确认订单（微信端）
 func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "PrintOrder", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "ConfirmOrder", "%#v", in))
 	//1.0 首先要检验 订单的状态 未发货的订单不能点击成功
 	searchOrder := &pb.Order{Id: in.Id}
 	err := orderDB.GetOrderBaseInfo(searchOrder)
@@ -145,6 +146,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 	//用户主动确认订单
 	//订单成功——>修改订单状态 +4
 	in.ConfirmAt = 1
+	in.OrderStatus = 4
 	err = orderDB.UpdateOrder(in)
 	if err != nil {
 		log.Error(err)
@@ -157,9 +159,39 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 }
 
 // 申请售后（微信端）
-func (s *OrderServiceServer) AfterSaleApply(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
-	//更改订单壮体啊，修改after_sale_apply_at，after_sale_status，refund_fee
-	return &pb.NormalResp{}, nil
+func (s *OrderServiceServer) AfterSaleApply(ctx context.Context, in *pb.AfterSaleModel) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "PrintOrder", "%#v", in))
+	//检查用户有没有资格申请售后
+	serachOrder := &pb.Order{Id: in.OrderId}
+	err := orderDB.GetOrderBaseInfo(serachOrder)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//1 如果订单状态是0，那么订单不支持售后
+	if serachOrder.OrderStatus == 0 || serachOrder.OrderStatus == 8 {
+
+		return nil, errs.Wrap(errors.New("order not support after-sales service"))
+	}
+	//2 完成订单14天之后不能申请售后
+	now := time.Now()
+	now = now.Add(14 * 24 * time.Hour)
+	if serachOrder.CompleteAt > now.Unix() {
+		return nil, errs.Wrap(errors.New("order not support after-sales service"))
+	}
+	//3 如果已经申请售后过了，就不能再次申请售后
+	if serachOrder.AfterSaleStatus != 0 {
+		return nil, errs.Wrap(errors.New("can not repeated apply after-sales service"))
+	}
+	//满足售后条件,那么检查必要字段
+	//更改订单，修改after_sale_apply_at，after_sale_status，refund_fee,refund_fee,reason ,images
+	err = orderDB.FillInAfterSaleDetail(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New("undefind err"))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 // 订单配送
@@ -179,8 +211,41 @@ func (s *OrderServiceServer) PrintOrder(ctx context.Context, in *pb.Order) (*pb.
 
 // 获取订单详情
 func (s *OrderServiceServer) OrderDetail(ctx context.Context, in *pb.Order) (*pb.OrderDetailResp, error) {
-	return &pb.OrderDetailResp{}, nil
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "OrderDetail", "%#v", in))
+	//首先获取订单的基本信息
+	err := orderDB.GetOrderBaseInfo(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	orderitems, err := orderDB.GetOrderItems(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	staffs, err := orderDB.GetOrderStaffWork(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//获取售后详情
+	afterSaleModel, err := orderDB.GetAfterSaleDetail(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	if in.AfterSaleStaffId != "" {
+		for i := 0; i < len(staffs); i++ {
+			if staffs[i].StaffWork == "after_sale" {
+				afterSaleModel.StaffId = staffs[i].StaffId
+				afterSaleModel.StaffName = staffs[i].StaffName
+			}
+		}
+	}
+	orderDetail := &pb.OrderDetail{Order: in, Items: orderitems, AfterSaleDetail: afterSaleModel, Staffs: staffs}
 
+	return &pb.OrderDetailResp{Code: "00000", Message: "ok", Data: orderDetail}, nil
 }
 
 //订单成功

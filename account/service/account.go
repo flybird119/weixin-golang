@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/misc"
@@ -59,10 +60,12 @@ func (s *AccountServiceServer) PayOverOrderAccountHandle(ctx context.Context, in
 	}
 	//2.1 记录增加记录
 	sellerRemark := "由%s支付，已经入待结算金额"
-	if in.PayChannel == "alipay" {
+	if strings.Contains(in.PayChannel, "alipay") {
 		sellerRemark = fmt.Sprintf(sellerRemark, "支付宝")
-	} else {
+	} else if strings.Contains(in.PayChannel, "wx") {
 		sellerRemark = fmt.Sprintf(sellerRemark, "微信")
+	} else {
+		sellerRemark = fmt.Sprintf(sellerRemark, "未知渠道")
 	}
 	sellerAccountItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, OrderId: in.Id, ItemType: 4, Remark: sellerRemark, ItemFee: in.TotalFee, AccountBalance: sellerAccount.UnsettledBalance + serviceFee}
 	err = db.AddAccountItem(sellerAccountItem)

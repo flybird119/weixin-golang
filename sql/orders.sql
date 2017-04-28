@@ -47,6 +47,9 @@ create table orders (
     after_sale_status int default 0,                --售后单号、状态 1待处理 2 退款中 3退款失败 4退款成功
     after_sale_trad_no text default '',                        --售后交易号
     refund_fee int default 0,                       --退款金额
+    after_sale_reason text default '',
+    after_sale_images jsonb default '[]',
+
     --团购
     groupon_id text  default '',                                --班级购id
 

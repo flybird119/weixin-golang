@@ -8,6 +8,7 @@ import (
 	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
+	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 )
@@ -79,6 +80,20 @@ func GetSellerByMobile(mobile string) (string, error) {
 
 	return id, nil
 
+}
+
+//根据id获取用户信息
+func GetSellerById(sellerId string) (*pb.SellerInfo, error) {
+	query := "select id, mobile,nickname from seller where id=$1"
+	log.Debugf("select id, mobile,nickname from seller where id='%s'", sellerId)
+	seller := &pb.SellerInfo{}
+	err := DB.QueryRow(query, sellerId).Scan(&seller.Id, &seller.Mobile, &seller.Username)
+	if err != nil {
+		log.Debug(err)
+		misc.LogErr(err)
+		return nil, err
+	}
+	return seller, nil
 }
 
 //GetStoresBySeller 通过商家获取所管理的店铺

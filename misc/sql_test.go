@@ -1,6 +1,7 @@
 package misc
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/goushuyun/weixin-golang/db"
+	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 )
 
@@ -105,4 +107,57 @@ func split(s rune) bool {
 		return true
 	}
 	return false
+}
+
+func TestJsonb(t *testing.T) {
+	db.InitPG("hello")
+	defer db.ClosePG()
+	query := "select after_sale_images from orders where id='17042700000027'"
+	var images []*pb.AfterSaleImage
+	var imageStr string
+	err := db.DB.QueryRow(query).Scan(&imageStr)
+	if err != nil {
+		log.Debug(err)
+		return
+	}
+	if err := json.Unmarshal([]byte(imageStr), &images); err == nil {
+		fmt.Println("================json str 转struct==")
+	}
+
+	for i := 0; i < len(images); i++ {
+		fmt.Println("==============================")
+		fmt.Print(images[i].Url)
+		fmt.Println("==============================")
+	}
+	json.Marshal(imageStr)
+	log.Debug("===============")
+	log.Debugf("======%#v", images)
+	log.Debug("===============")
+
+	if b, err := json.Marshal(images); err == nil {
+		fmt.Println("================struct 到json str==")
+		fmt.Println(string(b))
+	}
+	return
+}
+func TestRegPay(t *testing.T) {
+	payAlipayWeb := "alipay_wap"
+	payAlipay := "alipay"
+	payWx := "wx"
+	payWxWeb := "wx_web"
+
+	fmt.Println(strings.Contains(payAlipayWeb, "lipay"))
+	fmt.Println(strings.Contains(payAlipay, "alipay"))
+	fmt.Println(strings.Contains(payAlipay, "wx"))
+	fmt.Println(strings.Contains(payAlipayWeb, "wx"))
+	fmt.Println(strings.Contains(payWx, "alipay"))
+	fmt.Println(strings.Contains(payWxWeb, "alipay"))
+	fmt.Println(strings.Contains(payWx, "wx"))
+	fmt.Println(strings.Contains(payWxWeb, "wx"))
+}
+
+func TestTimeUnix(t *testing.T) {
+	now := time.Now()
+	now = now.Add(14 * 24 * time.Hour)
+	fmt.Print(now.Unix())
 }
