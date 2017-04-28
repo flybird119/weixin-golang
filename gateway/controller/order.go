@@ -137,7 +137,7 @@ func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
 	// get store_id
 	if c != nil && c.StoreId != "" && c.UserId != "" {
 		req.StoreId = c.StoreId
-		req.SellerId = c.SellerId
+		req.UserId = c.UserId
 	} else {
 		misc.RespondMessage(w, r, map[string]interface{}{
 			"code":    errs.ErrTokenNotFound,
@@ -145,4 +145,42 @@ func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
 		})
 	}
 	misc.CallWithResp(w, r, "bc_order", "ConfirmOrder", req)
+}
+
+//确认订单
+func OrderDetail(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.UserId != "" {
+		req.StoreId = c.StoreId
+		req.UserId = c.SellerId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_order", "OrderDetail", req)
+}
+
+//订单售后
+func AfterSaleApply(w http.ResponseWriter, r *http.Request) {
+	req := &pb.AfterSaleModel{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.UserId != "" {
+		req.UserId = c.UserId
+
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+	}
+	misc.CallWithResp(w, r, "bc_order", "AfterSaleApply", req, "order_id")
 }

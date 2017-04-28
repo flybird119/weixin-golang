@@ -38,6 +38,8 @@ func SetRouterV1() *m.Router {
 	v1.Register("/order/pay_success", m.Wrap(c.PaySuccess))
 	v1.Register("/order/find", m.Wrap(c.OrderListApp))
 	v1.Register("/order/confirm", m.Wrap(c.ConfirmOrder))
+	v1.Register("/order/detail", m.Wrap(c.OrderDetail))
+	v1.Register("/order/after_sale_apply", m.Wrap(c.AfterSaleApply))
 
 	//address
 	v1.Register("/address/add", m.Wrap(c.AddAddress))

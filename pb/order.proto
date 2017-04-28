@@ -16,7 +16,7 @@ service OrderService {
     //确认订单（微信端）😳
     rpc ConfirmOrder (Order) returns (NormalResp);
     //申请售后（微信端）😳
-    rpc AfterSaleApply (Order) returns (NormalResp);
+    rpc AfterSaleApply (AfterSaleModel) returns (NormalResp);
     //打印订单
     rpc PrintOrder (Order) returns (NormalResp);
     //获取订单详情
@@ -75,6 +75,8 @@ message Order{
 message OrderDetail{
     Order order = 1;
     repeated OrderItem items = 2;
+    AfterSaleModel after_sale_detail = 3;
+    repeated OrderStaff staffs = 4;
 }
 //订单详情列表
 message OrderDetailResp{
@@ -113,4 +115,25 @@ message OrderItem{
     string book_image = 6;
     string book_isbn = 7;
     string book_title = 8;
+}
+
+message OrderStaff{
+    string staff_id = 1;
+    string staff_name = 2;
+    string staff_work = 3; //print deliver distribute after_sale
+}
+
+message AfterSaleModel{
+    string trad_no = 1;
+    int64 apply_at = 2;
+    string reason = 3;
+    repeated AfterSaleImage images = 4;
+    string staff_id = 5;
+    string staff_name = 6;
+    string order_id = 7;
+    int64 refund_fee = 8;
+    string user_id = 9;
+}
+message AfterSaleImage{
+    string url = 1;
 }

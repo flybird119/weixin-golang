@@ -2,10 +2,12 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
 
+	sellerDB "github.com/goushuyun/weixin-golang/Seller/db"
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -332,7 +334,7 @@ func UpdateOrder(order *pb.Order) error {
 	var condition string
 	if order.OrderStatus != 0 {
 		args = append(args, order.OrderStatus)
-		condition += fmt.Sprintf(",order_status=$%d", len(args))
+		condition += fmt.Sprintf(",order_status=order_status|$%d", len(args))
 	}
 	if order.DeliverAt != 0 {
 		args = append(args, time.Now())
@@ -390,7 +392,7 @@ func UpdateOrder(order *pb.Order) error {
 	return nil
 }
 
-//获取订单的状态
+//获取订单的信息
 func GetOrderBaseInfo(order *pb.Order) error {
 	next := order
 	//需要的项
@@ -432,5 +434,147 @@ func GetOrderBaseInfo(order *pb.Order) error {
 		next.ConfirmAt, _ = strconv.ParseInt(confirm_at.String, 10, 64)
 	}
 
+	return nil
+}
+
+//获取订单员工信息
+func GetOrderStaffWork(order *pb.Order) (staffs []*pb.OrderStaff, err error) {
+	//print
+	if order.PrintStaffId != "" {
+		staff, err := getStaffInfo(staffs, order.PrintStaffId, "print")
+		if err != nil {
+			log.Debug(err)
+			misc.LogErr(err)
+			return nil, err
+		}
+		staffs = append(staffs, staff)
+	}
+	//deliver
+	if order.DeliverStaffId != "" {
+		staff, err := getStaffInfo(staffs, order.DeliverStaffId, "deliver")
+		if err != nil {
+			log.Debug(err)
+			misc.LogErr(err)
+			return nil, err
+		}
+		staffs = append(staffs, staff)
+	}
+	//distribute
+	if order.DistributeStaffId != "" {
+		staff, err := getStaffInfo(staffs, order.DistributeStaffId, "distribute")
+		if err != nil {
+			log.Debug(err)
+			misc.LogErr(err)
+			return nil, err
+		}
+		staffs = append(staffs, staff)
+	}
+	//after_sale
+	if order.AfterSaleStaffId != "" {
+		staff, err := getStaffInfo(staffs, order.AfterSaleStaffId, "after_sale")
+		if err != nil {
+			log.Debug(err)
+			misc.LogErr(err)
+			return nil, err
+		}
+		staffs = append(staffs, staff)
+	}
+	return staffs, nil
+}
+
+//获取售后详情
+func GetAfterSaleDetail(order *pb.Order) (*pb.AfterSaleModel, error) {
+	log.Debug(order)
+	if order.AfterSaleStatus != 0 {
+		query := "select o.refund_fee ,o.after_sale_reason,o.after_sale_images from orders o where o.id=$1"
+		log.Debugf("select o.refund_fee ,o.after_sale_reason,o.after_sale_images from orders where o.id='%s'", order.Id)
+		var images []*pb.AfterSaleImage
+		var imageStr string
+		afterSaleModdel := &pb.AfterSaleModel{}
+		err := DB.QueryRow(query, order.Id).Scan(&afterSaleModdel.RefundFee, &afterSaleModdel.Reason, &imageStr)
+		if err != nil {
+			log.Debug(err)
+			misc.LogErr(err)
+			return nil, err
+		}
+		//转化staff
+		if err := json.Unmarshal([]byte(imageStr), &images); err != nil {
+			log.Debug(err)
+			misc.LogErr(err)
+			return nil, err
+		}
+		afterSaleModdel.Images = images
+
+		return afterSaleModdel, nil
+	}
+	return nil, nil
+}
+
+//私有方法 获取用户信息
+func getStaffInfo(staffs []*pb.OrderStaff, findStaffId string, workName string) (*pb.OrderStaff, error) {
+
+	for index := 0; index < len(staffs); index++ {
+		staff := staffs[index]
+		if staff.StaffId == findStaffId {
+			findStaff := &pb.OrderStaff{StaffId: findStaffId, StaffName: staff.StaffName, StaffWork: workName}
+
+			return findStaff, nil
+		}
+	}
+	sellerInfo, err := sellerDB.GetSellerById(findStaffId)
+	if err != nil {
+		log.Debug(err)
+		misc.LogErr(err)
+		return nil, err
+	}
+	findStaff := &pb.OrderStaff{StaffId: sellerInfo.Id, StaffName: sellerInfo.Username, StaffWork: workName}
+
+	return findStaff, nil
+}
+
+//填写售后信息
+func FillInAfterSaleDetail(aftersaleModel *pb.AfterSaleModel) error {
+	query := "update orders set after_sale_apply_at=now(),update_at=now()"
+
+	var args []interface{}
+	var condition string
+	//退款原因
+	if aftersaleModel.Reason != "" {
+		args = append(args, aftersaleModel.Reason)
+		condition += fmt.Sprintf(",after_sale_reason=$%d", len(args))
+	}
+	log.Debug("==============")
+	log.Debug(aftersaleModel.Images)
+	log.Debug(json.Marshal(aftersaleModel.Images))
+	log.Debug("==============")
+
+	imagesStr, err := json.Marshal(aftersaleModel.Images)
+	if err == nil {
+		args = append(args, imagesStr)
+		condition += fmt.Sprintf(",after_sale_images=$%d", len(args))
+	}
+	//退款费用
+	args = append(args, aftersaleModel.RefundFee)
+	condition += fmt.Sprintf(",refund_fee=$%d", len(args))
+	//订单退款状态
+	args = append(args, 1)
+	condition += fmt.Sprintf(",after_sale_status=$%d", len(args))
+	//订单状态
+	args = append(args, 16)
+	condition += fmt.Sprintf(",order_status=order_status|$%d", len(args))
+
+	args = append(args, aftersaleModel.OrderId)
+	condition += fmt.Sprintf(" where id=$%d", len(args))
+
+	args = append(args, aftersaleModel.UserId)
+	condition += fmt.Sprintf(" and user_id=$%d ", len(args))
+
+	query += condition
+	_, err = DB.Exec(query, args...)
+	if err != nil {
+		log.Error(err)
+		misc.LogErr(err)
+		return err
+	}
 	return nil
 }
