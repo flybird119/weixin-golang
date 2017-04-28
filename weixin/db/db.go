@@ -10,11 +10,11 @@ import (
 func GetAccountInfoByStoreId(store_id string) (*pb.OfficialAccount, error) {
 	account := &pb.OfficialAccount{}
 
-	query := "select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at, store.authorizer_refresh_token from official_accounts as oa, store.authorizer_refresh_token where store.id = $1 and store.appid = oa.appid"
+	query := "select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at, store.authorizer_refresh_token from official_accounts as oa, store where store.id = $1 and store.appid = oa.appid"
 
 	log.Debugf("select oa.id, oa.appid, oa.nick_name, oa.head_img, oa.user_name, oa.principal_name, oa.qrcode_url, oa.service_type_info, oa.verify_type_info, extract(epoch from store.create_at)::integer create_at, store.authorizer_refresh_token from official_accounts as oa,  store where store.id = '%s' and store.appid = oa.appid", store_id)
 
-	err := DB.QueryRow(query, store_id).Scan(&account.Id, &account.Appid, &account.NickName, &account.HeadImg, &account.UserName, &account.PrincipalName, &account.QrcodeUrl, &account.ServiceTypeInfo, &account.VerifyTypeInfo, &account.CreateAt)
+	err := DB.QueryRow(query, store_id).Scan(&account.Id, &account.Appid, &account.NickName, &account.HeadImg, &account.UserName, &account.PrincipalName, &account.QrcodeUrl, &account.ServiceTypeInfo, &account.VerifyTypeInfo, &account.CreateAt, &account.RefreshToken)
 	if err != nil {
 		log.Error(err)
 		return nil, err

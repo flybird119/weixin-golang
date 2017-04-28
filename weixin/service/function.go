@@ -1,7 +1,12 @@
 package service
 
 import (
+	"crypto/rand"
+	"crypto/sha1"
+	"encoding/hex"
 	"fmt"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/coreos/etcd/client"
@@ -15,7 +20,7 @@ import (
 
 func saveAuthorizerAccessTokenToEtcd(appid, token string) error {
 	key := "/bookcloud/weixin/component/AuthorizerAccessToken/" + appid
-	_, err := globalDB.GetEtcdConn().Set(context.Background(), key, token, &client.SetOptions{TTL: time.Minute * 90})
+	_, err := globalDB.GetEtcdConn().Set(context.Background(), key, token, &client.SetOptions{TTL: time.Minute * 100})
 	if err != nil {
 		log.Error(err)
 		return err
@@ -76,4 +81,30 @@ func getandSaveAuthorizerAccountInfo(access_token, component_appid, authorizer_a
 	}
 
 	return nil
+}
+
+func DicSort(strs ...string) string {
+	sort.Strings(strs)
+	return strings.Join(strs, "")
+}
+
+func Sha1Str(str string) string {
+	h := sha1.New()
+	h.Write([]byte(str))
+	return hex.EncodeToString(h.Sum(nil))
+}
+
+// GetRandomString generate random string by specify chars.
+func GetRandomString(n int, alphabets ...byte) string {
+	const alphanum = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	var bytes = make([]byte, n)
+	rand.Read(bytes)
+	for i, b := range bytes {
+		if len(alphabets) == 0 {
+			bytes[i] = alphanum[b%byte(len(alphanum))]
+		} else {
+			bytes[i] = alphabets[b%byte(len(alphabets))]
+		}
+	}
+	return string(bytes)
 }

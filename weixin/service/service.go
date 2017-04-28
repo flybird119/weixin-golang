@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"fmt"
-	"ilhpay/ilhpay-golang/wechat/util"
 	"strconv"
 	"time"
 
@@ -41,12 +40,16 @@ func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
+	log.Debugf("<<<<<<<<<<<<<The Js_ticket is : %s>>>>>>>>>>>>>>", ticket)
+
 	timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-	nonceStr := util.GetRandomString(16)
+	nonceStr := GetRandomString(16)
 
 	text := fmt.Sprintf(`jsapi_ticket=%v&noncestr=%v&timestamp=%v&url=%v`, ticket, nonceStr, timestamp, req.Url)
 
-	signature := util.Sha1Str(text)
+	log.Debugf("需要加密的文本是：%s \n>>>>>>>>>>>>>>>>>>>>>", text)
+
+	signature := Sha1Str(text)
 
 	data := &pb.JsApiTicketResp_JsApiTicket{
 		Appid:     offical_account.Appid,
