@@ -1,6 +1,7 @@
 package component
 
 import (
+	"errors"
 	"time"
 	com "wechat_component/component"
 
@@ -39,6 +40,10 @@ func ApiAuthorizerToken(appid, refresh_token string) (string, error) {
 				log.Error(err)
 				return "", err
 			}
+
+			log.Error(err)
+			log.Debugf(">>>>>>>>>>>>>>%s<<<<<<<<<<<<<<<<", access_token)
+
 			publicToken, err := component.GetNormalApi().GetAuthAccessToken(access_token, appid, refresh_token)
 			if err != nil {
 				log.Error(err)
@@ -82,6 +87,7 @@ func ComponentAccessToken() (string, error) {
 			log.Debug("access_token not found")
 
 			ticket := Ticket()
+			log.Debugf("The ticket is %s", ticket)
 			token, _ := component.GetRegularApi().GetAccessToken(ticket)
 			if token != "" {
 				_, err = db.GetEtcdConn().Set(context.Background(), "/bookcloud/weixin/component/access_token", token, &client.SetOptions{TTL: time.Minute * 90})
@@ -89,7 +95,7 @@ func ComponentAccessToken() (string, error) {
 					return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
 				}
 			}
-			return token, nil
+			return token, errors.New("token not exist")
 		} else {
 			return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
 		}
