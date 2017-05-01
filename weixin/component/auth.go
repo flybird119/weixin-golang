@@ -84,11 +84,14 @@ func ComponentAccessToken() (string, error) {
 	if err != nil {
 		if client.IsKeyNotFound(err) {
 
-			log.Debug("access_token not found")
+			log.Debug("access_token not found at etcd")
 
 			ticket := Ticket()
 			log.Debugf("The ticket is %s", ticket)
-			token, _ := component.GetRegularApi().GetAccessToken(ticket)
+			token, expire := component.GetRegularApi().GetAccessToken(ticket)
+
+			log.Debugf("The token is :%s, expire is %d \n", token, expire)
+
 			if token != "" {
 				_, err = db.GetEtcdConn().Set(context.Background(), "/bookcloud/weixin/component/access_token", token, &client.SetOptions{TTL: time.Minute * 90})
 				if err != nil {
