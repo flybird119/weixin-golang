@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package pb;
+import "pb/common.proto";
+import "pb/seller.proto";
+
+service RetailService {
+    //提交零售
+    rpc RetailSubmit (RetailSubmitModel) returns (NormalResp);
+    //零售检索
+    rpc RetailList (Retail) returns (RetailListResp);
+}
+//订单提交model
+message RetailSubmitModel{
+    string store_id = 1;
+    string school_id = 2;
+    int64 total_fee = 3;
+    int64 goods_fee = 4;
+    repeated RetailItem items = 5;
+    string seller_id = 6;
+    string retail_id = 7;
+}
+
+//退款list
+
+message RetailListResp{
+    string code = 1;
+    string message = 2;
+    repeated RetailDetail data = 3;
+    int64 total_count = 4;
+}
+//零售model
+message Retail{
+    string id = 1;
+    int64 total_fee = 2;
+    int64 goods_fee = 3;
+    string store_id = 4;
+    string school_id = 5;
+    string handle_staff_id = 6;
+    int64 create_at = 7;
+    int64 update_at = 8;
+    string isbn = 9;
+    int64 start_at = 10;
+    int64 end_at = 11;
+    int64 page = 12;
+    int64 size = 13;
+}
+
+//零售项
+message RetailItem{
+    string id = 1;
+    string goods_id = 2;
+    string retail_id = 3;
+    int64 type = 4;
+    int64 amount = 5;
+    int64 price = 6;
+    string book_image = 7;
+    string book_isbn = 8;
+    string book_title = 9;
+    int64 origin_price = 10;
+}
+//零售详情
+message RetailDetail{
+    Retail retail = 1;
+    repeated RetailItem items = 2;
+    SellerInfo charge_man = 3;
+}

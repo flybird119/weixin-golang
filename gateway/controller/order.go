@@ -23,6 +23,7 @@ func OrderSubmit(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderSubmit", req, "mobile", "name", "address", "school_id")
 }
@@ -47,6 +48,7 @@ func OrderListApp(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderList", req)
 }
@@ -67,6 +69,7 @@ func OrderListSeller(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderList", req)
 }
@@ -86,6 +89,7 @@ func PrintOrder(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "PrintOrder", req)
 }
@@ -105,6 +109,7 @@ func DeliverOrder(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "DeliverOrder", req)
 }
@@ -124,6 +129,7 @@ func DistributeOrder(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "DistributeOrder", req)
 }
@@ -143,6 +149,7 @@ func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "ConfirmOrder", req)
 }
@@ -162,6 +169,7 @@ func OrderDetail(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderDetail", req)
 }
@@ -181,6 +189,7 @@ func OrderDetailSeller(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "OrderDetail", req)
 }
@@ -188,7 +197,6 @@ func OrderDetailSeller(w http.ResponseWriter, r *http.Request) {
 //订单售后
 func AfterSaleApply(w http.ResponseWriter, r *http.Request) {
 	req := &pb.AfterSaleModel{}
-	//搜索类型 来自商家
 	c := token.Get(r)
 
 	// get store_id
@@ -200,6 +208,26 @@ func AfterSaleApply(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "AfterSaleApply", req, "order_id")
+}
+
+//订单售后
+func CloseOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.UserId != "" {
+		req.UserId = c.UserId
+
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+	misc.CallWithResp(w, r, "bc_order", "CloseOrder", req, "id")
 }

@@ -13,6 +13,8 @@ service AccountService {
     rpc PayOverOrderAccountHandle (Order) returns (Void);
     //order complete account handle
     rpc OrderCompleteAccountHandle (Order) returns (Void);
+    //handle after sale order
+    rpc HandleAfterSaleOrder (Order) returns (NormalResp);
     //每日统计销售情况 1 每日统计销售 2 每日统计销量
 }
 

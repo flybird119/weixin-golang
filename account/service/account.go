@@ -137,14 +137,8 @@ func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, i
 	//1 需要更改两个值 1 ：待体现金额  2 可提现金额
 	//2 需要记录两条记录 1 ：待体现金额资金流向记录  2 ： 可提现金额资金流入记录
 	//1.1	待体现金额
-	log.Debug("===============")
-	log.Debug(in)
-	log.Debug("===============")
 
 	sellerAccountWithdrawal := &pb.Account{StoreId: in.StoreId, UnsettledBalance: -in.WithdrawalFee}
-	log.Debug("===============")
-	log.Debug(sellerAccountWithdrawal)
-	log.Debug("===============")
 	err = db.ChangeAccountWithdrawalFee(sellerAccountWithdrawal)
 	if err != nil {
 		go misc.LogErrOrder(in, "订单完成-待体现转化成可提现发生错误 ,影响商户可提现和待结算的转换", err)
@@ -161,9 +155,6 @@ func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, i
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	sellerAccountBalance := &pb.Account{StoreId: in.StoreId, Balance: in.WithdrawalFee}
-	log.Debug("===============")
-	log.Debug(sellerAccountBalance)
-	log.Debug("===============")
 	//2.1：	待体现金额资金流向记录
 	err = db.ChangAccountBalance(sellerAccountBalance)
 	if err != nil {
@@ -182,4 +173,25 @@ func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, i
 	}
 
 	return &pb.Void{}, nil
+}
+
+//处理售后订单
+func (s *AccountServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "PayOverOrderAccountHandle", "%#v", in))
+	sellerAccountBalance := &pb.Account{StoreId: in.StoreId, Balance: -in.WithdrawalFee}
+	//2.1：	待体现金额资金流向记录
+	err := db.ChangAccountBalance(sellerAccountBalance)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//可提现售后24
+	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, OrderId: in.Id, ItemType: 24, Remark: "已从可提现金额扣除", ItemFee: -in.WithdrawalFee, AccountBalance: sellerAccountBalance.Balance}
+	err = db.AddAccountItem(sellerAccountBalanceItem)
+	if err != nil {
+		log.Error(err)
+		go misc.LogErrAccount(sellerAccountBalanceItem, "订单售后-增加记录失败", err)
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }

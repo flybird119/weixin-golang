@@ -34,6 +34,7 @@ create table orders (
     complete_at timestamptz ,                        --完成时间
     confirm_at timestamptz,                         --订单确认时间
     distribute_at timestamptz,                      --配送时间
+    close_at timestamptz,                           --订单关闭时间
     after_sale_apply_at timestamptz,                --售后开始时间
     after_sale_end_at timestamptz,                  --售后结束时间
 
