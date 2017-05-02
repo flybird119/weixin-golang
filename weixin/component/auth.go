@@ -50,15 +50,18 @@ func ApiAuthorizerToken(appid, refresh_token string) (string, error) {
 				return "", err
 			}
 
-			// save authorizer token to etcd
+			// save authorizer token to etcd, while token is not null string
 			if publicToken.AccessToken != "" {
 				_, err = db.GetEtcdConn().Set(context.Background(), key, publicToken.AccessToken, &client.SetOptions{TTL: time.Minute * 90})
 				if err != nil {
 					return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
 				}
+				return publicToken.AccessToken, nil
+			} else {
+				log.Error("AuthorizerAccessToken is null")
+				return "", errors.New("AuthorizerAccessToken is null")
 			}
 
-			return publicToken.AccessToken, nil
 		} else {
 			// other error
 			log.Error(err)

@@ -11,6 +11,20 @@ service WeixinService {
 
     // get wechat jsapi ticket
     rpc WeChatJsApiTicket (WeixinReq) returns (JsApiTicketResp);
+
+    rpc ExtractImageFromWeixin (ExtractImageReq) returns (ExtractImageResp);
+}
+
+message ExtractImageReq {
+    repeated string server_ids = 1;    //微信媒体信息的server_id
+    MediaZone zone = 2;                //抓取的微信图片要放到的七牛bucket
+    string store_id = 3;
+}
+
+message ExtractImageResp {
+    string code = 1;
+    string message = 2;
+    repeated string qiniu_keys = 3;
 }
 
 message JsApiTicketResp {

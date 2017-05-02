@@ -22,6 +22,29 @@ import (
 
 type WeixinServer struct{}
 
+func (s *WeixinServer) ExtraImageFromWeixin(ctx context.Context, req *pb.ExtractImageReq) (*pb.ExtractImageResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "ExtraImageFromWeixin", "%#v", req))
+
+	// 根据store_id 获取店铺的相关信息
+	// official_account, err := db.GetAccountInfoByStoreId(req.StoreId)
+	// if err != nil {
+	// 	log.Error(err)
+	// 	return nil, errs.Wrap(errors.New(err.Error()))
+	// }
+	//
+	// // 获取对应appid的 Authorization access_token
+	// authorizer_token, err := component.ApiAuthorizerToken(official_account.Appid, official_account.RefreshToken)
+	// if err != nil {
+	// 	log.Error(err)
+	// 	return nil, errs.Wrap(errors.New(err.Error()))
+	// }
+
+	// 调用七牛抓取图片，并返回key
+
+	return &pb.ExtractImageResp{}, nil
+}
+
 func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq) (*pb.JsApiTicketResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "WeChatJsApiTicket", "%#v", req))

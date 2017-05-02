@@ -15,3 +15,9 @@ message WeixinInfo {
     int64 sex = 3;
     string headimgurl = 4;
 }
+
+// 七牛 bucket
+enum MediaZone {
+    Test      = 0;
+    Public    = 1;
+}
