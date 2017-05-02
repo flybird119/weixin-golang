@@ -22,7 +22,7 @@ import (
 
 type WeixinServer struct{}
 
-func (s *WeixinServer) ExtraImageFromWeixin(ctx context.Context, req *pb.ExtractImageReq) (*pb.ExtractImageResp, error) {
+func (s *WeixinServer) ExtractImageFromWeixin(ctx context.Context, req *pb.ExtractImageReq) (*pb.ExtractImageResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "ExtraImageFromWeixin", "%#v", req))
 
