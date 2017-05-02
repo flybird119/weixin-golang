@@ -4,11 +4,6 @@ package pb;
 
 import "pb/common.proto";
 
-enum MediaZone {
-    Test      = 0;
-    Public    = 1;
-}
-
 service Mediastore {
     rpc FetchImage (FetchImageReq) returns (FetchImageResp);
     rpc GetUpToken (UpLoadReq) returns (GetUpTokenResp);

@@ -17,6 +17,10 @@ func SetRouterV1() *m.Router {
 	v1.Register("/weixin/receive_verify_ticket", m.Wrap(c.ReceiveTicket))
 	v1.Register("/weixin/get_weixin_info", m.Wrap(c.GetWeixinInfo))
 	v1.Register("/weixin/get_js_ticket", m.Wrap(c.GetJsTicket))
+	v1.Register("/weixin/extract_image_from_weixin_to_qiniu", m.Wrap(c.ExtractImg))
+
+	// mediastore
+
 	//school
 	v1.Register("/school/get_store_schools", m.Wrap(c.StoreSchools))
 	v1.Register("/school/get_school_info", m.Wrap(c.GetSchoolById))
