@@ -8,7 +8,20 @@ service Mediastore {
     rpc FetchImage (FetchImageReq) returns (FetchImageResp);
     rpc GetUpToken (UpLoadReq) returns (GetUpTokenResp);
     rpc RefreshUrls (RefreshReq) returns (NormalResp);
+
+    rpc ExtractImageFromWeixinToQiniu (ExtractReq) returns (ExtractResp);
 }
+
+message ExtractReq {
+    repeated string weixin_media_urls = 1;
+    string appid = 2;
+    MediaZone zone = 3;
+}
+
+message ExtractResp {
+    repeated string qiniu_keys = 1;
+}
+
 
 message RefreshReq {
     repeated string urls = 1;

@@ -2,13 +2,18 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"crypto/hmac"
 	"crypto/sha1"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
+	"os"
+	"strings"
 
 	"github.com/goushuyun/weixin-golang/pb"
 
@@ -54,6 +59,88 @@ func init() {
 	kodo.SetMac(ak, sk)
 	zone := 0
 	cli = kodo.New(zone, nil)
+	uploader = kodocli.NewUploader(zone, nil) // 构建一个uploader
+}
+
+func upload(url string, zone pb.MediaZone, appid string) (key string, err error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	mediaType, mediaParams, _ := mime.ParseMediaType(resp.Header.Get("Content-Disposition"))
+	realName := mediaParams["filename"]
+	log.Debugf("MediaType=%s, filename=%s, size=%d", mediaType, realName, resp.ContentLength)
+
+	key = appid + "/" + realName
+
+	token, url := makeToken(zone, key)
+
+	log.Debugf("Token : %s, url : %s", token, url)
+
+	if resp.ContentLength <= 1<<22 {
+		log.Debug("<<little>> \n")
+
+		putLittleFile(token, key, resp.Body, resp.ContentLength)
+	} else {
+		log.Debug("<<large>> \n")
+		putLargeFile(token, key, resp.Body, resp.ContentLength)
+	}
+
+	return key, nil
+}
+
+func uploadLocal(filepath string, zone pb.MediaZone, filename string) (err error) {
+	token, url := makeToken(zone, filename)
+
+	err = uploader.PutFile(nil, nil, token, filename, filepath, nil)
+	//打印出错信息
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	log.Debug(url)
+	return nil
+}
+
+func putLittleFile(token, filename string, body io.ReadCloser, length int64) {
+
+	log.Debug("<>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<>>>")
+
+	err := uploader.Put(nil, nil, token, filename, body, length, nil)
+	if err != nil {
+		log.Error(err)
+	}
+	body.Close()
+	log.Infof("file %s upload complete", filename)
+}
+
+func putLargeFile(token, filename string, body io.ReadCloser, length int64) {
+	temp, err := ioutil.TempFile("", filename[strings.Index(filename, "/")+1:])
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	written, err := io.Copy(temp, body)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	body.Close()
+
+	log.Debugf("size=%d, temp=%s, written=%d, %p", length, temp.Name(), written, &uploader)
+
+	err = uploader.Rput(context.Background(), nil, token, filename, temp, written, nil)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	temp.Close()
+	log.Infof("file %s upload complete", filename)
+
+	os.Remove(temp.Name())
 }
 
 func makeToken(zone pb.MediaZone, filename string) (token, url string) {
