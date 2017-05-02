@@ -2,22 +2,18 @@ package main
 
 import (
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/goushuyun/weixin-golang/order/service"
 	"github.com/goushuyun/weixin-golang/pb"
-	"github.com/robfig/cron"
+	"github.com/goushuyun/weixin-golang/retail/service"
 	"github.com/wothing/worpc"
 	"google.golang.org/grpc"
 )
 
 const (
-	svcName = "bc_order"
-	port    = 8863
+	svcName = "bc_retail"
+	port    = 8867
 )
 
-var svcNames = []string{
-	"bc_cart",
-	"bc_account",
-}
+var svcNames = []string{}
 
 func main() {
 	m := db.NewMicro(svcName, port)
@@ -25,12 +21,6 @@ func main() {
 	m.ReferServices(svcNames...)
 
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
-	pb.RegisterOrderServiceServer(s, &service.OrderServiceServer{})
-
-	//注册时间轮询
-	c := cron.New()
-	service.RegisterOrderPolling(c)
-	c.Start()
-	defer c.Stop()
+	pb.RegisterRetailServiceServer(s, &service.RetailServiceServer{})
 	s.Serve(m.CreateListener())
 }

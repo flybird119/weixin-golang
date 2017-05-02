@@ -85,5 +85,9 @@ func SetRouterV1() *m.Router {
 	v1.Register("/order/search", m.Wrap(c.OrderListSeller))
 	v1.Register("/order/detail", m.Wrap(c.OrderDetailSeller))
 
+	//retail
+	v1.Register("/retail/add", m.Wrap(c.RetailSubmit))
+	v1.Register("/retail/find", m.Wrap(c.RetailList))
+
 	return v1
 }

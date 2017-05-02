@@ -255,18 +255,79 @@ func (s *OrderServiceServer) OrderList(ctx context.Context, in *pb.Order) (*pb.O
 
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "OrderList", "%#v", in))
-	details, err := orderDB.FindOrders(in)
+	details, err, totalCount := orderDB.FindOrders(in)
 	if err != nil {
 		log.Warn(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	return &pb.OrderListResp{Code: "00000", Message: "ok", Data: details}, nil
+	return &pb.OrderListResp{Code: "00000", Message: "ok", Data: details, TotalCount: totalCount}, nil
 }
 
 //关闭订单
-func (s *OrderServiceServer) CloseOrder(ctx context.Context, in *pb.Order) (*pb.Void, error) {
+func (s *OrderServiceServer) CloseOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "CloseOrder", "%#v", in))
+	//释放图书资源，更改修改过时间 更改订单状态
+	//首先更改改订单的状态
+	err := orderDB.CloseOrder(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//处理售后订单--未完成
+func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.AfterSaleModel) (*pb.NormalResp, error) {
+	order := &pb.Order{Id: in.OrderId}
+	err := orderDB.GetOrderBaseInfo(order)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	if order.AfterSaleStatus != 1 {
+
+		return nil, errs.Wrap(errors.New("order not support after sale service"))
+	}
+	//order_id return_fee
+	order.RefundFee = in.RefundFee
+	tx, err := db.DB.Begin()
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	defer tx.Rollback()
+	err = orderDB.HandleAfterSaleOrder(tx, order)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//检查退款金额 ，refund_fee == 0 ? 特殊处理：CallRPC
+	data, err := misc.CallRPC(ctx, "bc_account", "HandleAfterSaleOrder", order)
+
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	normalResp, ok := data.(*pb.NormalResp)
+	if !ok {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	if normalResp.Code == "00000" {
+		return nil, errs.Wrap(errors.New("Oops,occur a error !"))
+	}
+	tx.Commit()
+	//查看退款金额是否为0
+	if order.RefundFee != 0 {
+		//如果退款金额不为0 ，Callrpc
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//售后订单处理结果
+func (s *OrderServiceServer) AfterSaleOrderHandledResult(ctx context.Context, in *pb.AfterSaleModel) (*pb.Void, error) {
 
 	return &pb.Void{}, nil
-	//释放图书资源，更改修改过时间 更改订单状态
 }

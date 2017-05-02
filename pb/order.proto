@@ -3,7 +3,7 @@ syntax = "proto3";
 package pb;
 
 import "pb/common.proto";
-
+import "pb/store.proto";
 service OrderService {
     //提交订单
     rpc OrderSubmit (OrderSubmitModel) returns (OrderSubmitResp);
@@ -24,7 +24,13 @@ service OrderService {
     //获取订单列表 用户 云店铺 状态
     rpc OrderList (Order) returns (OrderListResp);
     //关闭订单
-    rpc CloseOrder (Order) returns (Void);
+    rpc CloseOrder (Order) returns (NormalResp);
+    //处理售后订单
+    rpc HandleAfterSaleOrder (AfterSaleModel) returns (NormalResp);
+    //售后订单处理结果
+    rpc AfterSaleOrderHandledResult (AfterSaleModel) returns (Void);
+    //商家订单每日销售统计
+    rpc StoreDailyGoodsSalesStatistic (Store) returns(Void);
 }
 
 //订单model
@@ -48,27 +54,29 @@ message Order{
     int64 deliver_at = 17;
     int64 print_at =18;
     int64 complete_at = 19;
-    string print_staff_id   = 20;
-    string deliver_staff_id = 21;
-    int64 after_sale_status = 22;
-    string after_sale_trade_no = 23;
-    int64 refund_fee = 24;
-    int64 update_at = 25;
-    string pay_channel = 26;
-    string after_sale_staff_id = 27;
-    int64 after_sale_apply_at = 28;
-    int64 after_sale_end_at = 29;
-    string groupon_id = 30;
-    int64 searchType = 31; //搜索类型 0 用户搜索 1商家搜索
-    int64 start_at = 32;
-    int64 end_at = 33;
-    int64 page = 34;
-    int64 size = 35;
-    string isbn = 36;
-    int64 confirm_at = 37;
-    int64 distribute_at = 38;
-    string distribute_staff_id = 39;
-    string seller_id = 40;
+    int64 close_at = 20;
+    string print_staff_id   = 21;
+    string deliver_staff_id = 22;
+    int64 after_sale_status = 23;
+    string after_sale_trade_no = 24;
+    int64 refund_fee = 25;
+    int64 update_at = 26;
+    string pay_channel = 27;
+    string after_sale_staff_id = 28;
+    int64 after_sale_apply_at = 29;
+    int64 after_sale_end_at = 30;
+    string groupon_id = 31;
+    int64 searchType = 32; //搜索类型 0 用户搜索 1商家搜索
+    int64 start_at = 33;
+    int64 end_at = 34;
+    int64 page = 35;
+    int64 size = 36;
+    string isbn = 37;
+    int64 confirm_at = 38;
+    int64 distribute_at = 39;
+    string distribute_staff_id = 40;
+    string seller_id = 41;
+
 }
 
 //订单详情model
@@ -88,6 +96,7 @@ message OrderListResp{
     string code =1;
     string message =2;
     repeated OrderDetail data = 3;
+    int64 total_count =4;
 }
 //订单提交model
 message OrderSubmitModel{
@@ -115,6 +124,8 @@ message OrderItem{
     string book_image = 6;
     string book_isbn = 7;
     string book_title = 8;
+    int64 origin_price = 9;
+
 }
 
 message OrderStaff{

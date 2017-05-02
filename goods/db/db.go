@@ -569,3 +569,26 @@ func InsertGoodsLocation(loc *pb.GoodsLocation) error {
 	}
 	return nil
 }
+
+//recover goods amount
+func RecoverGoodsAmountFromClosedOrder(tx *sql.Tx, orderitem *pb.OrderItem) error {
+	query := "update goods set %s where id='%s'"
+	var condition string
+	//新书
+	if orderitem.Type == 0 {
+		condition = fmt.Sprintf("new_book_amount=new_book_amount+%d", orderitem.Amount)
+	} else {
+		//二手书
+		condition = fmt.Sprintf("old_book_amount=old_book_amount+%d", orderitem.Amount)
+	}
+
+	query = fmt.Sprintf(query, condition, orderitem.GoodsId)
+	_, err := tx.Exec(query)
+	if err != nil {
+		log.Error(err)
+		misc.LogErr(err)
+		return err
+	}
+
+	return nil
+}
