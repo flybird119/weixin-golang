@@ -45,14 +45,7 @@ func AddRetail(retail *pb.RetailSubmitModel) error {
 //增加零售项
 func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 	//插入零售项
-
-	query := "insert into retail_item (goods_id,retail_id,type,amount,price) values($1,$2,$3,$4,$5)"
-	log.Debugf("insert into retail_item (goods_id,retail_id,type,amount,price) values('%s','%s','%d','%d','%d')", item.GoodsId, item.RetailId, item.Type, item.Amount, item.Price)
-	_, err = tx.Exec(query, item.GoodsId, item.RetailId, item.Type, item.Amount, item.Price)
-	if err != nil {
-		log.Error(err)
-		return
-	}
+	var query string
 	//修改商品数量
 	if item.Type == 0 {
 		query = "update goods set new_book_amount=new_book_amount-$1 where id=$2 returning new_book_amount,new_book_price"
@@ -72,6 +65,13 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 		item.HasStock = false
 		item.CurrentAmount = amount + item.Amount
 		err = errors.New("noStock")
+		return
+	}
+	query = "insert into retail_item (goods_id,retail_id,type,amount,price) values($1,$2,$3,$4,$5)"
+	log.Debugf("insert into retail_item (goods_id,retail_id,type,amount,price) values('%s','%s','%d','%d','%d')", item.GoodsId, item.RetailId, item.Type, item.Amount, price)
+	_, err = tx.Exec(query, item.GoodsId, item.RetailId, item.Type, item.Amount, price)
+	if err != nil {
+		log.Error(err)
 		return
 	}
 	//修改零售商品费用
