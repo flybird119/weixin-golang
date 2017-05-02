@@ -97,8 +97,10 @@ func ComponentAccessToken() (string, error) {
 				if err != nil {
 					return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
 				}
+				return token, nil
+			} else {
+				return token, errors.New("get access error")
 			}
-			return token, errors.New("token not exist")
 		} else {
 			return "", errs.NewError(errs.ErrInternal, "etcd error %v", err)
 		}
