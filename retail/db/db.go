@@ -32,7 +32,7 @@ func AddRetail(retail *pb.RetailSubmitModel) error {
 	//增加零售项
 	for i := 0; i < len(retail.Items); i++ {
 		retail.Items[i].RetailId = retail.RetailId
-		err = AddRetailItem(tx, retail.Items[i])
+		err := AddRetailItem(tx, retail.Items[i])
 		if err != nil {
 			log.Error(err)
 			return err
@@ -43,14 +43,15 @@ func AddRetail(retail *pb.RetailSubmitModel) error {
 }
 
 //增加零售项
-func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) error {
+func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 	//插入零售项
+
 	query := "insert into retail_item (goods_id,retail_id,type,amount,price) values($1,$2,$3,$4,$5)"
 	log.Debugf("insert into retail_item (goods_id,retail_id,type,amount,price) values('%s','%s','%d','%d','%d')", item.GoodsId, item.RetailId, item.Type, item.Amount, item.Price)
-	_, err := tx.Exec(query, item.GoodsId, item.RetailId, item.Type, item.Amount, item.Price)
+	_, err = tx.Exec(query, item.GoodsId, item.RetailId, item.Type, item.Amount, item.Price)
 	if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
 	//修改商品数量
 	if item.Type == 0 {
@@ -64,11 +65,14 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) error {
 	err = tx.QueryRow(query, item.Amount, item.GoodsId).Scan(&amount, &price)
 	if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
 	//检测数量
 	if amount < 0 {
-		return errors.New("库存不足")
+		item.HasStock = false
+		item.CurrentAmount = amount + item.Amount
+		err = errors.New("noStock")
+		return
 	}
 	//修改零售商品费用
 	itemFee := item.Amount * price
@@ -77,9 +81,9 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) error {
 	_, err = tx.Exec(query, itemFee, item.RetailId)
 	if err != nil {
 		log.Error(err)
-		return err
+		return
 	}
-	return nil
+	return
 }
 
 //售后检索
