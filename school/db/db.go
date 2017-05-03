@@ -58,6 +58,7 @@ func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
 	for rows.Next() {
 		var school pb.School
 		s = append(s, &school)
+		school.StoreId = storeId
 		err = rows.Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt)
 		if err != nil {
 			log.Errorf("%+v", err)

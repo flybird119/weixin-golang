@@ -30,13 +30,18 @@ func AddRetail(retail *pb.RetailSubmitModel) error {
 		return err
 	}
 	//增加零售项
+	hasErr := false
 	for i := 0; i < len(retail.Items); i++ {
 		retail.Items[i].RetailId = retail.RetailId
+		retail.Items[i].HasStock = true
 		err := AddRetailItem(tx, retail.Items[i])
 		if err != nil {
 			log.Error(err)
-			return err
+			hasErr = true
 		}
+	}
+	if hasErr {
+		return errors.New("noStock")
 	}
 	tx.Commit()
 	return nil
@@ -61,12 +66,13 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 		return
 	}
 	//检测数量
+	item.CurrentAmount = amount + item.Amount
 	if amount < 0 {
 		item.HasStock = false
-		item.CurrentAmount = amount + item.Amount
 		err = errors.New("noStock")
 		return
 	}
+
 	query = "insert into retail_item (goods_id,retail_id,type,amount,price) values($1,$2,$3,$4,$5)"
 	log.Debugf("insert into retail_item (goods_id,retail_id,type,amount,price) values('%s','%s','%d','%d','%d')", item.GoodsId, item.RetailId, item.Type, item.Amount, price)
 	_, err = tx.Exec(query, item.GoodsId, item.RetailId, item.Type, item.Amount, price)

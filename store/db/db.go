@@ -179,3 +179,28 @@ func DelRealStore(shop *pb.RealStore) error {
 	}
 	return nil
 }
+
+//FindAllEffectiveStores 获取所有有效的云店铺
+func FindAllStores() (stores []*pb.Store, err error) {
+	query := "select id,name,status from store"
+	log.Debug("select id,name,status from store")
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return stores, nil
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		store := &pb.Store{}
+		stores = append(stores, store)
+		err = rows.Scan(&store.Id, &store.Name, &store.Status)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}

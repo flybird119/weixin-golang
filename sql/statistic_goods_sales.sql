@@ -8,12 +8,10 @@ create table statistic_goods_sales(
     --线上统计
     alipay_order_num                INT                     NOT NULL            DEFAULT 0,      --当天支付宝订单量
     alipay_order_fee                INT                     NOT NULL            DEFAULT 0,      --当天支付宝订单销售额
-    whchat_order_num                INT                     NOT NULL            DEFAULT 0,      --当天微信订单销售量
-    whchat_order_fee                INT                     NOT NULL            DEFAULT 0,      --当天微信订单销售额
+    wechat_order_num                INT                     NOT NULL            DEFAULT 0,      --当天微信订单销售量
+    wechat_order_fee                INT                     NOT NULL            DEFAULT 0,      --当天微信订单销售额
     online_new_book_sales_fee       INT                     NOT NULL            DEFAULT 0,      --当天线上新书销售额
     online_old_book_sales_fee       INT                     NOT NULL            DEFAULT 0,      --当天线上旧书销售额
-    online_new_book_sales_num       INT                     NOT NULL            DEFAULT 0,      --当天线上新书销售量
-    online_old_book_sales_num       INT                     NOT NULL            DEFAULT 0,      --当天线上旧书销售量
     send_order_num                  INT                     NOT NULL            DEFAULT 0,      --当天配送的订单量（订单已发货）
 
     --售后统计
@@ -24,9 +22,10 @@ create table statistic_goods_sales(
     --线下统计
     offline_new_book_sales_fee      INT                     NOT NULL            DEFAULT 0,      --线下新书销售额
     offline_old_book_sales_fee      INT                     NOT NULL            DEFAULT 0,      --线下旧书销售额
-    offline_new_book_sales_num      INT                     NOT NULL            DEFAULT 0,      --线下新书统计数量
-    offline_old_book_sales_num      INT                     NOT NULL            DEFAULT 0,      --线下旧书销售数量
+    offline_order_num               INT                     NOT NULL            DEFAULT 0,      --线下订单数量
+
     --时间字段
+    statistic_at                    TIMESTAMP WITH TIME ZONE NOT NULL  ,
     create_at                       TIMESTAMP WITH TIME ZONE NOT NULL           DEFAULT now()  --创建时间                      --改数据统计所属年
 );
 CREATE INDEX IF NOT EXISTS statistic_goods_school ON statistic_goods_sales(school_id);
