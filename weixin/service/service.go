@@ -27,22 +27,36 @@ func (s *WeixinServer) ExtractImageFromWeixin(ctx context.Context, req *pb.Extra
 	defer log.TraceOut(log.TraceIn(tid, "ExtraImageFromWeixin", "%#v", req))
 
 	// 根据store_id 获取店铺的相关信息
-	// official_account, err := db.GetAccountInfoByStoreId(req.StoreId)
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return nil, errs.Wrap(errors.New(err.Error()))
-	// }
-	//
-	// // 获取对应appid的 Authorization access_token
-	// authorizer_token, err := component.ApiAuthorizerToken(official_account.Appid, official_account.RefreshToken)
-	// if err != nil {
-	// 	log.Error(err)
-	// 	return nil, errs.Wrap(errors.New(err.Error()))
-	// }
+	official_account, err := db.GetAccountInfoByStoreId(req.StoreId)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 
-	// 调用七牛抓取图片，并返回key
+	// 获取对应appid的 Authorization access_token
+	authorizer_token, err := component.ApiAuthorizerToken(official_account.Appid, official_account.RefreshToken)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 
-	return &pb.ExtractImageResp{}, nil
+	// 封装 weixin urls
+	weixin_media_urls := []string{}
+	for _, server_id := range req.ServerIds {
+		url := fmt.Sprintf("https://api.weixin.qq.com/cgi-bin/media/get?access_token=%s&media_id=%s", authorizer_token, server_id)
+		weixin_media_urls = append(weixin_media_urls, url)
+	}
+
+	// 调用七牛抓取图片，并返回keys
+	extract_req := &pb.ExtractReq{Appid: official_account.Appid, Zone: req.Zone, WeixinMediaUrls: weixin_media_urls}
+	extract_resp := &pb.ExtractResp{}
+	err = misc.CallSVC(ctx, "bc_mediastore", "ExtractImageFromWeixinToQiniu", extract_req, extract_resp)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.ExtractImageResp{Code: errs.Ok, Message: "ok", QiniuKeys: extract_resp.QiniuKeys}, nil
 }
 
 func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq) (*pb.JsApiTicketResp, error) {
@@ -158,7 +172,7 @@ func (s *WeixinServer) GetOfficialAccountInfo(ctx context.Context, req *pb.Weixi
 	}
 
 	// 将API 授权 token 存入etcd
-	err = saveAuthorizerAccessTokenToEtcd(GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerRefreshToken)
+	err = saveAuthorizerAccessTokenToEtcd(GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAppid, GetApiQueryAuthResp.AuthorizationInfo.AuthorizerAccessToken)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))

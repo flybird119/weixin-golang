@@ -38,6 +38,22 @@ func SaveAccount(accout *pb.GetAuthBaseInfoResp) error {
 	return nil
 }
 
+func AccountExist(accout *pb.GetAuthBaseInfoResp) (bool, error) {
+	query := "select count(*) from official_accounts where appid = $1"
+	var total int64
+	err := DB.QueryRow(query, accout.AuthorizationInfo.AuthorizerAppid).Scan(&total)
+	if err != nil {
+		log.Error(err)
+		return false, err
+	}
+	return total > 0, nil
+}
+
+func UpdateAccount(accout *pb.GetAuthBaseInfoResp) error {
+
+	return nil
+}
+
 func SaveAuthorizerInfoToStore(store_id, app_id, token string) error {
 	query := "update store set appid = $1, authorizer_refresh_token = $2 where id = $3"
 	log.Debugf("update store set appid = '%s', authorizer_refresh_token = '%s' where id = '%s'", app_id, token, store_id)

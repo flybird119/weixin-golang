@@ -16,6 +16,26 @@ type MediastoreServer struct {
 	Test bool
 }
 
+func (s *MediastoreServer) ExtractImageFromWeixinToQiniu(ctx context.Context, req *pb.ExtractReq) (*pb.ExtractResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "ExtractImageFromWeixinToQiniu", "%#v", req))
+
+	qiniu_keys := []string{}
+
+	for _, url := range req.WeixinMediaUrls {
+
+		key, err := upload(url, req.Zone, req.Appid)
+		if err != nil {
+			log.Error(err)
+			return nil, errs.Wrap(errors.New(err.Error()))
+		}
+
+		qiniu_keys = append(qiniu_keys, key)
+	}
+
+	return &pb.ExtractResp{QiniuKeys: qiniu_keys}, nil
+}
+
 func (s *MediastoreServer) RefreshUrls(ctx context.Context, req *pb.RefreshReq) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "RefreshUrls", "%#v", req))
