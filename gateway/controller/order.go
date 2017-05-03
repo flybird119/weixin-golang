@@ -231,3 +231,21 @@ func CloseOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	misc.CallWithResp(w, r, "bc_order", "CloseOrder", req, "id")
 }
+
+//订单售后
+func UserCenterNecessaryOrderCount(w http.ResponseWriter, r *http.Request) {
+	req := &pb.UserCenterOrderCount{}
+	c := token.Get(r)
+
+	if c != nil && c.StoreId != "" && c.UserId != "" {
+		req.UserId = c.UserId
+		req.StoreId = c.StoreId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+	misc.CallWithResp(w, r, "bc_order", "UserCenterNecessaryOrderCount", req)
+}

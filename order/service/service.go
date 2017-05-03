@@ -280,6 +280,8 @@ func (s *OrderServiceServer) CloseOrder(ctx context.Context, in *pb.Order) (*pb.
 
 //处理售后订单--未完成
 func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.AfterSaleModel) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "HandleAfterSaleOrder", "%#v", in))
 	order := &pb.Order{Id: in.OrderId}
 	err := orderDB.GetOrderBaseInfo(order)
 	if err != nil {
@@ -330,4 +332,16 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 func (s *OrderServiceServer) AfterSaleOrderHandledResult(ctx context.Context, in *pb.AfterSaleModel) (*pb.Void, error) {
 
 	return &pb.Void{}, nil
+}
+
+//处理售后订单--未完成
+func (s *OrderServiceServer) UserCenterNecessaryOrderCount(ctx context.Context, in *pb.UserCenterOrderCount) (*pb.UserCenterOrderCount, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UserCenterNecessaryOrderCount", "%#v", in))
+	err := orderDB.UserCenterNecessaryOrderCount(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return in, nil
 }

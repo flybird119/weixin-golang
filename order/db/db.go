@@ -662,3 +662,28 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	}
 	return nil
 }
+
+func UserCenterNecessaryOrderCount(model *pb.UserCenterOrderCount) error {
+	query := "select count(*) from orders where order_status=0 and user_id=$1 and store_id=$2"
+	log.Debugf("select count(*) from orders where order_status=0 and user_id='%s' and store_id='%s'", model.UserId, model.StoreId)
+	err := DB.QueryRow(query, model.UserId, model.StoreId).Scan(&model.UnpaidOrderNum)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	query = "select count(*) from orders where order_status=1 and user_id=$1 and store_id=$2"
+	log.Debugf("select count(*) from orders where order_status=1 and user_id='%s' and store_id='%s'", model.UserId, model.StoreId)
+	err = DB.QueryRow(query, model.UserId, model.StoreId).Scan(&model.UndeliveredOrderNum)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	query = "select count(*) from orders where order_status=3 and user_id=$1 and store_id=$2"
+	log.Debugf("select count(*) from orders where order_status=3 and user_id='%s' and store_id='%s'", model.UserId, model.StoreId)
+	err = DB.QueryRow(query, model.UserId, model.StoreId).Scan(&model.UncompletedOrderNum)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}

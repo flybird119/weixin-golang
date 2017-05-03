@@ -45,6 +45,8 @@ func SetRouterV1() *m.Router {
 	v1.Register("/order/detail", m.Wrap(c.OrderDetail))
 	v1.Register("/order/after_sale_apply", m.Wrap(c.AfterSaleApply))
 	v1.Register("/order/close", m.Wrap(c.CloseOrder))
+	v1.Register("/order/necessary_order_counts", m.Wrap(c.UserCenterNecessaryOrderCount))
+
 	//address
 	v1.Register("/address/add", m.Wrap(c.AddAddress))
 	v1.Register("/address/update", m.Wrap(c.UpdateAddress))
