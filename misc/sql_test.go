@@ -158,6 +158,7 @@ func TestRegPay(t *testing.T) {
 
 func TestTimeUnix(t *testing.T) {
 	now := time.Now()
-	now = now.Add(14 * 24 * time.Hour)
+	statisticDate := now.Add(-1 * 24 * time.Hour)
+	fmt.Println(statisticDate.Format("2006-01-02"))
 	fmt.Print(now.Unix())
 }

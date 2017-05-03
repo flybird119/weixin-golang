@@ -23,10 +23,7 @@ func (s *RetailServiceServer) RetailSubmit(ctx context.Context, in *pb.RetailSub
 		return nil, errs.Wrap(errors.New("items should not null"))
 	}
 	err := db.AddRetail(in)
-	log.Debug("=============")
-	log.Debug(err.Error())
-	log.Debug("=============")
-	if err.Error() == "noStock" {
+	if err != nil && err.Error() == "noStock" {
 		return &pb.RetailSubmitResp{Code: "00000", Message: "noStock", Items: in.Items}, nil
 	}
 	if err != nil {

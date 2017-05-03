@@ -598,7 +598,7 @@ func FillInAfterSaleDetail(aftersaleModel *pb.AfterSaleModel) error {
 func CloseOrder(order *pb.Order) error {
 	//首先更改订单的状态
 	query := "update orders set order_status=order_status|$1,close_at=now() where id=$2 and user_id=$3 returning order_status"
-	log.Debugf("update orders set order_status=order_status|%d,close_at=now() where id='%s' and user_id='%s' returning order_status")
+	log.Debugf("update orders set order_status=order_status|%d,close_at=now() where id='%s' and user_id='%s' returning order_status", 8, order.Id, order.UserId)
 	tx, err := DB.Begin()
 	if err != nil {
 		log.Error(err)

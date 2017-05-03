@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package pb;
+
+//商品销量统计model
+message GoodsSalesStatisticModel{
+    string id = 1;
+    string store_id = 2;
+    string school_id = 3;
+    int64 alipay_order_num = 4;
+    int64 alipay_order_fee = 5;
+    int64 wechat_order_num = 6;
+    int64 wechat_order_fee = 7;
+    int64 online_new_book_sales_fee = 8;
+    int64 online_old_book_sales_fee = 9;
+    int64 send_order_num = 12;
+    int64 after_sale_num = 13;
+    int64 after_sale_handled_num = 14;
+    int64 after_sale_handled_fee = 15;
+    int64 offline_new_book_sales_fee = 16;
+    int64 offline_old_book_sales_fee = 17;
+    int64 offline_order_num = 18;
+    int64 create_at = 19;
+    string statistic_at = 20;
+}
+
+//图书销量统计model
+message BookSalesStatisticModel{
+    string id = 1;
+    string store_ie = 2;
+    string school_id = 3;
+    int64 online_new_book_sales_num = 4;
+    int64 online_old_book_sales_num = 5;
+    int64 offline_new_book_sales_num = 6;
+    int64 offline_old_book_sales_num = 7;
+    int64 create_at = 8;
+}
