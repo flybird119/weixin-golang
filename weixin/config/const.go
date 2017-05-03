@@ -13,7 +13,7 @@ func GetConf() *Conf {
 	if conf == nil {
 		return &Conf{
 			AppID:     "wx1c2695469ae47724",
-			AppSecret: "ea187a8170f5dc556992d9fa90f6dd56",
+			AppSecret: "bd8f125dc0300451e7495c70f5480575",
 			Token:     "goushuyun",
 			AESKey:    "goushuyungoushuyungoushuyungoushuyungoushuy",
 		}

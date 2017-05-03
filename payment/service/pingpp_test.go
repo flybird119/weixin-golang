@@ -10,9 +10,31 @@ import (
 
 	pingpp "github.com/pingplusplus/pingpp-go/pingpp"
 	"github.com/pingplusplus/pingpp-go/pingpp/charge"
-
+	"github.com/pingplusplus/pingpp-go/pingpp/refund"
 	"github.com/wothing/log"
 )
+
+func init() {
+	pingpp.LogLevel = 2
+	pingpp.Key = "sk_test_ibbTe5jLGCi5rzfH4OqPW9KC"
+	fmt.Println("Go SDK Version:", pingpp.Version())
+	pingpp.AcceptLanguage = "zh-CN"
+	//设置商户的私钥 记得在Ping++上配置公钥
+	//pingpp.AccountPrivateKey
+}
+
+func TestRefund(t *testing.T) {
+	params := &pingpp.RefundParams{
+		Amount:      1, //可以注释不上传
+		Description: "12345",
+	}
+	re, err := refund.New("ch_GuPKi1mjXjzDPmz1uD1aPq90", params) //ch_id 是已付款的订单号
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.JSONIndent(re)
+}
 
 func TestPay(t *testing.T) {
 	// LogLevel 是 Go SDK 提供的 debug 开关

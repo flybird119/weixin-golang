@@ -15,6 +15,7 @@ const (
 
 var svcNames = []string{
 	"bc_user",
+	"bc_mediastore",
 }
 
 func main() {
