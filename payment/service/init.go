@@ -10,7 +10,7 @@ func init() {
 	// LogLevel 是 Go SDK 提供的 debug 开关
 	pingpp.LogLevel = 2
 	//设置 API Key
-	pingpp.Key = "sk_test_v94yzLeL8S8COiTGC40yLiDK"
+	pingpp.Key = "sk_live_mHebTSOm1S0G8y5SW5zTSaDO"
 	//获取 SDK 版本
 	fmt.Println("Go SDK Version:", pingpp.Version())
 	//设置错误信息语言，默认是中文
