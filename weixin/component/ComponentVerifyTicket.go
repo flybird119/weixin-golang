@@ -1,27 +1,26 @@
 package component
 
 import (
+	"errors"
+
 	"golang.org/x/net/context"
 
 	"github.com/goushuyun/weixin-golang/db"
 	"github.com/wothing/log"
 )
 
-var ticket = ""
+func Ticket() (string, error) {
+	// 每次从 etcd 取 ticket, 若etcd中没有，则抛错
 
-func Ticket() string {
-	if ticket == "" {
-		resp, err := db.GetEtcdConn().Get(context.Background(), "/bookcloud/weixin/component/ComponentVerifyTicket", nil)
-
-		if err != nil {
-			log.Error(err)
-			return ""
-		}
-
-		if err == nil && resp.Node != nil && resp.Node.Value != "" {
-			ticket = resp.Node.Value
-			return ticket
-		}
+	resp, err := db.GetEtcdConn().Get(context.Background(), "/bookcloud/weixin/component/ComponentVerifyTicket", nil)
+	if err != nil {
+		log.Error(err)
+		return "", err
 	}
-	return ticket
+
+	if err == nil && resp.Node != nil && resp.Node.Value != "" {
+		return resp.Node.Value, nil
+	}
+
+	return "", errors.New("there is no ticket in etcd")
 }
