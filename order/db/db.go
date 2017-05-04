@@ -553,12 +553,12 @@ func GetOrderStaffWork(order *pb.Order) (staffs []*pb.OrderStaff, err error) {
 func GetAfterSaleDetail(order *pb.Order) (*pb.AfterSaleModel, error) {
 	log.Debug(order)
 	if order.AfterSaleStatus != 0 {
-		query := "select o.refund_fee ,o.after_sale_reason,o.after_sale_images from orders o where o.id=$1"
-		log.Debugf("select o.refund_fee ,o.after_sale_reason,o.after_sale_images from orders where o.id='%s'", order.Id)
+		query := "select o.refund_fee ,o.after_sale_reason,o.after_sale_images,o.apply_refund_fee from orders o where o.id=$1"
+		log.Debugf("select o.refund_fee ,o.after_sale_reason,o.after_sale_images,o.apply_refund_fee from orders where o.id='%s'", order.Id)
 		var images []*pb.AfterSaleImage
 		var imageStr string
 		afterSaleModdel := &pb.AfterSaleModel{}
-		err := DB.QueryRow(query, order.Id).Scan(&afterSaleModdel.RefundFee, &afterSaleModdel.Reason, &imageStr)
+		err := DB.QueryRow(query, order.Id).Scan(&afterSaleModdel.RefundFee, &afterSaleModdel.Reason, &imageStr, &afterSaleModdel.ApplyRefundFee)
 		if err != nil {
 			log.Debug(err)
 			misc.LogErr(err)
