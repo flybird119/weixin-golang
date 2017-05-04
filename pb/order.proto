@@ -31,6 +31,8 @@ service OrderService {
     rpc AfterSaleOrderHandledResult (AfterSaleModel) returns (Void);
     //商家订单每日销售统计
     rpc StoreDailyGoodsSalesStatistic (Store) returns(Void);
+    //用户个人中心-订单状态统计
+    rpc UserCenterNecessaryOrderCount (UserCenterOrderCount) returns (UserCenterOrderCount);
 }
 
 //订单model
@@ -147,4 +149,12 @@ message AfterSaleModel{
 }
 message AfterSaleImage{
     string url = 1;
+}
+
+message UserCenterOrderCount{
+    int64 unpaid_order_num = 1;
+    int64 undelivered_order_num = 2;
+    int64 uncompleted_order_num = 3;
+    string user_id = 4;
+    string store_id = 5;
 }
