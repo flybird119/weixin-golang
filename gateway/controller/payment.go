@@ -49,7 +49,18 @@ func RefundSuccessNotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debugf("The callback obj is %#v\n", obj)
+	log.Debug("****************The callback obj is******************\n")
+	log.JSONIndent(p)
+
+	// 组织数据，提送退款成功消息
+	refundSuccessReq := &pb.AfterSaleModel{
+		RefundFee:     p.Amount,
+		RefundTradeNo: p.TransactionNo, //退款单号
+		IsSuccess:     p.Succeed,
+		TradeNo:       p.Charge,
+	}
+
+	misc.CallWithResp(w, r, "bc_order", "AfterSaleOrderHandledResult", refundSuccessReq)
 }
 
 func PaySuccessNotify(w http.ResponseWriter, r *http.Request) {

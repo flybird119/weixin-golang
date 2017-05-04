@@ -93,7 +93,11 @@ func ComponentAccessToken() (string, error) {
 
 			log.Debug("access_token not found at etcd")
 
-			ticket := Ticket()
+			ticket, err := Ticket()
+			if err != nil {
+				log.Error(err)
+				return "", err
+			}
 			log.Debugf("The ticket is %s", ticket)
 			token, expire := component.GetRegularApi().GetAccessToken(ticket)
 
