@@ -11,11 +11,42 @@ import (
 	"github.com/goushuyun/weixin-golang/pb"
 	pingpp "github.com/pingplusplus/pingpp-go/pingpp"
 	"github.com/pingplusplus/pingpp-go/pingpp/charge"
+	"github.com/pingplusplus/pingpp-go/pingpp/refund"
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
 )
 
 type PaymentService struct{}
+
+func (s *PaymentService) Refund(ctx context.Context, req *pb.RefundReq) (*pb.Void, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "Refund", "%#v", req))
+
+	params := &pingpp.RefundParams{
+		Amount:      uint64(req.Amount),
+		Description: req.Reason,
+	}
+	re, err := refund.New(req.TradeNo, params)
+	if err != nil {
+		// 生成退款请求时出错，可能为该笔订单已经足额退款
+		log.Error(err)
+
+		// 封装错误信息并返回
+		callback := &pb.RefundErrCallback{}
+		err = json.Unmarshal([]byte(err.Error()), callback)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return nil, errors.New(callback.Message)
+	}
+
+	if !re.Succeed {
+		// 退款失败，可能原因为商户平台余额不足
+		return nil, errors.New(re.Failure_msg)
+	}
+
+	return &pb.Void{}, nil
+}
 
 func (s *PaymentService) PaySuccessNotify(ctx context.Context, req *pb.Order) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)

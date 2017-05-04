@@ -11,27 +11,39 @@ import (
 	pingpp "github.com/pingplusplus/pingpp-go/pingpp"
 	"github.com/pingplusplus/pingpp-go/pingpp/charge"
 	"github.com/pingplusplus/pingpp-go/pingpp/refund"
+
+	"github.com/goushuyun/weixin-golang/pb"
+
 	"github.com/wothing/log"
 )
 
 func init() {
-	pingpp.LogLevel = 2
-	pingpp.Key = "sk_test_ibbTe5jLGCi5rzfH4OqPW9KC"
-	fmt.Println("Go SDK Version:", pingpp.Version())
-	pingpp.AcceptLanguage = "zh-CN"
 	//设置商户的私钥 记得在Ping++上配置公钥
 	//pingpp.AccountPrivateKey
 }
 
 func TestRefund(t *testing.T) {
+	pingpp.LogLevel = 2
+	pingpp.Key = "sk_live_mHebTSOm1S0G8y5SW5zTSaDO"
+	fmt.Println("Go SDK Version:", pingpp.Version())
+	pingpp.AcceptLanguage = "zh-CN"
+
 	params := &pingpp.RefundParams{
-		Amount:      1, //可以注释不上传
+		Amount: 1, //可以注释不上传
+
 		Description: "12345",
 	}
-	re, err := refund.New("ch_GuPKi1mjXjzDPmz1uD1aPq90", params) //ch_id 是已付款的订单号
+	re, err := refund.New("ch_DSu9W9jnDavPyzL48O5S88O8", params) //ch_id 是已付款的订单号
 
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		callback := &pb.RefundErrCallback{}
+		err := json.Unmarshal([]byte(err.Error()), callback)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Debugf("%#v", callback)
 	}
 	log.JSONIndent(re)
 }

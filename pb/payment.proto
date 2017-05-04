@@ -7,7 +7,22 @@ import "pb/order.proto";
 service PaymentService {
     rpc GetCharge (GetChargeReq) returns (GetChargeResp);
     rpc PaySuccessNotify (Order) returns (NormalResp);
+    rpc Refund (RefundReq) returns (Void);
 }
+
+// 退款请求
+message RefundReq {
+    string trade_no = 1;
+    int64 amount = 2;
+    string reason = 3;
+}
+
+// 退款请求错误结构体
+message RefundErrCallback {
+    string type = 1;
+    string message = 2;
+}
+
 
 // 支付成功回调对象
 message PaySuccessCallbackPayload {
@@ -15,6 +30,12 @@ message PaySuccessCallbackPayload {
     string transaction_no = 2;
     int64 time_paid = 3;
     string channel = 4;
+    string id = 5;
+
+    // refund params
+    string charge = 6;
+    bool successd = 7;
+    int64 amount = 8;
 }
 
 message GetChargeReq {
