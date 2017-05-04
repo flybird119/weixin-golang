@@ -39,7 +39,6 @@ func (s *PaymentService) Refund(ctx context.Context, req *pb.RefundReq) (*pb.Voi
 		}
 		return nil, errors.New(callback.Message)
 	}
-
 	if !re.Succeed {
 		// 退款失败，可能原因为商户平台余额不足
 		return nil, errors.New(re.Failure_msg)
