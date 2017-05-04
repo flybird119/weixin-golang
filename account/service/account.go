@@ -116,7 +116,7 @@ func (s *AccountServiceServer) AddAccountItem(ctx context.Context, in *pb.Accoun
 func (s *AccountServiceServer) OrderCompleteAccountHandle(ctx context.Context, in *pb.Order) (*pb.Void, error) {
 
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "PayOverOrderAccountHandle", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "OrderCompleteAccountHandle", "%#v", in))
 	//首先查看相对应的记录
 	hasSellerWithdrwalAccountItem, err := db.HasExistAcoount(&pb.AccountItem{StoreId: in.StoreId, OrderId: in.Id, ItemType: 1})
 	if err != nil {

@@ -456,6 +456,54 @@ func GetOrderBaseInfo(order *pb.Order) error {
 	return nil
 }
 
+//获取订单的信息
+func GetOrderBaseInfoByTradeNo(order *pb.Order) error {
+	next := order
+	//需要的项
+	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at, distribute_at, confirm_at, close_at sql.NullString
+
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer,extract(epoch from o.distribute_at)::integer,distribute_staff_id,extract(epoch from o.confirm_at)::integer, extract(epoch from o.close_at)::integer"
+
+	query := fmt.Sprintf("select %s from orders o where trade_no=$1 ", selectParam)
+
+	err := DB.QueryRow(query, order.TradeNo).Scan(&next.Id, &next.OrderStatus, &next.TotalFee, &next.Freight, &next.GoodsFee, &next.WithdrawalFee, &next.UserId, &next.Mobile, &next.Name, &next.Address, &next.Remark, &next.StoreId, &next.SchoolId, &next.TradeNo, &next.PayChannel, &next.OrderAt, &pay_at, &deliver_at, &print_at, &complete_at, &next.PrintStaffId, &next.DeliverStaffId, &next.AfterSaleStaffId, &after_sale_apply_at, &after_sale_end_at, &next.AfterSaleStatus, &next.AfterSaleTradeNo, &next.RefundFee, &next.GrouponId,
+		&next.UpdateAt, &distribute_at, &next.DistributeStaffId, &confirm_at, &close_at)
+	if err != nil && err != sql.ErrNoRows {
+		misc.LogErr(err)
+		return err
+	}
+	//转换可能为空的值
+	if pay_at.Valid {
+		next.PayAt, _ = strconv.ParseInt(pay_at.String, 10, 64)
+	}
+	if deliver_at.Valid {
+		next.DeliverAt, _ = strconv.ParseInt(deliver_at.String, 10, 64)
+	}
+	if print_at.Valid {
+		next.PrintAt, _ = strconv.ParseInt(print_at.String, 10, 64)
+	}
+	if complete_at.Valid {
+		next.CompleteAt, _ = strconv.ParseInt(complete_at.String, 10, 64)
+	}
+	if after_sale_apply_at.Valid {
+		next.AfterSaleApplyAt, _ = strconv.ParseInt(after_sale_apply_at.String, 10, 64)
+	}
+	if after_sale_end_at.Valid {
+		next.AfterSaleEndAt, _ = strconv.ParseInt(after_sale_end_at.String, 10, 64)
+	}
+	if distribute_at.Valid {
+		next.DistributeAt, _ = strconv.ParseInt(distribute_at.String, 10, 64)
+	}
+	if confirm_at.Valid {
+		next.ConfirmAt, _ = strconv.ParseInt(confirm_at.String, 10, 64)
+	}
+	if close_at.Valid {
+		next.CloseAt, _ = strconv.ParseInt(close_at.String, 10, 64)
+	}
+
+	return nil
+}
+
 //获取订单员工信息
 func GetOrderStaffWork(order *pb.Order) (staffs []*pb.OrderStaff, err error) {
 	//print
@@ -650,6 +698,8 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	} else {
 		condition += fmt.Sprintf(",refund_fee=$%d,after_sale_status=2", len(args))
 	}
+	args = append(args, order.AfterSaleStaffId)
+	condition += fmt.Sprintf(",after_sale_staff_id=$%d", len(args))
 
 	condition += fmt.Sprintf(" where id='%s' returning after_sale_status", order.Id)
 	query += condition
@@ -681,6 +731,21 @@ func UserCenterNecessaryOrderCount(model *pb.UserCenterOrderCount) error {
 	query = "select count(*) from orders where order_status=3 and user_id=$1 and store_id=$2"
 	log.Debugf("select count(*) from orders where order_status=3 and user_id='%s' and store_id='%s'", model.UserId, model.StoreId)
 	err = DB.QueryRow(query, model.UserId, model.StoreId).Scan(&model.UncompletedOrderNum)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func AfterSaleResultOperation(afterSaleModel *pb.AfterSaleModel) error {
+	query := "update orders set after_sale_status=%d,after_sale_trad_no=%s,refund_fee=%d where trade_no='%s' returning id"
+	if afterSaleModel.IsSuccess {
+		query = fmt.Sprintf(query, 4, afterSaleModel.RefundTradeNo, afterSaleModel.RefundFee, afterSaleModel.TradeNo)
+	} else {
+		query = fmt.Sprintf(query, 3, afterSaleModel.RefundTradeNo, afterSaleModel.RefundFee, afterSaleModel.TradeNo)
+	}
+	_, err := DB.Exec(query)
 	if err != nil {
 		log.Error(err)
 		return err

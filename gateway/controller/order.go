@@ -249,3 +249,36 @@ func UserCenterNecessaryOrderCount(w http.ResponseWriter, r *http.Request) {
 	}
 	misc.CallWithResp(w, r, "bc_order", "UserCenterNecessaryOrderCount", req)
 }
+
+//订单售后
+func HandleAfterSaleOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.AfterSaleModel{}
+	c := token.Get(r)
+
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
+		req.StaffId = c.SellerId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+	misc.CallWithResp(w, r, "bc_order", "HandleAfterSaleOrder", req)
+}
+
+//订单售后
+func AfterSaleOrderHandledResult(w http.ResponseWriter, r *http.Request) {
+	req := &pb.AfterSaleModel{}
+	c := token.Get(r)
+
+	if c != nil && c.StoreId != "" {
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+	misc.CallWithResp(w, r, "bc_order", "AfterSaleOrderHandledResult", req)
+}

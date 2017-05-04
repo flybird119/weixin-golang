@@ -1,14 +1,17 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"time"
 
 	"github.com/goushuyun/weixin-golang/errs"
 
+	accountDB "github.com/goushuyun/weixin-golang/account/db"
 	"github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	orderDB "github.com/goushuyun/weixin-golang/order/db"
+
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
@@ -152,6 +155,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	searchOrder.OrderStatus = 4
 	//商家账户更改
 	misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", searchOrder)
 
@@ -288,8 +292,10 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	log.Debugf("============================")
+	log.Debugf("===%+v", order)
+	log.Debugf("============================")
 	if order.AfterSaleStatus != 1 {
-
 		return nil, errs.Wrap(errors.New("order not support after sale service"))
 	}
 	//order_id return_fee
@@ -300,41 +306,76 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	defer tx.Rollback()
+
+	//检查退款金额 ，refund_fee == 0 ? 特殊处理：CallRPC
+	err = handleAfterSaleOrder(tx, order)
+	//检查用户资金以及记录
+	if err != nil && err.Error() == "sellerNoMoney" {
+		return &pb.NormalResp{Code: "00000", Message: "可提现金额不足，请充值"}, nil
+	} else if err != nil {
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//修改退款状态
+	order.AfterSaleStaffId = in.StaffId
 	err = orderDB.HandleAfterSaleOrder(tx, order)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	//检查退款金额 ，refund_fee == 0 ? 特殊处理：CallRPC
-	data, err := misc.CallRPC(ctx, "bc_account", "HandleAfterSaleOrder", order)
 
-	if err != nil {
-		log.Debug(err)
-		return nil, errs.Wrap(errors.New(err.Error()))
-	}
-	normalResp, ok := data.(*pb.NormalResp)
-	if !ok {
-		log.Debug(err)
-		return nil, errs.Wrap(errors.New(err.Error()))
-	}
-	if normalResp.Code == "00000" {
-		return nil, errs.Wrap(errors.New("Oops,occur a error !"))
-	}
-	tx.Commit()
 	//查看退款金额是否为0
 	if order.RefundFee != 0 {
+		afterSaleModel, err := orderDB.GetAfterSaleDetail(order)
+		if err != nil {
+			log.Error(err)
+			return nil, errs.Wrap(errors.New(err.Error()))
+		}
 		//如果退款金额不为0 ，Callrpc
+		req := &pb.RefundReq{TradeNo: order.TradeNo, Amount: in.RefundFee, Reason: afterSaleModel.Reason}
+		_, err = misc.CallRPC(ctx, "bc_payment", "Refund", req)
+		if err != nil {
+			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
+		}
+
 	}
+	tx.Commit()
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 //售后订单处理结果
 func (s *OrderServiceServer) AfterSaleOrderHandledResult(ctx context.Context, in *pb.AfterSaleModel) (*pb.Void, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "AfterSaleOrderHandledResult", "%#v", in))
+	order := &pb.Order{TradeNo: in.TradeNo}
+	err := orderDB.GetOrderBaseInfoByTradeNo(order)
+	if err != nil {
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 
+	log.Debugf("============================")
+	log.Debugf("===%+v", order)
+	log.Debugf("============================")
+
+	if order.AfterSaleStatus <= 0 {
+		return &pb.Void{}, nil
+	}
+	//检查是否处理过
+	if order.AfterSaleStatus > 2 {
+		return &pb.Void{}, nil
+	}
+	err = orderDB.AfterSaleResultOperation(in)
+	if err != nil {
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//检查是否满足体现条件
+	if order.OrderStatus >= 17 && order.OrderStatus < 23 {
+		//商家账户更改
+		misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", order)
+	}
 	return &pb.Void{}, nil
 }
 
-//处理售后订单--未完成
+//处理售后订单
 func (s *OrderServiceServer) UserCenterNecessaryOrderCount(ctx context.Context, in *pb.UserCenterOrderCount) (*pb.UserCenterOrderCount, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UserCenterNecessaryOrderCount", "%#v", in))
@@ -344,4 +385,23 @@ func (s *OrderServiceServer) UserCenterNecessaryOrderCount(ctx context.Context, 
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	return in, nil
+}
+
+//处理售后订单
+func handleAfterSaleOrder(tx *sql.Tx, in *pb.Order) error {
+	sellerAccountBalance := &pb.Account{StoreId: in.StoreId, Balance: -in.RefundFee}
+	//2.1：	待体现金额资金流向记录
+	err := accountDB.ChangAccountBalanceWithTx(tx, sellerAccountBalance)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	//可提现售后24
+	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, OrderId: in.Id, ItemType: 24, Remark: "已从可提现金额扣除", ItemFee: -in.RefundFee, AccountBalance: sellerAccountBalance.Balance}
+	err = accountDB.AddAccountItemWithTx(tx, sellerAccountBalanceItem)
+	if err != nil {
+		log.Error(err)
+		go misc.LogErrAccount(sellerAccountBalanceItem, "订单售后-增加记录失败", err)
+	}
+	return nil
 }

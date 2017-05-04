@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
@@ -115,5 +116,44 @@ func ChangAccountBalance(account *pb.Account) error {
 		return err
 	}
 	tx.Commit()
+	return nil
+}
+
+//修改账户可提现余额
+func ChangAccountBalanceWithTx(tx *sql.Tx, account *pb.Account) error {
+	query := "update account set balance=balance+$1,update_at=now() where store_id=$2 returning balance,id"
+	//开启事务
+	err := tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
+	if err != nil {
+		log.Error(err)
+		misc.LogErr(err)
+		return err
+	}
+	if account.Balance < 0 {
+		return errors.New("sellerNoMoney")
+	}
+	return nil
+}
+
+//增加什么AccountItem
+func AddAccountItemWithTx(tx *sql.Tx, item *pb.AccountItem) error {
+	query := "select id from account_item where user_type=$1 and store_id=$2 and order_id=$3 and item_type=$4"
+	log.Debugf("select id from account_item where user_type=%d and store_id='%s' and order_id='%s' and item_type=%d", item.UserType, item.StoreId, item.OrderId, item.ItemType)
+	err := DB.QueryRow(query, item.UserType, item.StoreId, item.OrderId, item.ItemType).Scan(&item.Id)
+	if err != nil && err != sql.ErrNoRows {
+		misc.LogErr(err)
+		return err
+	}
+	if item.Id != "" {
+
+		return nil
+	}
+	query = "insert into account_item (user_type,store_id,order_id,remark,item_type,item_fee,account_balance) values ($1,$2,$3,$4,$5,$6,$7)"
+	log.Debugf("insert into account_item (user_type,store_id,order_id,remark,item_type,item_fee,account_balance) values (%d,'%s','%s','%s',%d,%d,%d)", item.UserType, item.StoreId, item.OrderId, item.Remark, item.ItemType, item.ItemFee, item.AccountBalance)
+	_, err = tx.Exec(query, item.UserType, item.StoreId, item.OrderId, item.Remark, item.ItemType, item.ItemFee, item.AccountBalance)
+	if err != nil {
+		misc.LogErr(err)
+		return err
+	}
 	return nil
 }
