@@ -49,7 +49,8 @@ func RefundSuccessNotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debugf("The callback obj is %#v\n", obj)
+	log.Debug("****************The callback obj is******************\n")
+	log.JSONIndent(p)
 }
 
 func PaySuccessNotify(w http.ResponseWriter, r *http.Request) {

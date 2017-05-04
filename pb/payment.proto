@@ -34,7 +34,7 @@ message PaySuccessCallbackPayload {
 
     // refund params
     string charge = 6;
-    bool successd = 7;
+    bool succeed = 7;
     int64 amount = 8;
 }
 

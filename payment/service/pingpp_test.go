@@ -33,12 +33,12 @@ func TestRefund(t *testing.T) {
 
 		Description: "12345",
 	}
-	re, err := refund.New("ch_DSu9W9jnDavPyzL48O5S88O8", params) //ch_id 是已付款的订单号
+	re, err := refund.New("ch_SuHyXTrTK0m9jzvn5Svn5848", params) //ch_id 是已付款的订单号
 
 	if err != nil {
 		log.Error(err)
 		callback := &pb.RefundErrCallback{}
-		err := json.Unmarshal([]byte(err.Error()), callback)
+		err = json.Unmarshal([]byte(err.Error()), callback)
 		if err != nil {
 			log.Fatal(err)
 		}
