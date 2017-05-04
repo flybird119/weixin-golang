@@ -17,6 +17,7 @@ const (
 var svcNames = []string{
 	"bc_cart",
 	"bc_account",
+	"bc_payment",
 }
 
 func main() {

@@ -137,7 +137,7 @@ message OrderStaff{
 }
 
 message AfterSaleModel{
-    string trad_no = 1;
+    string trade_no = 1;
     int64 apply_at = 2;
     string reason = 3;
     repeated AfterSaleImage images = 4;
@@ -146,6 +146,8 @@ message AfterSaleModel{
     string order_id = 7;
     int64 refund_fee = 8;
     string user_id = 9;
+    string refund_trade_no = 10;
+    bool is_success = 11;
 }
 message AfterSaleImage{
     string url = 1;
