@@ -553,12 +553,12 @@ func GetOrderStaffWork(order *pb.Order) (staffs []*pb.OrderStaff, err error) {
 func GetAfterSaleDetail(order *pb.Order) (*pb.AfterSaleModel, error) {
 	log.Debug(order)
 	if order.AfterSaleStatus != 0 {
-		query := "select o.refund_fee ,o.after_sale_reason,o.after_sale_images from orders o where o.id=$1"
-		log.Debugf("select o.refund_fee ,o.after_sale_reason,o.after_sale_images from orders where o.id='%s'", order.Id)
+		query := "select o.refund_fee ,o.after_sale_reason,o.after_sale_images,o.apply_refund_fee from orders o where o.id=$1"
+		log.Debugf("select o.refund_fee ,o.after_sale_reason,o.after_sale_images,o.apply_refund_fee from orders where o.id='%s'", order.Id)
 		var images []*pb.AfterSaleImage
 		var imageStr string
 		afterSaleModdel := &pb.AfterSaleModel{}
-		err := DB.QueryRow(query, order.Id).Scan(&afterSaleModdel.RefundFee, &afterSaleModdel.Reason, &imageStr)
+		err := DB.QueryRow(query, order.Id).Scan(&afterSaleModdel.RefundFee, &afterSaleModdel.Reason, &imageStr, &afterSaleModdel.ApplyRefundFee)
 		if err != nil {
 			log.Debug(err)
 			misc.LogErr(err)
@@ -688,24 +688,26 @@ func CloseOrder(order *pb.Order) error {
 //处理售后订单
 func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	//修改状态，退款金额
+	log.Debugf("============sssss================")
+	log.Debugf("===%+v", order)
+	log.Debugf("============================")
 	query := "update orders set update_at=now()"
-	var args []interface{}
+
 	var condition string
-	args = append(args, order.RefundFee)
+
 	//区分退款金额
 
 	if order.RefundFee == 0 {
-		condition += fmt.Sprintf(",refund_fee=$%d,after_sale_status=4", len(args))
+		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=4", order.RefundFee)
 	} else {
-		condition += fmt.Sprintf(",refund_fee=$%d,after_sale_status=2", len(args))
+		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=2", order.RefundFee)
 	}
-	args = append(args, order.AfterSaleStaffId)
-	condition += fmt.Sprintf(",after_sale_staff_id=$%d", len(args))
 
+	condition += fmt.Sprintf(",after_sale_staff_id='%s'", order.AfterSaleStaffId)
 	condition += fmt.Sprintf(" where id='%s' returning after_sale_status", order.Id)
 	query += condition
-	log.Debugf(query+" args : ", args...)
-	err := tx.QueryRow(query, args...).Scan(&order.AfterSaleStatus)
+	log.Debugf(query)
+	err := tx.QueryRow(query).Scan(&order.AfterSaleStatus)
 	if err != nil {
 		log.Error(err)
 		misc.LogErr(err)
@@ -740,7 +742,7 @@ func UserCenterNecessaryOrderCount(model *pb.UserCenterOrderCount) error {
 }
 
 func AfterSaleResultOperation(afterSaleModel *pb.AfterSaleModel) error {
-	query := "update orders set after_sale_status=%d,after_sale_trad_no=%s,refund_fee=%d where trade_no='%s' returning id"
+	query := "update orders set after_sale_status=%d,after_sale_trad_no=%s,refund_fee=%d,after_sale_end_at=now() where trade_no='%s' returning id"
 	if afterSaleModel.IsSuccess {
 		query = fmt.Sprintf(query, 4, afterSaleModel.RefundTradeNo, afterSaleModel.RefundFee, afterSaleModel.TradeNo)
 	} else {
