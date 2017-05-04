@@ -51,6 +51,8 @@ func (s *PaymentService) Refund(ctx context.Context, req *pb.RefundReq) (*pb.Voi
 		return nil, errors.New(re.Failure_msg)
 	}
 
+	log.Debug("*******退款完成，没毛病*********")
+
 	return &pb.Void{}, nil
 }
 
