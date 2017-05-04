@@ -35,12 +35,19 @@ func (s *PaymentService) Refund(ctx context.Context, req *pb.RefundReq) (*pb.Voi
 		callback := &pb.RefundErrCallback{}
 		err = json.Unmarshal([]byte(err.Error()), callback)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return nil, err
 		}
+
+		log.Debugf("********订单已足额退款*******\n %+v", callback)
+
 		return nil, errors.New(callback.Message)
 	}
 	if !re.Succeed {
 		// 退款失败，可能原因为商户平台余额不足
+
+		log.Debugf("*********商户平台余额不足***********\n%+v", re)
+
 		return nil, errors.New(re.Failure_msg)
 	}
 
