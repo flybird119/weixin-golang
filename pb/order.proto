@@ -78,6 +78,7 @@ message Order{
     int64 distribute_at = 39;
     string distribute_staff_id = 40;
     string seller_id = 41;
+    int64 apply_refund_fee = 42;
 
 }
 
@@ -148,6 +149,7 @@ message AfterSaleModel{
     string user_id = 9;
     string refund_trade_no = 10;
     bool is_success = 11;
+    int64 apply_refund_fee = 12;
 }
 message AfterSaleImage{
     string url = 1;
