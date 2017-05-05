@@ -2,6 +2,19 @@ syntax = "proto3";
 
 package pb;
 
+service StatisticService {
+    //获取今日销售额
+    rpc StatisticToday (GoodsSalesStatisticModel) returns (StatisticTodayResp);
+    //总计统计
+    rpc StatisticTotal (GoodsSalesStatisticModel) returns (StatisticTotalResp);
+    //统计详情列表
+    rpc StatisticDaliy (GoodsSalesStatisticModel) returns (StatisticDaliyResp);
+    //月统计
+    rpc StatisticMonth (GoodsSalesStatisticModel) returns (StatisticMonthResp);
+
+
+}
+
 //商品销量统计model
 message GoodsSalesStatisticModel{
     string id = 1;
@@ -22,6 +35,8 @@ message GoodsSalesStatisticModel{
     int64 offline_order_num = 18;
     int64 create_at = 19;
     string statistic_at = 20;
+    int64 start_at = 21;
+    int64 end_at = 22;
 }
 
 //图书销量统计model
@@ -34,4 +49,50 @@ message BookSalesStatisticModel{
     int64 offline_new_book_sales_num = 6;
     int64 offline_old_book_sales_num = 7;
     int64 create_at = 8;
+}
+//日统计list
+message StatisticDaliyResp{
+    string code = 1;
+    string message = 2;
+    repeated GoodsSalesStatisticModel data = 3;
+}
+//总统计响应
+message StatisticTotalResp{
+    string code = 1;
+    string message = 2;
+    StatisticTotalData data = 3;
+}
+//总统计响应data封装
+message StatisticTotalData{
+    StatisticTotalModel yesterday_sales = 1;
+    StatisticTotalModel total_sales = 2;
+}
+//总统计model
+message StatisticTotalModel{
+    int64 online_total_sales = 1;
+    int64 offline_total_sales = 2;
+    int64 newbook_total_sales = 3;
+    int64 oldbook_total_sales = 4;
+}
+
+//今日销售额统计
+message StatisticTodayResp{
+    string code = 1;
+    string message = 2;
+    StatisticTotalModel data =3;
+}
+//月销售额统计响应体
+message StatisticMonthResp{
+    string code = 1;
+    string message = 2;
+    repeated StatisticMonthModel data = 3;
+
+}
+//月销售额统计model
+message StatisticMonthModel{
+    int64 newbook_sales = 1;
+    int64 oldbook_sales = 2;
+    int64 online_sales = 3;
+    int64 offline_sales = 4;
+    string month = 5;
 }

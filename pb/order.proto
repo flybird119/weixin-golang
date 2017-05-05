@@ -29,8 +29,6 @@ service OrderService {
     rpc HandleAfterSaleOrder (AfterSaleModel) returns (NormalResp);
     //售后订单处理结果
     rpc AfterSaleOrderHandledResult (AfterSaleModel) returns (Void);
-    //商家订单每日销售统计
-    rpc StoreDailyGoodsSalesStatistic (Store) returns(Void);
     //用户个人中心-订单状态统计
     rpc UserCenterNecessaryOrderCount (UserCenterOrderCount) returns (UserCenterOrderCount);
 }

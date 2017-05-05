@@ -352,10 +352,6 @@ func (s *OrderServiceServer) AfterSaleOrderHandledResult(ctx context.Context, in
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	log.Debugf("============================")
-	log.Debugf("===%+v", order)
-	log.Debugf("============================")
-
 	if order.AfterSaleStatus <= 0 {
 		return &pb.Void{}, nil
 	}

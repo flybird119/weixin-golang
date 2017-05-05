@@ -688,9 +688,6 @@ func CloseOrder(order *pb.Order) error {
 //处理售后订单
 func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	//修改状态，退款金额
-	log.Debugf("============sssss================")
-	log.Debugf("===%+v", order)
-	log.Debugf("============================")
 	query := "update orders set update_at=now()"
 
 	var condition string

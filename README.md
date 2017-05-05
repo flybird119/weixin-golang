@@ -22,3 +22,4 @@
 |8865|payment|支付模块|
 |8866|address|用户地址管理|
 |8867|address|线下零售模块|
+|8868|statistic|统计模块|
