@@ -33,7 +33,7 @@ func TestRefund(t *testing.T) {
 
 		Description: "12345",
 	}
-	re, err := refund.New("ch_nvL488mbLezHHqHynTzDOGaP", params) //ch_id 是已付款的订单号
+	re, err := refund.New("ch_54CuLKiX9yzPGyzjDSPWzzHS", params) //ch_id 是已付款的订单号
 
 	if err != nil {
 		log.Error(err)

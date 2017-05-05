@@ -27,6 +27,11 @@ func (s *PaymentService) Refund(ctx context.Context, req *pb.RefundReq) (*pb.Voi
 		Description: req.Reason,
 	}
 	re, err := refund.New(req.TradeNo, params)
+
+	log.Debug("---------------------------------------")
+	log.JSONIndent(re)
+	log.Debug("---------------------------------------")
+
 	if err != nil {
 		// 生成退款请求时出错，可能为该笔订单已经足额退款
 		log.Error(err)
@@ -35,15 +40,22 @@ func (s *PaymentService) Refund(ctx context.Context, req *pb.RefundReq) (*pb.Voi
 		callback := &pb.RefundErrCallback{}
 		err = json.Unmarshal([]byte(err.Error()), callback)
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
+			return nil, err
 		}
+
+		log.Debugf("********订单已足额退款*******\n %+v", callback)
+
 		return nil, errors.New(callback.Message)
 	}
-	if !re.Succeed {
+
+	// 若有错误信息，则返回错误信息
+	if re.Failure_msg != "" {
 		// 退款失败，可能原因为商户平台余额不足
 		return nil, errors.New(re.Failure_msg)
 	}
 
+	// 退款成功
 	return &pb.Void{}, nil
 }
 
