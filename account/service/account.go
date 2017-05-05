@@ -195,3 +195,16 @@ func (s *AccountServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.
 	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
+
+//处理售后订单
+func (s *AccountServiceServer) FindAccountItems(ctx context.Context, in *pb.FindAccountitemReq) (*pb.FindAccountitemResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "FindAccountItems", "%#v", in))
+	respData, err := db.FindAccountItems(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.FindAccountitemResp{Code: "00000", Message: "ok", Data: respData.Data, TotalCount: respData.TotalCount, TotalIncome: respData.TotalIncome, TotalExpense: respData.TotalExpense}, nil
+}

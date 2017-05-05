@@ -15,9 +15,11 @@ service AccountService {
     rpc OrderCompleteAccountHandle (Order) returns (Void);
     //handle after sale order
     rpc HandleAfterSaleOrder (Order) returns (NormalResp);
-    //每日统计销售情况 1 每日统计销售 2 每日统计销量
-}
+    //查找账户项列表
+    rpc FindAccountItems (FindAccountitemReq) returns (FindAccountitemResp);
 
+}
+//账户
 message Account{
     string id = 1;
     int64 type = 2;
@@ -30,50 +32,7 @@ message Account{
     int64 create_at = 9;
     int64 update_at = 10;
 }
-
-message BooksSalesStatistic{
-    string  id = 1;
-    string  store_id = 2;
-    string  goods_id = 3;
-    int64   online_new_book_sales_num = 4;
-    int64   online_old_book_sales_num = 5;
-    int64   offline_new_book_sales_num = 6;
-    int64   offline_old_book_sales_num = 7;
-    int64   new_book_remove_num = 8;
-    int64   new_book_upload_num = 9;
-    int64   old_book_remove_num = 10;
-    int64   old_book_upload_num = 11;
-    int64   create_at = 12;
-    int64   statistic_day = 13;
-    int64   statistic_month = 14;
-    int64   statistic_year = 15;
-}
-message GoodsSalesStatistic{
-    string  id = 1;
-    string  store_id = 2;
-    string  school_id = 3;
-    int64   alipay_order_num = 4;
-    int64   alipay_order_fee = 5;
-    int64   wechat_order_num = 6;
-    int64   wechat_order_fee = 7;
-    int64   online_new_book_sales_fee = 8;
-    int64   online_old_book_sales_fee = 9;
-    int64   online_new_book_sales_num = 10;
-    int64   online_old_book_sales_num = 11;
-    int64   send_order_num = 12;
-    int64   after_sale_num = 13;
-    int64   after_sale_handled_num = 14;
-    int64   after_sale_handled_fee = 15;
-    int64   offline_new_book_sales_fee = 16;
-    int64   offline_old_book_sales_fee = 17;
-    int64   offline_new_book_sales_num = 18;
-    int64   offline_old_book_sales_num = 19;
-    int64   create_at = 20;
-    int64   statistic_day = 21;
-    int64   statistic_month = 22;
-    int64   statistic_year = 23;
-}
-
+//账户项
 message AccountItem{
     string id = 1;
     int64 user_type = 2;
@@ -84,6 +43,23 @@ message AccountItem{
     int64   item_fee = 7;
     int64   account_balance = 8;
     int64   create_at = 9;
-    int64   create_day = 10;
-    int64   update_at = 11;
+    int64   update_at = 10;
+}
+//查找账户项列表提交model
+message FindAccountitemReq{
+
+    int64 type = 1;
+    int64 start_at = 2;
+    int64 end_at = 3;
+    string store_id = 4;
+
+}
+//查找账户项列表提交model
+message FindAccountitemResp{
+    string code = 1;
+    string message = 2;
+    repeated AccountItem data = 3;
+    int64 total_income = 4;
+    int64 total_expense = 5;
+    int64 total_count = 6;
 }

@@ -150,6 +150,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 	//订单成功——>修改订单状态 +4
 	in.ConfirmAt = 1
 	in.OrderStatus = 4
+	in.CompleteAt = 1
 	err = orderDB.UpdateOrder(in)
 	if err != nil {
 		log.Error(err)

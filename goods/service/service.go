@@ -46,12 +46,12 @@ func (s *GoodsServiceServer) UpdateGoods(ctx context.Context, in *pb.Goods) (*pb
 func (s *GoodsServiceServer) SearchGoods(ctx context.Context, in *pb.Goods) (*pb.GoodsDetailResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "SearchGoods", "%#v", in))
-	res, err := db.SearchGoods(in)
+	res, err, totalCount := db.SearchGoods(in)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	return &pb.GoodsDetailResp{Code: "00000", Message: "ok", Data: res}, nil
+	return &pb.GoodsDetailResp{Code: "00000", Message: "ok", Data: res, TotalCount: totalCount}, nil
 }
 
 //GetGoodsByIdOrIsbn 获取商品基本信息

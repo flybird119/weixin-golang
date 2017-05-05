@@ -308,9 +308,6 @@ func GetOneDaySales(model *pb.GoodsSalesStatisticModel) error {
 			log.Error(err)
 			return err
 		}
-		log.Debug("=========================")
-		log.Debugf("%+v,%+v", price, bookType)
-		log.Debug("=========================")
 		if bookType == 0 {
 			if price.Valid {
 				newbookSales += price.Int64
@@ -325,9 +322,6 @@ func GetOneDaySales(model *pb.GoodsSalesStatisticModel) error {
 	}
 	model.OfflineNewBookSalesFee = newbookSales
 	model.OfflineOldBookSalesFee = oldbookSales
-	log.Debug("=========================")
-	log.Debugf("%+v", model)
-	log.Debug("=========================")
 	return nil
 }
 
@@ -383,7 +377,7 @@ func HistoryDaliySales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.Go
 	if model.SchoolId != "" {
 		condition += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
 	}
-	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD') between '%s' and '%s' group by d order by d desc", model.StoreId, startAt, endAt)
+	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD') between '%s' and '%s' group by d order by d asc", model.StoreId, startAt, endAt)
 
 	query += condition
 
@@ -476,7 +470,7 @@ func HistoryMonthSales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.St
 	if model.SchoolId != "" {
 		condition += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
 	}
-	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM') between '%s' and '%s' group by d  order by d desc", model.StoreId, startAt, endAt)
+	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM') between '%s' and '%s' group by d  order by d asc", model.StoreId, startAt, endAt)
 
 	query += condition
 	log.Debug(query)

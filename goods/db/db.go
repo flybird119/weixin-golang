@@ -180,10 +180,11 @@ func UpdateGoods(goods *pb.Goods) error {
 }
 
 //SearchGoods 搜索图书 isbn SearchAmount
-func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
+func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCount int64) {
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true "
 	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling,g.has_new_book,g.has_old_book"
 	query = fmt.Sprintf(query, param)
+	queryCount := "select count(*) from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true"
 	//动态拼接参数
 	var args []interface{}
 	var condition string
@@ -263,18 +264,41 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 	if goods.Title != "" {
 		args = append(args, misc.FazzyQuery(goods.Title))
 		condition += fmt.Sprintf(" and b.title like $%d", len(args))
+
+		queryCount += condition
+		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
+		if err != nil {
+			log.Error(err)
+			return nil, err, totalCount
+		}
+		if totalCount == 0 {
+
+			return
+		}
+
 		args = append(args, goods.Title)
 		condition += fmt.Sprintf(" order by  title <-> $%d ,g.update_at desc", len(args))
 	} else {
+
+		queryCount += condition
+		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
+		if err != nil {
+			log.Error(err)
+			return nil, err, totalCount
+		}
+		if totalCount == 0 {
+
+			return
+		}
 		condition += " order by g.update_at desc"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	}
 	query += condition
 	log.Debugf(query+"%+v", args)
 	rows, err := DB.Query(query, args...)
-
 	if err != nil {
-		return nil, err
+		log.Error(err)
+		return nil, err, totalCount
 	}
 	defer rows.Close()
 
@@ -290,7 +314,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		//遍历数据
 		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &searchGoods.HasNewBook, &searchGoods.HasOldBook)
 		if err != nil {
-			return nil, err
+			return nil, err, totalCount
 		}
 
 		if goods.SearchType == -100 {
@@ -323,7 +347,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
 	}
 
-	return r, nil
+	return r, nil, totalCount
 }
 
 //SearchGoods 搜索图书 isbn 用于用户端搜索
