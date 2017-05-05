@@ -251,17 +251,15 @@ func AddGoodsSalesStatistic(model *pb.GoodsSalesStatisticModel, time time.Time) 
 func GetOneDaySales(model *pb.GoodsSalesStatisticModel) error {
 	var rows *sql.Rows
 	var err error
-
+	var query string
 	if model.SchoolId != "" {
-		query := "select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::integer), 'YYYY-MM-DD')=$1 and school_id=$2 and store_id=$3  group by pay_channel"
-		log.Debugf("select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::integer), 'YYYY-MM-DD')='%s' and school_id='%s' and store_id=$3  group by pay_channel", model.StatisticAt, model.SchoolId, model.StoreId)
-		rows, err = DB.Query(query, model.StatisticAt, model.SchoolId, model.StoreId)
+		query = "select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::integer), 'YYYY-MM-DD')='%s' and school_id='%s' and store_id='%s'  group by pay_channel"
+		query = fmt.Sprintf(query, model.StatisticAt, model.SchoolId, model.StoreId)
 	} else {
-		query := "select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::integer), 'YYYY-MM-DD')=$1 and store_id=$2   group by pay_channel"
-		log.Debugf("select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::integer), 'YYYY-MM-DD')='%s' and store_id='%s'   group by pay_channel", model.StatisticAt, model.StoreId)
-		rows, err = DB.Query(query, model.StatisticAt, model.StoreId)
+		query = "select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::integer), 'YYYY-MM-DD')='%s' and store_id='%s' group by pay_channel"
+		query = fmt.Sprintf(query, model.StatisticAt, model.StoreId)
 	}
-
+	rows, err = DB.Query(query)
 	if err != nil && err != sql.ErrNoRows {
 		log.Error(err)
 		return err
@@ -290,14 +288,13 @@ func GetOneDaySales(model *pb.GoodsSalesStatisticModel) error {
 
 	//统计新书旧书销售额
 	if model.SchoolId != "" {
-		query := "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')=$1 and r.school_id=$2 and r.store_id=$3 group by ri.type "
-		log.Debugf("select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.school_id='%s' and r.store_id='%s'  group by ri.type ", model.StatisticAt, model.SchoolId, model.StoreId)
-		rows, err = DB.Query(query, model.StatisticAt, model.SchoolId, model.StoreId)
+		query = "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.school_id='%s' and r.store_id='%s' group by ri.type "
+		query = fmt.Sprintf(query, model.StatisticAt, model.SchoolId, model.StoreId)
 	} else {
-		query := "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')=$1 and r.school_id=$2  group by ri.type "
-		log.Debugf("select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.store_id='%s'  group by ri.type ", model.StatisticAt, model.StoreId)
-		rows, err = DB.Query(query, model.StatisticAt, model.StoreId)
+		query = "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.store_id='%s' group by ri.type "
+		query = fmt.Sprintf(query, model.StatisticAt, model.StoreId)
 	}
+	rows, err = DB.Query(query)
 	if err != nil && err != sql.ErrNoRows {
 		log.Error(err)
 		return err
@@ -311,24 +308,26 @@ func GetOneDaySales(model *pb.GoodsSalesStatisticModel) error {
 			log.Error(err)
 			return err
 		}
+		log.Debug("=========================")
+		log.Debugf("%+v,%+v", price, bookType)
+		log.Debug("=========================")
 		if bookType == 0 {
 			if price.Valid {
 				newbookSales += price.Int64
-			} else {
-				newbookSales += 0
 			}
 
 		} else {
 			if price.Valid {
 				oldbookSales += price.Int64
-			} else {
-				oldbookSales += 0
 			}
 		}
 
 	}
 	model.OfflineNewBookSalesFee = newbookSales
 	model.OfflineOldBookSalesFee = oldbookSales
+	log.Debug("=========================")
+	log.Debugf("%+v", model)
+	log.Debug("=========================")
 	return nil
 }
 
@@ -339,7 +338,7 @@ func HistoryTotalSales(model *pb.GoodsSalesStatisticModel) (totalModel *pb.Stati
 		query = fmt.Sprintf(query+" and school_id='%s'", model.SchoolId)
 	}
 	query = fmt.Sprintf(query+" and store_id='%s'", model.StoreId)
-	var online_total_sales, offline_total_sales, newbook_total_sales, oldbook_total_sales sql.NullInt64
+	var online_total_sales, offline_total_sales, newbook_total_sales, oldbook_total_sales sql.NullFloat64
 	log.Debugf(query)
 	err = DB.QueryRow(query).Scan(&online_total_sales, &offline_total_sales, &newbook_total_sales, &oldbook_total_sales)
 
@@ -347,18 +346,18 @@ func HistoryTotalSales(model *pb.GoodsSalesStatisticModel) (totalModel *pb.Stati
 		log.Error(err)
 		return nil, err
 	}
-
+	totalModel = &pb.StatisticTotalModel{}
 	if online_total_sales.Valid {
-		totalModel.OnlineTotalSales = online_total_sales.Int64
+		totalModel.OnlineTotalSales = int64(online_total_sales.Float64)
 	}
 	if offline_total_sales.Valid {
-		totalModel.OfflineTotalSales = offline_total_sales.Int64
+		totalModel.OfflineTotalSales = int64(offline_total_sales.Float64)
 	}
 	if newbook_total_sales.Valid {
-		totalModel.NewbookTotalSales = newbook_total_sales.Int64
+		totalModel.NewbookTotalSales = int64(newbook_total_sales.Float64)
 	}
 	if oldbook_total_sales.Valid {
-		totalModel.OldbookTotalSales = oldbook_total_sales.Int64
+		totalModel.OldbookTotalSales = int64(oldbook_total_sales.Float64)
 	}
 	return totalModel, nil
 }
@@ -368,8 +367,8 @@ func HistoryDaliySales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.Go
 	var startAt, endAt string
 	now := time.Now()
 	if model.StartAt == 0 || model.EndAt == 0 {
-		startAt = (now.Add(-1 * 24 * time.Hour)).Format("2006-01-02")
-		endAt = (now.Add(-15 * 24 * time.Hour)).Format("2006-01-02")
+		endAt = (now.Add(-1 * 24 * time.Hour)).Format("2006-01-02")
+		startAt = (now.Add(-15 * 24 * time.Hour)).Format("2006-01-02")
 
 	} else {
 		startAt = time.Unix(model.StartAt, 0).Format("2006-01-02")
@@ -378,13 +377,13 @@ func HistoryDaliySales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.Go
 	}
 	log.Debugf("start_at:%s and end_at:%s", startAt, endAt)
 
-	query := "select alipay_order_num,alipay_order_fee,wechat_order_num,wechat_order_fee,online_new_book_sales_fee,online_old_book_sales_fee,send_order_num,after_sale_num,after_sale_handled_num,after_sale_handled_fee,offline_new_book_sales_fee,offline_old_book_sales_fee,offline_order_num,to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD') from statistic_goods_sales where 1=1"
+	query := "select sum(alipay_order_num),sum(alipay_order_fee),sum(wechat_order_num),sum(wechat_order_fee),sum(online_new_book_sales_fee),sum(online_old_book_sales_fee),sum(send_order_num),sum(after_sale_num),sum(after_sale_handled_num),sum(after_sale_handled_fee),sum(offline_new_book_sales_fee),sum(offline_old_book_sales_fee),sum(offline_order_num),to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD') as d from statistic_goods_sales where 1=1"
 	var condition string
 	//拼接字符串
 	if model.SchoolId != "" {
 		condition += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
 	}
-	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD') between '%s' and '%s'  order by statistic_at desc", model.StoreId, startAt, endAt)
+	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD') between '%s' and '%s' group by d order by d desc", model.StoreId, startAt, endAt)
 
 	query += condition
 
@@ -403,10 +402,55 @@ func HistoryDaliySales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.Go
 		find := &pb.GoodsSalesStatisticModel{}
 		salesModels = append(salesModels, find)
 		//alipay_order_num,alipay_order_fee,wechat_order_num,wechat_order_fee,online_new_book_sales_fee,online_old_book_sales_fee,send_order_num,after_sale_num,after_sale_handled_num,after_sale_handled_fee,offline_new_book_sales_fee,offline_old_book_sales_fee,offline_order_num,to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM-DD')
-		err = rows.Scan(&find.AlipayOrderNum, &find.AlipayOrderFee, &find.WechatOrderNum, &find.WechatOrderFee, &find.OnlineNewBookSalesFee, &find.OnlineOldBookSalesFee, &find.SendOrderNum, &find.AfterSaleNum, &find.AfterSaleHandledNum, &find.AfterSaleHandledFee, &find.OfflineNewBookSalesFee, &find.OfflineOldBookSalesFee, &find.OfflineOrderNum, &find.StatisticAt)
+		var alipayOrderNum, alipayOrderFee, wechatOrderNum, wechatOrderFee, onlineNewBookSalesFee, onlineOldBookSalesFee, sendOrderNum, afterSaleNum, afterSaleHandledNum, afterSaleHandledFee, offlineNewBookSalesFee, offlineOldBookSalesFee, offlineOrderNum sql.NullFloat64
+		var statisticAt sql.NullString
+		err = rows.Scan(&alipayOrderNum, &alipayOrderFee, &wechatOrderNum, &wechatOrderFee, &onlineNewBookSalesFee, &onlineOldBookSalesFee, &sendOrderNum, &afterSaleNum, &afterSaleHandledNum, &afterSaleHandledFee, &offlineNewBookSalesFee, &offlineOldBookSalesFee, &offlineOrderNum, &statisticAt)
 		if err != nil {
 			return
 		}
+		if alipayOrderNum.Valid {
+			find.AlipayOrderNum = int64(alipayOrderNum.Float64)
+		}
+		if alipayOrderFee.Valid {
+			find.AlipayOrderFee = int64(alipayOrderFee.Float64)
+		}
+		if wechatOrderNum.Valid {
+			find.WechatOrderNum = int64(wechatOrderNum.Float64)
+		}
+		if wechatOrderFee.Valid {
+			find.WechatOrderFee = int64(wechatOrderFee.Float64)
+		}
+		if onlineNewBookSalesFee.Valid {
+			find.OnlineNewBookSalesFee = int64(onlineNewBookSalesFee.Float64)
+		}
+		if onlineOldBookSalesFee.Valid {
+			find.OnlineOldBookSalesFee = int64(onlineOldBookSalesFee.Float64)
+		}
+		if sendOrderNum.Valid {
+			find.SendOrderNum = int64(sendOrderNum.Float64)
+		}
+		if afterSaleNum.Valid {
+			find.AfterSaleNum = int64(afterSaleNum.Float64)
+		}
+		if afterSaleHandledNum.Valid {
+			find.AfterSaleHandledNum = int64(afterSaleHandledNum.Float64)
+		}
+		if afterSaleHandledFee.Valid {
+			find.AfterSaleHandledFee = int64(afterSaleHandledFee.Float64)
+		}
+		if offlineNewBookSalesFee.Valid {
+			find.OfflineNewBookSalesFee = int64(offlineNewBookSalesFee.Float64)
+		}
+		if offlineOldBookSalesFee.Valid {
+			find.OfflineOldBookSalesFee = int64(offlineOldBookSalesFee.Float64)
+		}
+		if offlineOrderNum.Valid {
+			find.OfflineOrderNum = int64(offlineOrderNum.Float64)
+		}
+		if statisticAt.Valid {
+			find.StatisticAt = statisticAt.String
+		}
+
 	}
 	return
 }
@@ -416,8 +460,8 @@ func HistoryMonthSales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.St
 	var startAt, endAt string
 	now := time.Now()
 	if model.StartAt == 0 || model.EndAt == 0 {
-		startAt = (now.AddDate(0, -1, 0)).Format("2006-01")
-		endAt = (now.AddDate(0, -7, 0)).Format("2006-01")
+		endAt = now.Format("2006-01")
+		startAt = (now.AddDate(0, -6, 0)).Format("2006-01")
 
 	} else {
 		startAt = time.Unix(model.StartAt, 0).Format("2006-01")
@@ -426,13 +470,13 @@ func HistoryMonthSales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.St
 	}
 	log.Debugf("start_at:%s and end_at:%s", startAt, endAt)
 
-	query := "select sum(online_new_book_sales_fee+offline_new_book_sales_fee),sum(online_old_book_sales_fee+offline_old_book_sales_fee),sum(alipay_order_fee+wechat_order_fee),sum(offline_new_book_sales_fee+offline_old_book_sales_fee),to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM') from statistic_goods_sales where 1=1"
+	query := "select sum(online_new_book_sales_fee+offline_new_book_sales_fee),sum(online_old_book_sales_fee+offline_old_book_sales_fee),sum(alipay_order_fee+wechat_order_fee),sum(offline_new_book_sales_fee+offline_old_book_sales_fee),to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM') as d from statistic_goods_sales where 1=1"
 	var condition string
 	//拼接字符串
 	if model.SchoolId != "" {
 		condition += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
 	}
-	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM') between '%s' and '%s' group by to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM')  order by statistic_at desc", model.StoreId, startAt, endAt)
+	condition += fmt.Sprintf(" and store_id='%s' and to_char(to_timestamp(extract(epoch from statistic_at )::integer), 'YYYY-MM') between '%s' and '%s' group by d  order by d desc", model.StoreId, startAt, endAt)
 
 	query += condition
 	log.Debug(query)

@@ -30,6 +30,9 @@ func (s *StatisticServiceServer) StatisticToday(ctx context.Context, in *pb.Good
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	//
+	log.Debug("=========================")
+	log.Debugf("%+v", in)
+	log.Debug("=========================")
 	todayModel := &pb.StatisticTotalModel{}
 	todayModel.OnlineTotalSales = in.AlipayOrderFee + in.WechatOrderFee
 	todayModel.OfflineTotalSales = in.OfflineNewBookSalesFee + in.OfflineOldBookSalesFee
