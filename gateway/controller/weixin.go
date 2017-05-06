@@ -17,6 +17,11 @@ import (
 	"github.com/wothing/log"
 )
 
+func MsgPush(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("The request body is : %s", r.Context().Value("body"))
+	misc.RespondMessage(w, r, "success")
+}
+
 func GetOfficeAccountInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
 	if c := token.Get(r); c != nil {
