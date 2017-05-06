@@ -17,7 +17,8 @@ service AccountService {
     rpc HandleAfterSaleOrder (Order) returns (NormalResp);
     //查找账户项列表
     rpc FindAccountItems (FindAccountitemReq) returns (FindAccountitemResp);
-
+    //账户余额统计
+    rpc AccountStatistic (Account) returns (AccountStatisticResp);
 }
 //账户
 message Account{
@@ -53,6 +54,17 @@ message FindAccountitemReq{
     int64 end_at = 3;
     string store_id = 4;
 
+}
+//账户统计响应
+message AccountStatisticResp{
+    string code = 1;
+    string message = 2;
+    AccountStatisticModel data = 3;
+}
+//账户余额统计model
+message AccountStatisticModel{
+    int64 unsettled_balance = 1;
+    int64 balance = 2;
 }
 //查找账户项列表提交model
 message FindAccountitemResp{
