@@ -118,6 +118,7 @@ message GoodsDetailResp{
     string code = 1;
     string message = 2;
     repeated GoodsSearchResult data = 3;
+    int64 totalCount = 4;
 }
 message GoodsSearchResult{
     Book book = 1;

@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
@@ -156,4 +157,92 @@ func AddAccountItemWithTx(tx *sql.Tx, item *pb.AccountItem) error {
 		return err
 	}
 	return nil
+}
+
+//查找账户项列表
+func FindAccountItems(submitModel *pb.FindAccountitemReq) (respModel pb.FindAccountitemResp, err error) {
+
+	//>1	商家 待结算-交易完成
+	//>2 商家 待结算-手续费
+	//>4 商家 待结算-交易收入
+	//>17 商家 可提现-交易完成
+	//>18 商家 可提现-充值
+	//>20 商家 可提现-体现
+	//>24 商家 可提现-售后
+	//>80 商家 所有待结算分类
+	//>81 商家 所有可提现分类
+	query := "select store_id,order_id,remark,item_type,item_fee,account_balance,extract(epoch from create_at)::integer from account_item where 1=1"
+	queryCount := "select count(*) from account_item where 1=1"
+	querySumPlus := "select sum(item_fee) from account_item where item_fee>0"
+	querySumReduce := "select sum(item_fee) from account_item where item_fee<0"
+
+	var condition string
+	if submitModel.StartAt != 0 && submitModel.EndAt != 0 {
+		condition += fmt.Sprintf(" and extract(epoch from create_at)::integer between %d and %d", submitModel.StartAt, submitModel.EndAt)
+	}
+	if submitModel.Type == 80 {
+		condition += fmt.Sprintf(" and item_type in (1,2,4)")
+	} else if submitModel.Type == 81 {
+		condition += fmt.Sprintf(" and item_type in (17,18,20,24)")
+	} else {
+		condition += fmt.Sprintf(" and item_type=%d", submitModel.Type)
+	}
+
+	condition += fmt.Sprintf(" and store_id='%s'", submitModel.StoreId)
+	//计算总个数
+	queryCount += condition
+	log.Debug(queryCount)
+	err = DB.QueryRow(queryCount).Scan(&respModel.TotalCount)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if respModel.TotalCount == 0 {
+		return
+	}
+	var sumplus, sumreduce sql.NullInt64
+	//计算当前条件总收入
+	querySumPlus += condition
+	log.Debug(querySumPlus)
+	err = DB.QueryRow(querySumPlus).Scan(&sumplus)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	//计算当前条件总支出
+	querySumReduce += condition
+	log.Debug(querySumReduce)
+	err = DB.QueryRow(querySumReduce).Scan(&sumreduce)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if sumplus.Valid {
+		respModel.TotalIncome = sumplus.Int64
+	}
+	if sumreduce.Valid {
+		respModel.TotalExpense = sumreduce.Int64
+	}
+	//遍历
+	condition += " order by create_at desc"
+	query += condition
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		item := &pb.AccountItem{}
+		respModel.Data = append(respModel.Data, item)
+		//store_id,order_id,remark,item_type,item_fee,account_balance,extract(epoch from create_at)::integer from account_item
+		err = rows.Scan(&item.StoreId, &item.OrderId, &item.Remark, &item.ItemType, &item.ItemFee, &item.AccountBalance, &item.CreateAt)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+
+	return
 }

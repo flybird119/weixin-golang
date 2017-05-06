@@ -97,5 +97,9 @@ func SetRouterV1() *m.Router {
 	v1.Register("/statistic/get_total_sales", m.Wrap(c.StatisticTotal))
 	v1.Register("/statistic/get_daliy_sales", m.Wrap(c.StatisticDaliy))
 	v1.Register("/statistic/get_month_sales", m.Wrap(c.StatisticMonth))
+
+	//account
+	v1.Register("/account/find_list", m.Wrap(c.FindAccountItems))
+
 	return v1
 }
