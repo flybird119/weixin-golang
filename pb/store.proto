@@ -16,9 +16,33 @@ service StoreService {
   rpc CheckCode (RegisterModel) returns (NormalResp);
   rpc TransferStore (TransferStoreReq) returns (AddStoreResp);
   rpc DelRealStore (RealStore) returns (NormalResp);
+  //获取提现账号管理的手机验证码
+  rpc GetCardOperSmsCode (SmsCardSubmitModel) returns (NormalResp);
+  //保存提现账号
+  rpc SaveStoreWithdrawCard (StoreWithdrawCard) returns (StoreWithdrawCardOpeResp);
+  //更新提现账号
+  rpc UpdateStoreWithdrawCard (StoreWithdrawCard) returns (StoreWithdrawCardOpeResp);
+  //获取提现账号信息
+  rpc GetWithdrawCardInfoByStore (StoreWithdrawCard) returns (StoreWithdrawCardOpeResp);
 
 }
 
+//提现卡model
+message StoreWithdrawCard{
+    string id = 1;
+    string store_id = 2;
+    int64 type = 3;
+    string card_no = 4;
+    string card_name = 5;
+    string username = 6;
+    string code = 7;
+    string mobile = 8;
+}
+message StoreWithdrawCardOpeResp{
+    string code = 1;
+    string message = 2;
+    StoreWithdrawCard data = 3;
+}
 //增加云店铺 resp model
 message AddStoreResp{
   string code = 1;
@@ -26,13 +50,18 @@ message AddStoreResp{
   Store data = 3;
   string token = 4;
 }
+//获取提现账号管理的手机验证码
+message SmsCardSubmitModel{
+    string mobile = 1;
+    string store_id = 2;
+}
 
+//更替店铺
 message TransferStoreReq{
     string mobile = 1;
     string message_code = 2 ;
     Store store = 3;
 }
-
 
 //增加实体店 resp model
 message AddRealStoreResp{
@@ -41,7 +70,7 @@ message AddRealStoreResp{
     string message = 2;
     RealStore data = 3;
 }
-
+//
 message RealStoresResp{
     string code = 1;
     string message = 2;

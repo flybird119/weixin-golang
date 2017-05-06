@@ -21,6 +21,7 @@ func AddCircular(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_circular", "AddCircular", req, "image")
@@ -37,6 +38,7 @@ func DelCircular(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_circular", "DelCircular", req, "id")
@@ -53,6 +55,7 @@ func UpdateCircular(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_circular", "UpdateCircular", req, "id")
@@ -69,6 +72,7 @@ func CircularList(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_circular", "CircularList", req)
@@ -85,6 +89,7 @@ func CircularInit(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_circular", "CircularInit", req)

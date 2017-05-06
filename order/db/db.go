@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"time"
 
-	sellerDB "github.com/goushuyun/weixin-golang/Seller/db"
 	. "github.com/goushuyun/weixin-golang/db"
 	goodsDB "github.com/goushuyun/weixin-golang/goods/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
 	schoolDB "github.com/goushuyun/weixin-golang/school/db"
+	sellerDB "github.com/goushuyun/weixin-golang/seller/db"
 	"github.com/wothing/log"
 )
 

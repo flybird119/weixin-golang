@@ -6,7 +6,6 @@ import (
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"
 	"github.com/goushuyun/weixin-golang/pb"
-	"github.com/wothing/log"
 )
 
 //AddGoods 增加商品
@@ -99,8 +98,6 @@ func AppSearchGoods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.Goods{StoreId: c.StoreId}
-
-	log.Debug(">>>>>>>>>>>>>>>>Call RPC to bc_goods<<<<<<<<<<<<<<<<\n")
 
 	// call RPC to handle request
 	misc.CallWithResp(w, r, "bc_goods", "AppSearchGoods", req)

@@ -24,6 +24,7 @@ func CartAdd(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_cart", "CartAdd", req, "goods_id")
@@ -43,6 +44,7 @@ func CartList(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_cart", "CartList", req)
@@ -62,6 +64,7 @@ func CartUpdate(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_cart", "CartUpdate", req)
@@ -81,6 +84,7 @@ func CartDel(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_cart", "CartDel", req)

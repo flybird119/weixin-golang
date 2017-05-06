@@ -49,7 +49,6 @@ func RefundSuccessNotify(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Debug("****************The callback obj is******************\n")
 	log.JSONIndent(p)
 
 	// 组织数据，提送退款成功消息

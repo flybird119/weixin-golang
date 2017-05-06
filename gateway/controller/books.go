@@ -26,6 +26,7 @@ func GetBookInfoByISBN(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_books", "GetBookInfoByISBN", req, "isbn")

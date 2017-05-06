@@ -224,7 +224,15 @@ func FindAccountItems(submitModel *pb.FindAccountitemReq) (respModel pb.FindAcco
 		respModel.TotalExpense = sumreduce.Int64
 	}
 	//遍历
+
 	condition += " order by create_at desc"
+	if submitModel.Page <= 0 {
+		submitModel.Page = 1
+	}
+	if submitModel.Size <= 0 {
+		submitModel.Size = 10
+	}
+	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (submitModel.Page-1)*submitModel.Size, submitModel.Size)
 	query += condition
 	log.Debug(query)
 	rows, err := DB.Query(query)
