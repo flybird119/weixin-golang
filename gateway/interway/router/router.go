@@ -12,6 +12,7 @@ func SetRouterV1() *m.Router {
 	// weixin
 	v1.Register("/weixin/get_auth_url", m.Wrap(c.GetAuthURL))
 	v1.Register("/weixin/get_api_query_auth", m.Wrap(c.GetApiQueryAuth))
+	v1.Register("/weixin/get_office_account_info", m.Wrap(c.GetOfficeAccountInfo))
 
 	// books
 	v1.Register("/books/get_book_info_by_isbn", m.Wrap(c.GetBookInfoByISBN))

@@ -13,6 +13,13 @@ service WeixinService {
     rpc WeChatJsApiTicket (WeixinReq) returns (JsApiTicketResp);
 
     rpc ExtractImageFromWeixin (ExtractImageReq) returns (ExtractImageResp);
+    rpc GetOfficeAccountInfo (WeixinReq) returns (GetOfficeAccountInfoResp);
+}
+
+message GetOfficeAccountInfoResp {
+    string code = 1;
+    string message = 2;
+    OfficialAccount data = 3;
 }
 
 message ExtractImageReq {
@@ -54,6 +61,7 @@ message OfficialAccount {
     int64 create_at = 9;
     string appid = 10;
     string refresh_token = 11;
+    string wechat_id = 12;
 }
 
 message GetWeixinInfoResp {
