@@ -100,6 +100,6 @@ func SetRouterV1() *m.Router {
 
 	//account
 	v1.Register("/account/find_list", m.Wrap(c.FindAccountItems))
-
+	v1.Register("/account/seller_account", m.Wrap(c.AccountStatistic))
 	return v1
 }

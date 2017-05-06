@@ -246,3 +246,16 @@ func FindAccountItems(submitModel *pb.FindAccountitemReq) (respModel pb.FindAcco
 
 	return
 }
+
+//获取账户详情
+func GetAccountDetail(account *pb.Account) error {
+	query := "select balance,unsettled_balance from account where store_id='%s'"
+	query = fmt.Sprintf(query, account.StoreId)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&account.Balance, &account.UnsettledBalance)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}

@@ -208,3 +208,16 @@ func (s *AccountServiceServer) FindAccountItems(ctx context.Context, in *pb.Find
 
 	return &pb.FindAccountitemResp{Code: "00000", Message: "ok", Data: respData.Data, TotalCount: respData.TotalCount, TotalIncome: respData.TotalIncome, TotalExpense: respData.TotalExpense}, nil
 }
+
+//账户余额统计
+func (s *AccountServiceServer) AccountStatistic(ctx context.Context, in *pb.Account) (*pb.AccountStatisticResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "FindAccountItems", "%#v", in))
+	err := db.GetAccountDetail(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.AccountStatisticResp{Code: "00000", Message: "ok", Data: &pb.AccountStatisticModel{UnsettledBalance: in.UnsettledBalance, Balance: in.Balance}}, nil
+}
