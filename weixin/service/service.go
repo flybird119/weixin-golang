@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strconv"
@@ -21,6 +22,27 @@ import (
 )
 
 type WeixinServer struct{}
+
+func (s *WeixinServer) GetOfficeAccountInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetOfficeAccountInfoResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetOfficeAccountInfo", "%#v", req))
+
+	// 通过store_id, 取出 official_account 信息
+	oa, err := db.GetAccountInfoByStoreId(req.StoreId)
+
+	if err == sql.ErrNoRows {
+		// 没有该 store_id 对应的 office_account
+		log.Error(err)
+		return &pb.GetOfficeAccountInfoResp{Code: errs.Ok, Message: "not_found"}, nil
+	}
+
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.GetOfficeAccountInfoResp{Code: errs.Ok, Message: "ok", Data: oa}, nil
+}
 
 func (s *WeixinServer) ExtractImageFromWeixin(ctx context.Context, req *pb.ExtractImageReq) (*pb.ExtractImageResp, error) {
 	tid := misc.GetTidFromContext(ctx)

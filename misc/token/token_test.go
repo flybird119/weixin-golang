@@ -60,7 +60,7 @@ func TestSignAppToken(t *testing.T) {
 }
 
 func TestSign(t *testing.T) {
-	tokenStr = SignSellerToken(InterToken, "00000004", "18817953402", "170411000002", role.InterAdmin)
+	tokenStr = SignSellerToken(InterToken, "00000004", "18817953402", "170424000006", role.InterAdmin)
 	t.Log(">>>>>>>>>>>>>>>token>>>>>>>>>>>>>>")
 	t.Logf("%s\n", tokenStr)
 	t.Log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")

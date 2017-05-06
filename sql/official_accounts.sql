@@ -10,6 +10,9 @@ create table official_accounts (
     head_img text not null,
     user_name text not null,
 
+    /* 授权方公众号所设置的微信号 */
+    wechat_id text not null default '',
+
     /* 授权方公众号的原始ID */
     principal_name text not null default '',
     qrcode_url text not null,
