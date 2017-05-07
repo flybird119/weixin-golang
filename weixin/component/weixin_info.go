@@ -17,6 +17,12 @@ func GetWeixinInfo(req *pb.WeixinReq) (*pb.WeixinInfo, error) {
 	}
 	config := config.GetConf()
 
+	log.Debug("++++++++++++++++获取微信信息的请求++++++++++++++++++")
+	log.JSONIndent(req)
+	log.Debugf("--------------component_access_token: %s--------------", component_access_token)
+
+	log.Debug("++++++++++++++++++++++++++++++++++")
+
 	// get access_token
 	access_token_url := "https://api.weixin.qq.com/sns/oauth2/component/access_token?appid=%s&code=%s&grant_type=authorization_code&component_appid=%s&component_access_token=%s"
 
@@ -27,6 +33,8 @@ func GetWeixinInfo(req *pb.WeixinReq) (*pb.WeixinInfo, error) {
 		log.Error(err)
 		return nil, err
 	}
+
+	log.Debugf("------------授权 access_token: %s--------------", getAcessTokenResp.AccessToken)
 
 	// get user info
 	get_user_info_url := "https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s&lang=zh_CN"

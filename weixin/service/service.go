@@ -131,6 +131,10 @@ func (s *WeixinServer) GetWeixinInfo(ctx context.Context, req *pb.WeixinReq) (*p
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
+	log.Debug("------------------------------------")
+	log.JSONIndent(weixinInfo)
+	log.Debug("------------------------------------")
+
 	// save weixin info to db
 	userReq := &pb.User{WeixinInfo: weixinInfo, StoreId: req.StoreId}
 	userResp := &pb.User{}

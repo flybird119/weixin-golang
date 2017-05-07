@@ -23,6 +23,7 @@ func GetChildrenLocation(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_location", "GetChildrenLocation", req)
 }
@@ -41,6 +42,7 @@ func ListLocation(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	// call RPC to handle request
@@ -56,6 +58,7 @@ func AddLocation(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	// call RPC to handle request
