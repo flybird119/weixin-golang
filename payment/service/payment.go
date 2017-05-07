@@ -78,8 +78,7 @@ func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*
 	defer log.TraceOut(log.TraceIn(tid, "GetCharge", "%#v", req))
 
 	// 根据支付方式来分别填充 extra 参数
-	if(req.Channel == "")
-
+	// if(req.Channel == "")
 
 	// 封装数据，并请求 charge 对象
 	extra := make(map[string]interface{})
