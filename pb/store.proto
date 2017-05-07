@@ -24,9 +24,30 @@ service StoreService {
   rpc UpdateStoreWithdrawCard (StoreWithdrawCard) returns (StoreWithdrawCardOpeResp);
   //获取提现账号信息
   rpc GetWithdrawCardInfoByStore (StoreWithdrawCard) returns (StoreWithdrawCardOpeResp);
-
+  //店铺首页历史订单各个状态统计
+  rpc StoreHistoryStateOrderNum (StoreHistoryStateOrderNumModel) returns (StoreHistoryStateOrderNumResp);
 }
 
+//店铺首页历史订单各个状态统计resp
+message StoreHistoryStateOrderNumResp{
+    string code = 1;
+    string message = 2;
+    StoreHistoryStateOrderNumModel data = 3;
+}
+//店铺首页历史订单各个状态统计modle
+message StoreHistoryStateOrderNumModel{
+    int64 undelivered_order_num = 1;
+    int64 after_sale_order_num = 2;
+    StoreStatisticDaliyModel today_data = 3;
+    StoreStatisticDaliyModel yesterday_data = 4;
+    string store_id = 5;
+    string school_id=6;
+}
+message StoreStatisticDaliyModel{
+    int64 total_sales = 1;
+    int64 order_num = 2;
+    int64 handled_order_num = 3;
+}
 //提现卡model
 message StoreWithdrawCard{
     string id = 1;

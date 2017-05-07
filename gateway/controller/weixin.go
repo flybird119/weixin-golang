@@ -17,6 +17,39 @@ import (
 	"github.com/wothing/log"
 )
 
+func MsgPush(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("The request body is : %s", r.Context().Value("body"))
+
+	type callback struct {
+		XMLName    xml.Name `xml:"xml"`
+		ToUserName string   `xml:"ToUserName"`
+		Encrypt    string   `xml:"Encrypt"`
+	}
+
+	cb := &callback{}
+	err := xml.Unmarshal(r.Context().Value("body").([]byte), cb)
+	if err != nil {
+		log.Error(err)
+		misc.RespondMessage(w, r, "fail")
+	}
+
+	c, err := getCrypter()
+	if err != nil {
+		log.Error(err)
+		misc.RespondMessage(w, r, "fail")
+	}
+	crypter := *c
+
+	crypterText, _, err := crypter.Decrypt(cb.Encrypt)
+	if err != nil {
+		log.Error(err)
+		misc.RespondMessage(w, r, "fail")
+	}
+
+	log.Debugf("解密后的文本是：%s\n", crypterText)
+	misc.RespondMessage(w, r, "success")
+}
+
 func GetOfficeAccountInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
 	if c := token.Get(r); c != nil {
@@ -145,11 +178,14 @@ func ReceiveTicket(w http.ResponseWriter, r *http.Request) {
 		misc.RespondMessage(w, r, "fail")
 	}
 
+	// update component_verify_ticket to etcd
 	_, err = db.GetEtcdConn().Set(context.Background(), "bookcloud/weixin/component/ComponentVerifyTicket", ticketXML.ComponentVerifyTicket, &client.SetOptions{})
 	if err != nil {
 		log.Error(err)
 		misc.RespondMessage(w, r, "fail")
 	}
+
+	misc.RespondMessage(w, r, "success")
 
 	log.Debugf("the cryter xml is : %s", ticketXML.ComponentVerifyTicket)
 }

@@ -77,7 +77,6 @@ message Order{
     string distribute_staff_id = 40;
     string seller_id = 41;
     int64 apply_refund_fee = 42;
-
 }
 
 //订单详情model
@@ -152,7 +151,7 @@ message AfterSaleModel{
 message AfterSaleImage{
     string url = 1;
 }
-
+//个人中心订单数量
 message UserCenterOrderCount{
     int64 unpaid_order_num = 1;
     int64 undelivered_order_num = 2;

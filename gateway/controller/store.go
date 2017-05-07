@@ -217,3 +217,16 @@ func GetWithdrawCardInfoByStore(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_store", "GetWithdrawCardInfoByStore", req)
 
 }
+
+//店铺首页历史订单各个状态统计
+func StoreHistoryStateOrderNum(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.StoreHistoryStateOrderNumModel{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "StoreHistoryStateOrderNum", req)
+
+}

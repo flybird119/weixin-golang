@@ -176,8 +176,8 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error, totalcou
 		if order.OrderStatus == 80 {
 			//1.1.1 如果是app端并且搜索全部的订单，那么显示该用户所有状态的订单
 			if order.SearchType != 0 {
-				//1.1.3 如果是seller端并且搜索全部的订单，那么显示不为 代付款 ：0 和 已关闭订单：16 状态的订单
-				condition += "and (o.order_status <> 0 and o.order_status <> 16) "
+				//1.1.3 如果是seller端并且搜索全部的订单，那么显示不为 代付款 ：0 和 已关闭订单：8 状态的订单
+				condition += "and (o.order_status <> 0 and o.order_status <> 8) "
 			}
 			//查看待处理订单
 		} else if order.OrderStatus == 79 {
@@ -718,6 +718,7 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	return nil
 }
 
+//用户个人中心必要订单数量统计
 func UserCenterNecessaryOrderCount(model *pb.UserCenterOrderCount) error {
 	query := "select count(*) from orders where order_status=0 and user_id=$1 and store_id=$2"
 	log.Debugf("select count(*) from orders where order_status=0 and user_id='%s' and store_id='%s'", model.UserId, model.StoreId)
@@ -743,6 +744,97 @@ func UserCenterNecessaryOrderCount(model *pb.UserCenterOrderCount) error {
 	return nil
 }
 
+//店铺首页必要订单状态数量
+func StoreCenterNecessaryOrderCount(model *pb.StoreHistoryStateOrderNumModel) error {
+	//统计待发货订单量
+	query := fmt.Sprintf("select count(*) from orders where order_status=1 and store_id='%s'", model.StoreId)
+	if model.SchoolId != "" {
+		query += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
+	}
+	log.Debugf(query)
+	err := DB.QueryRow(query).Scan(&model.UndeliveredOrderNum)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	//统计待售后订单量
+	query = fmt.Sprintf("select count(*) from orders where after_sale_status=1 and store_id='%s'", model.StoreId)
+	if model.SchoolId != "" {
+		query += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
+	}
+	log.Debugf(query)
+	err = DB.QueryRow(query).Scan(&model.AfterSaleOrderNum)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	todayStatistic := &pb.StoreStatisticDaliyModel{}
+	yesterdayStatistic := &pb.StoreStatisticDaliyModel{}
+	now := time.Now()
+	todayDateStr := now.Format("2006-01-02")
+	now = now.Add(-1 * 24 * time.Hour)
+	yesterDayDateStr := now.Format("2006-01-02")
+	//统计今日处理订单量-以及订单金额
+	query = fmt.Sprintf("select count(*),sum(total_fee),to_char(to_timestamp(extract(epoch from pay_at)::integer), 'YYYY-MM-DD') as d from orders where to_char(to_timestamp(extract(epoch from pay_at)::integer), 'YYYY-MM-DD') in ('%s','%s') and store_id='%s'", yesterDayDateStr, todayDateStr, model.StoreId)
+	if model.SchoolId != "" {
+		query += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
+	}
+	query += " group by d"
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err != nil && err != sql.ErrNoRows {
+		log.Error(err)
+		return err
+	}
+	defer rows.Close()
+	var totalSales, orderNum int64
+	var dateStr string
+	for rows.Next() {
+		err = rows.Scan(&orderNum, &totalSales, &dateStr)
+		if err != nil && err != sql.ErrNoRows {
+			log.Error(err)
+			return err
+		}
+		if dateStr == todayDateStr {
+			todayStatistic.TotalSales = totalSales
+			todayStatistic.OrderNum = orderNum
+		} else {
+			yesterdayStatistic.TotalSales = totalSales
+			yesterdayStatistic.OrderNum = orderNum
+		}
+	}
+
+	//统计处理的订单量
+	query = fmt.Sprintf("select count(*),to_char(to_timestamp(extract(epoch from pay_at)::integer), 'YYYY-MM-DD') as d from orders where to_char(to_timestamp(extract(epoch from deliver_at)::integer), 'YYYY-MM-DD') in ('%s','%s') and store_id='%s'", yesterDayDateStr, todayDateStr, model.StoreId)
+	if model.SchoolId != "" {
+		query += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
+	}
+	query += " group by d"
+	log.Debug(query)
+	rows, err = DB.Query(query)
+	if err != nil && err != sql.ErrNoRows {
+		log.Error(err)
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		err = rows.Scan(&orderNum, &dateStr)
+		if err != nil && err != sql.ErrNoRows {
+			log.Error(err)
+			return err
+		}
+		if dateStr == todayDateStr {
+			todayStatistic.HandledOrderNum = orderNum
+		} else {
+			yesterdayStatistic.HandledOrderNum = orderNum
+		}
+	}
+	model.TodayData = todayStatistic
+	model.YesterdayData = yesterdayStatistic
+	return nil
+}
+
+//售后结果处理
 func AfterSaleResultOperation(afterSaleModel *pb.AfterSaleModel) error {
 	query := "update orders set after_sale_status=%d,after_sale_trad_no=%s,refund_fee=%d,after_sale_end_at=now() where trade_no='%s' returning id"
 	if afterSaleModel.IsSuccess {

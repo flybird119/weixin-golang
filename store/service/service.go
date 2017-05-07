@@ -7,6 +7,7 @@ import (
 	baseDb "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"
+	orderDb "github.com/goushuyun/weixin-golang/order/db"
 	sellerDb "github.com/goushuyun/weixin-golang/seller/db"
 	"github.com/wothing/log"
 
@@ -372,5 +373,17 @@ func (s *StoreServiceServer) GetWithdrawCardInfoByStore(ctx context.Context, in 
 	}
 
 	return &pb.StoreWithdrawCardOpeResp{Code: "00000", Message: "ok", Data: in}, nil
+}
 
+//更新提现账号
+func (s *StoreServiceServer) StoreHistoryStateOrderNum(ctx context.Context, in *pb.StoreHistoryStateOrderNumModel) (*pb.StoreHistoryStateOrderNumResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "StoreHistoryStateOrderNum", "%#v", in))
+
+	err := orderDb.StoreCenterNecessaryOrderCount(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.StoreHistoryStateOrderNumResp{Code: "00000", Message: "ok", Data: in}, nil
 }
