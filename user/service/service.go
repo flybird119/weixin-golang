@@ -15,6 +15,20 @@ import (
 type UserService struct {
 }
 
+func (s *UserService) GetUserInfoByOpenid(ctx context.Context, req *pb.User) (*pb.User, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetUserInfoByOpenid", "%#v", req))
+
+	// get user info by openid
+	err := db.GetUserInfo(req)
+	if err != nil {
+		log.Error(err)
+		errs.Wrap(errors.New(err.Error()))
+	}
+
+	return req, nil
+}
+
 func (s *UserService) SaveUser(ctx context.Context, req *pb.User) (*pb.User, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "SaveUser", "%#v", req))

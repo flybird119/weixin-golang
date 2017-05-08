@@ -77,10 +77,17 @@ func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetCharge", "%#v", req))
 
-	// 封装数据，并请求 charge 对象
+	// 根据支付方式来分别填充 extra 参数
 	extra := make(map[string]interface{})
-	extra["open_id"] = req.Openid
+	if req.Channel == "alipay_wap" {
+		// 支付宝手机网页支付
+		extra["success_url"] = req.SuccessUrl
+	} else if req.Channel == "wx_pub" {
+		// 微信公众号支付
+		extra["open_id"] = req.Openid
+	}
 
+	// 封装数据，并请求 charge 对象
 	params := &pingpp.ChargeParams{
 		Order_no:  req.OrderNo,
 		App:       pingpp.App{Id: "app_4qnjLOWXbDKSPmbb"},
