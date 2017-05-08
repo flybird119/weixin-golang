@@ -81,6 +81,7 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 	}
 
 	//2 修改商家账户和管理员账户 以及记录交易记录
+
 	misc.CallRPC(ctx, "bc_account", "PayOverOrderAccountHandle", in)
 
 	return &pb.NormalResp{}, nil
@@ -339,7 +340,10 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		}
 
 	} else {
-		misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", order)
+		_, err := misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", order)
+		if err != nil {
+			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
+		}
 	}
 	tx.Commit()
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
