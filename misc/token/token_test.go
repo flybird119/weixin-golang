@@ -48,7 +48,7 @@ func IsZeroOfUnderlyingType(x interface{}) bool {
 }
 
 func TestSignAppToken(t *testing.T) {
-	tokenStr = SignUserToken(AppToken, "0000000006", "170424000006")
+	tokenStr = SignUserToken(AppToken, "0000000007", "170424000006")
 	t.Log(tokenStr)
 
 	claims, err := Check(tokenStr)

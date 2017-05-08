@@ -616,3 +616,63 @@ func RecoverGoodsAmountFromClosedOrder(tx *sql.Tx, orderitem *pb.OrderItem) erro
 
 	return nil
 }
+
+//获取商品详情
+func GetGoodsLocationDetailByIdAndType(goodsId string, bookType int64) (locations []*pb.GoodsLocationWithName, err error) {
+	query := "select goods_id,storehouse_id,shelf_id,floor_id from goods_location where 1=1"
+
+	if bookType == 0 {
+		query += fmt.Sprintf(" and type=%d ", bookType)
+	} else {
+		query += fmt.Sprintf(" and type=%d ", bookType)
+	}
+
+	query += fmt.Sprintf(" and goods_id='%s' order by id", goodsId)
+
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return locations, nil
+	}
+	if err != nil {
+
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		//遍历location
+		location := &pb.GoodsLocationWithName{}
+		locations = append(locations, location)
+		err = rows.Scan(&location.GoodsId, &location.StorehouseId, &location.ShelfId, &location.FloorId)
+		if err != nil {
+			return nil, err
+		}
+		var id, name string
+		query = fmt.Sprintf("select id,name from location where id in ('%s','%s','%s')", location.StorehouseId, location.ShelfId, location.FloorId)
+		log.Debug(query)
+		rows, err = DB.Query(query)
+		if err != nil && err == sql.ErrNoRows {
+			return locations, nil
+		} else if err != nil {
+			log.Error(err)
+			return
+		}
+		defer rows.Close()
+		for rows.Next() {
+			err = rows.Scan(&id, &name)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			if id == location.StorehouseId {
+				location.StorehouseName = name
+			} else if id == location.ShelfId {
+				location.ShelfName = name
+			} else {
+				location.FloorName = name
+			}
+		}
+
+	}
+	return locations, err
+}
