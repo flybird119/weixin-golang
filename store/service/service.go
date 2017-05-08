@@ -7,6 +7,7 @@ import (
 	baseDb "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/misc/token"
+	orderDb "github.com/goushuyun/weixin-golang/order/db"
 	sellerDb "github.com/goushuyun/weixin-golang/seller/db"
 	"github.com/wothing/log"
 
@@ -215,6 +216,7 @@ func (s *StoreServiceServer) TransferStore(ctx context.Context, in *pb.TransferS
 	defer log.TraceOut(log.TraceIn(tid, "TransferStore", "%#v", in))
 	//获取redis的连接
 	conn := baseDb.GetRedisConn()
+	defer conn.Close()
 	//检验验证码是否正确
 	code, err := redis.String(conn.Do("get", "sellerUpdate:"+in.Mobile))
 	if err == redis.ErrNil || code != in.MessageCode {
@@ -225,7 +227,7 @@ func (s *StoreServiceServer) TransferStore(ctx context.Context, in *pb.TransferS
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	conn.Close()
+
 	//转让店铺的核心操作
 	//首先根据手机号获取用户的id
 	sellerId, err := sellerDb.GetSellerByMobile(in.Mobile)
@@ -255,4 +257,133 @@ func (s *StoreServiceServer) DelRealStore(ctx context.Context, in *pb.RealStore)
 	//记录日志
 	log.Debugf("DelRealStore realStoreId:%s Operater Id:%s", in.Id, in.Seller.Id)
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//获取提现账号管理的手机验证码
+func (s *StoreServiceServer) GetCardOperSmsCode(ctx context.Context, in *pb.SmsCardSubmitModel) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetCardOperSmsCode", "%#v", in))
+	store := &pb.Store{Id: in.StoreId}
+	err := db.GetStoreInfo(store)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	in.Mobile = store.AdminMobile
+	code := misc.GenCheckCode(4, misc.KC_RAND_KIND_NUM)
+
+	log.Debugf("sms code:%s", code)
+	//rpc调用短信接口
+	_, err = misc.CallRPC(ctx, "bc_sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: store.AdminMobile, Message: []string{code}})
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//redis 存放验证码
+	conn := baseDb.GetRedisConn()
+	defer conn.Close()
+	_, err = conn.Do("set", "storeCardOpe:"+in.Mobile, code)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	_, err = conn.Do("expire", "storeCardOpe:"+in.Mobile, 300)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//保存提现账号
+func (s *StoreServiceServer) SaveStoreWithdrawCard(ctx context.Context, in *pb.StoreWithdrawCard) (*pb.StoreWithdrawCardOpeResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SaveStoreWithdrawCard", "%#v", in))
+	store := &pb.Store{Id: in.StoreId}
+	err := db.GetStoreInfo(store)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	in.Mobile = store.AdminMobile
+	//首先检查code
+	conn := baseDb.GetRedisConn()
+	defer conn.Close()
+	//检验验证码是否正确
+	code, err := redis.String(conn.Do("get", "storeCardOpe:"+in.Mobile))
+	if err == redis.ErrNil || code != in.Code {
+		log.Debugf("验证码错误：%s:%s", code, in.Code)
+		return &pb.StoreWithdrawCardOpeResp{Code: "00000", Message: "codeErr"}, nil
+	}
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	err = db.SaveWithdrawCard(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.StoreWithdrawCardOpeResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//更新提现账号
+func (s *StoreServiceServer) UpdateStoreWithdrawCard(ctx context.Context, in *pb.StoreWithdrawCard) (*pb.StoreWithdrawCardOpeResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateStoreWithdrawCard", "%#v", in))
+	store := &pb.Store{Id: in.StoreId}
+	err := db.GetStoreInfo(store)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	in.Mobile = store.AdminMobile
+	//首先检查code
+	conn := baseDb.GetRedisConn()
+	defer conn.Close()
+	//检验验证码是否正确
+	code, err := redis.String(conn.Do("get", "storeCardOpe:"+in.Mobile))
+	if err == redis.ErrNil || code != in.Code {
+		log.Debugf("验证码错误：%s:%s", code, in.Code)
+		return &pb.StoreWithdrawCardOpeResp{Code: "00000", Message: "codeErr"}, nil
+	}
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	err = db.UpdateWithdrawCard(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.StoreWithdrawCardOpeResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//更新提现账号
+func (s *StoreServiceServer) GetWithdrawCardInfoByStore(ctx context.Context, in *pb.StoreWithdrawCard) (*pb.StoreWithdrawCardOpeResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetWithdrawCardInfoByStore", "%#v", in))
+
+	err := db.GetWithdrawCardInfoByStore(in)
+
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.StoreWithdrawCardOpeResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//更新提现账号
+func (s *StoreServiceServer) StoreHistoryStateOrderNum(ctx context.Context, in *pb.StoreHistoryStateOrderNumModel) (*pb.StoreHistoryStateOrderNumResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "StoreHistoryStateOrderNum", "%#v", in))
+
+	err := orderDb.StoreCenterNecessaryOrderCount(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.StoreHistoryStateOrderNumResp{Code: "00000", Message: "ok", Data: in}, nil
 }

@@ -12,7 +12,6 @@ service StatisticService {
     //月统计
     rpc StatisticMonth (GoodsSalesStatisticModel) returns (StatisticMonthResp);
 
-
 }
 
 //商品销量统计model

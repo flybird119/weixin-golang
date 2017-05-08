@@ -53,7 +53,8 @@ message FindAccountitemReq{
     int64 start_at = 2;
     int64 end_at = 3;
     string store_id = 4;
-
+    int64 page = 5;
+    int64 size = 6;
 }
 //账户统计响应
 message AccountStatisticResp{

@@ -24,6 +24,7 @@ func AddAddress(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_address", "AddAddress", req)
 
@@ -42,6 +43,7 @@ func UpdateAddress(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 
 	misc.CallWithResp(w, r, "bc_address", "UpdateAddress", req, "id")
@@ -61,6 +63,7 @@ func MyAddresses(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_address", "MyAddresses", req)
 
@@ -79,6 +82,7 @@ func DeleteAddress(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_address", "DeleteAddress", req)
 

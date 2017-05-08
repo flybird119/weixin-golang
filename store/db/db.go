@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/goushuyun/weixin-golang/seller/role"
@@ -203,4 +204,60 @@ func FindAllStores() (stores []*pb.Store, err error) {
 		}
 	}
 	return
+}
+
+//保存提现账号
+func SaveWithdrawCard(card *pb.StoreWithdrawCard) error {
+	query := "insert into store_withdraw_card (store_id,card_type,card_no,card_name,username) values('%s',%d,'%s','%s','%s') returning id"
+	query = fmt.Sprintf(query, card.StoreId, card.Type, card.CardNo, card.CardName, card.Username)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&card.Id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//保存提现账号
+func UpdateWithdrawCard(card *pb.StoreWithdrawCard) error {
+	query := "update store_withdraw_card set update_at=now()"
+	var condition string
+	if card.Type != 0 {
+		condition += fmt.Sprintf((" ,card_type=%d"), card.Type)
+	}
+
+	if card.CardNo != "" {
+		condition += fmt.Sprintf((" ,card_no='%s'"), card.CardNo)
+	}
+	if card.CardName != "" {
+		condition += fmt.Sprintf((" ,card_name='%s'"), card.CardName)
+	}
+	if card.Username != "" {
+		condition += fmt.Sprintf((" ,username='%s'"), card.Username)
+	}
+	condition += fmt.Sprintf((" where store_id='%s' and id='%s'"), card.StoreId, card.Id)
+	query += condition
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//获取提现卡信息
+func GetWithdrawCardInfoByStore(card *pb.StoreWithdrawCard) error {
+	query := "select id,card_type,card_no,card_name,username from store_withdraw_card where store_id='%s'"
+	query = fmt.Sprintf(query, card.StoreId)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&card.Id, &card.Type, &card.CardNo, &card.CardName, &card.Username)
+	if err == sql.ErrNoRows {
+		return nil
+	} else if err != sql.ErrNoRows {
+		log.Error(err)
+		return err
+	}
+	return nil
 }

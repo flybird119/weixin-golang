@@ -56,6 +56,7 @@ func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.Registe
 	*====================================
 	 */
 	conn := baseDb.GetRedisConn()
+	defer conn.Close()
 	code, err := redis.String(conn.Do("get", "sellerRegister:"+in.Mobile))
 	if err == redis.ErrNil || code != in.MessageCode {
 		log.Debugf("验证码错误：%s:%s", code, in.MessageCode)
@@ -65,7 +66,6 @@ func (s *SellerServiceServer) SellerRegister(ctx context.Context, in *pb.Registe
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	conn.Close()
 
 	id, err := db.SellerRegister(in)
 
@@ -102,6 +102,7 @@ func (s *SellerServiceServer) UpdatePasswordAndLogin(ctx context.Context, in *pb
 	*====================================
 	 */
 	conn := baseDb.GetRedisConn()
+	defer conn.Close()
 	code, err := redis.String(conn.Do("get", "sellerUpdate:"+in.Mobile))
 	if err == redis.ErrNil || code != in.MessageCode {
 		log.Debugf("验证码错误：%s:%s", code, in.MessageCode)
@@ -111,7 +112,7 @@ func (s *SellerServiceServer) UpdatePasswordAndLogin(ctx context.Context, in *pb
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	conn.Close()
+
 	log.Debugf("===================,%s", 1)
 	seller, err := db.UpdatePassword(in)
 
@@ -165,6 +166,7 @@ func (s *SellerServiceServer) GetTelCode(ctx context.Context, in *pb.CheckMobile
 	}
 	//redis 存放验证码
 	conn := baseDb.GetRedisConn()
+	defer conn.Close()
 	_, err = conn.Do("set", "sellerRegister:"+in.Mobile, code)
 	if err != nil {
 		log.Error(err)
@@ -175,7 +177,7 @@ func (s *SellerServiceServer) GetTelCode(ctx context.Context, in *pb.CheckMobile
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	conn.Close()
+
 	return &pb.CheckMobileRsp{Code: "00000", Message: "ok"}, nil
 }
 
@@ -200,6 +202,7 @@ func (s *SellerServiceServer) GetUpdateTelCode(ctx context.Context, in *pb.Check
 	}
 	//redis 存放验证码
 	conn := baseDb.GetRedisConn()
+	defer conn.Close()
 	_, err = conn.Do("set", "sellerUpdate:"+in.Mobile, code)
 	if err != nil {
 		log.Error(err)
@@ -210,7 +213,7 @@ func (s *SellerServiceServer) GetUpdateTelCode(ctx context.Context, in *pb.Check
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	conn.Close()
+
 	return &pb.CheckMobileRsp{Code: "00000", Message: "ok"}, nil
 }
 

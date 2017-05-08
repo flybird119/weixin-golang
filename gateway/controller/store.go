@@ -162,3 +162,71 @@ func DelRealStore(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_store", "DelRealStore", req, "id")
 
 }
+
+//删除实体店
+func GetCardOperSmsCode(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.SmsCardSubmitModel{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "GetCardOperSmsCode", req)
+
+}
+
+//保存提现账号
+func SaveStoreWithdrawCard(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.StoreWithdrawCard{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "SaveStoreWithdrawCard", req, "card_no", "card_name", "username", "code")
+
+}
+
+//保存提现账号
+func UpdateStoreWithdrawCard(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.StoreWithdrawCard{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "UpdateStoreWithdrawCard", req, "id")
+
+}
+
+//保存提现账号
+func GetWithdrawCardInfoByStore(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.StoreWithdrawCard{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "GetWithdrawCardInfoByStore", req)
+
+}
+
+//店铺首页历史订单各个状态统计
+func StoreHistoryStateOrderNum(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.StoreHistoryStateOrderNumModel{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "StoreHistoryStateOrderNum", req)
+
+}
