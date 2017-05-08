@@ -74,8 +74,8 @@ func OnlineGoodsSalesStatistic(goodsSalesStatisticModel *pb.GoodsSalesStatisticM
 	goodsSalesStatisticModel.WechatOrderFee = wechat_order_fee
 
 	//1.2统计线上新书旧书销售额
-	query = "select sum(oi.price),oi.type from orders_item oi join orders o on oi.orders_id=o.id and to_char(to_timestamp(extract(epoch from o.pay_at )::integer), 'YYYY-MM-DD')=$1 and o.school_id=$2  group by oi.type"
-	log.Debugf("select sum(oi.price),oi.type from orders_item oi join orders o on oi.orders_id=o.id and to_char(to_timestamp(extract(epoch from o.pay_at )::integer), 'YYYY-MM-DD')='%s' and o.school_id='%s'  group by oi.type", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
+	query = "select sum(oi.price*oi.amount),oi.type from orders_item oi join orders o on oi.orders_id=o.id and to_char(to_timestamp(extract(epoch from o.pay_at )::integer), 'YYYY-MM-DD')=$1 and o.school_id=$2  group by oi.type"
+	log.Debugf("select sum(oi.price*oi.amount),oi.type from orders_item oi join orders o on oi.orders_id=o.id and to_char(to_timestamp(extract(epoch from o.pay_at )::integer), 'YYYY-MM-DD')='%s' and o.school_id='%s'  group by oi.type", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
 	rows, err = DB.Query(query, goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Error(err)
@@ -155,8 +155,8 @@ func OfflineGoodsSalesStatistic(goodsSalesStatisticModel *pb.GoodsSalesStatistic
 		return err
 	}
 	//统计新书旧书销售额
-	query = "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')=$1 and r.school_id=$2  group by ri.type "
-	log.Debugf("select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.school_id='%s'  group by ri.type ", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
+	query = "select sum(ri.price*ri.amount),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')=$1 and r.school_id=$2  group by ri.type "
+	log.Debugf("select sum(ri.price*ri.amount),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.school_id='%s'  group by ri.type ", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
 	rows, err := DB.Query(query, goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
 
 	if err != nil && err != sql.ErrNoRows {
@@ -288,10 +288,10 @@ func GetOneDaySales(model *pb.GoodsSalesStatisticModel) error {
 
 	//统计新书旧书销售额
 	if model.SchoolId != "" {
-		query = "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.school_id='%s' and r.store_id='%s' group by ri.type "
+		query = "select sum(ri.price*ri.amount),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.school_id='%s' and r.store_id='%s' group by ri.type "
 		query = fmt.Sprintf(query, model.StatisticAt, model.SchoolId, model.StoreId)
 	} else {
-		query = "select sum(ri.price),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.store_id='%s' group by ri.type "
+		query = "select sum(ri.price*ri.amount),ri.type from retail_item ri join retail r on ri.retail_id=r.id and to_char(to_timestamp(extract(epoch from r.create_at )::integer), 'YYYY-MM-DD')='%s' and r.store_id='%s' group by ri.type "
 		query = fmt.Sprintf(query, model.StatisticAt, model.StoreId)
 	}
 	rows, err = DB.Query(query)
