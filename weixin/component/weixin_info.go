@@ -27,6 +27,11 @@ func GetWeixinInfo(req *pb.WeixinReq) (*pb.WeixinInfo, error) {
 	access_token_url := "https://api.weixin.qq.com/sns/oauth2/component/access_token?appid=%s&code=%s&grant_type=authorization_code&component_appid=%s&component_access_token=%s"
 
 	access_token_url = fmt.Sprintf(access_token_url, req.Appid, req.Code, config.AppID, component_access_token)
+
+	log.Debug("++++++++++++++++++++++++++++++++++")
+	log.Debugf("get access_token_url is : %s", access_token_url)
+	log.Debug("++++++++++++++++++++++++++++++++++")
+
 	getAcessTokenResp := &GetAcessTokenResp{}
 	err = http.GETWithUnmarshal(access_token_url, getAcessTokenResp)
 	if err != nil {

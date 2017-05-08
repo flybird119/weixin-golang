@@ -44,8 +44,10 @@ message GetChargeReq {
     string body = 3;
     string order_no = 4;
     string channel = 5;         //wx_pub	微信公众号支付
-    string openid = 6;
+    string openid = 6;      //微信支付必须
     string ip = 7;
+
+    string success_url = 8;     //支付宝支付成功后的回调页面
 }
 
 message GetChargeResp {
