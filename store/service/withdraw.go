@@ -188,7 +188,7 @@ func handleWithdrawApply(tx *sql.Tx, in *pb.StoreWithdrawalsModel) error {
 	}
 	subCardNo := misc.SubString(cardNo, len(cardNo)-4, 4)
 	//提现记录
-	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, ItemType: 24, Remark: "提现到银行卡,尾号:" + subCardNo, ItemFee: -in.WithdrawFee, AccountBalance: sellerAccountBalance.Balance}
+	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, ItemType: 20, Remark: "提现到银行卡,尾号:" + subCardNo, ItemFee: -in.WithdrawFee, AccountBalance: sellerAccountBalance.Balance}
 	err = accountDb.AddAccountItemWithTx(tx, sellerAccountBalanceItem)
 	if err != nil {
 		log.Error(err)
