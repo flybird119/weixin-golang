@@ -38,6 +38,10 @@ func (s *StoreServiceServer) RechargeHandler(ctx context.Context, in *pb.Recharg
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	if searchRecharge.Status > 2 {
+		return &pb.Void{}, nil
+	}
+	in.StoreId = searchRecharge.StoreId
 	//获取事务
 	tx, err := DB.Begin()
 	if err != nil {
@@ -57,7 +61,7 @@ func (s *StoreServiceServer) RechargeHandler(ctx context.Context, in *pb.Recharg
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-
+	tx.Commit()
 	return &pb.Void{}, nil
 }
 
@@ -72,7 +76,7 @@ func handleRechargeResult(tx *sql.Tx, in *pb.RechargeModel) error {
 	}
 
 	//提现记录
-	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, ItemType: 18, Remark: "商家充值到可提现金额", ItemFee: in.RechargeFee, AccountBalance: sellerAccountBalance.Balance}
+	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, OrderId: in.Id, StoreId: in.StoreId, ItemType: 18, Remark: "商家充值到可提现金额", ItemFee: in.RechargeFee, AccountBalance: sellerAccountBalance.Balance}
 	err = accountDb.AddAccountItemWithTx(tx, sellerAccountBalanceItem)
 	if err != nil {
 		log.Error(err)
