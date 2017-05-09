@@ -269,7 +269,7 @@ func OrderShareOperation(w http.ResponseWriter, r *http.Request) {
 		})
 		return
 	}
-	misc.CallWithResp(w, r, "bc_order", "OrderShareOperation", req)
+	misc.CallWithResp(w, r, "bc_order", "OrderShareOperation", req, "id")
 }
 
 //订单售后

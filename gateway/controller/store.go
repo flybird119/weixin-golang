@@ -230,3 +230,16 @@ func StoreHistoryStateOrderNum(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_store", "StoreHistoryStateOrderNum", req)
 
 }
+
+//提现申请
+func WithdrawApply(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.StoreWithdrawalsModel{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "WithdrawApply", req, "withdraw_card_id", "withdraw_fee")
+
+}

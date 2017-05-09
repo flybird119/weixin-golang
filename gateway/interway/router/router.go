@@ -43,6 +43,8 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/update_card", m.Wrap(c.UpdateStoreWithdrawCard))
 	v1.Register("/store/get_store_card", m.Wrap(c.GetWithdrawCardInfoByStore))
 	v1.Register("/store/index_order_num_statistic", m.Wrap(c.StoreHistoryStateOrderNum))
+	v1.Register("/store/withdraw_apply", m.Wrap(c.WithdrawApply))
+
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 	v1.Register("/mediastore/refresh_urls", m.Wrap(c.RefreshUrls))
