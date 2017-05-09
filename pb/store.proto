@@ -30,6 +30,8 @@ service StoreService {
   rpc WithdrawApply (StoreWithdrawalsModel) returns (NormalResp);
   //充值操作
   rpc RechargeApply (RechargeModel) returns (RechargeOperationResp);
+  //充值完成操作
+  rpc RechargeHandler (RechargeModel) returns (Void);
 }
 
 //店铺首页历史订单各个状态统计resp
@@ -64,6 +66,7 @@ message RechargeModel{
     int64 update_at = 7;
     string pay_way = 8;
     string trade_no = 9;
+    string charge_id = 10;
 }
 //充值响应model
 message RechargeOperationResp{

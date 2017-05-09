@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"time"
 
@@ -299,6 +300,56 @@ func RechargeApply(recharge *pb.RechargeModel) error {
 	if err != nil {
 		log.Error(err)
 		return err
+	}
+	return nil
+}
+
+//根据id获取充值记录
+func GetRechargeById(recharge *pb.RechargeModel) error {
+	query := "select store_id,recharge_fee,pay_way,status from recharge where id='%s'"
+	query = fmt.Sprintf(query, recharge.Id)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&recharge.StoreId, &recharge.RechargeFee, &recharge.PayWay, &recharge.Status)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//充值成功
+func RechargeSuccessHandler(tx *sql.Tx, recharge *pb.RechargeModel) error {
+	query := "update recharge set update_at=now()"
+	var condition string
+	if recharge.RechargeFee != 0 {
+		condition += fmt.Sprintf(",recharge_fee=%d", recharge.RechargeFee)
+	}
+	if recharge.PayWay != "" {
+		condition += fmt.Sprintf(",pay_way='%s'", recharge.PayWay)
+
+	}
+	if recharge.TradeNo != "" {
+		condition += fmt.Sprintf(",trade_no='%s'", recharge.TradeNo)
+	}
+	if recharge.ChargeId != "" {
+		condition += fmt.Sprintf(",charge_id='%s'", recharge.ChargeId)
+
+	}
+	if recharge.CompleteAt != 0 {
+		tm := time.Unix(recharge.CompleteAt, 0)
+		dateStr := tm.Format("2006-01-02 15:04:05")
+		condition += fmt.Sprintf(",complete_at='%s'", dateStr)
+	}
+	condition += fmt.Sprintf(",status=status+1 where id='%s' returning status", recharge.Id)
+	query += condition
+	log.Debug(query)
+	err := tx.QueryRow(query).Scan(&recharge.Status)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if recharge.Status > 2 {
+		return errors.New("has changed")
 	}
 	return nil
 }

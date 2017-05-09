@@ -243,6 +243,8 @@ func WithdrawApply(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_store", "WithdrawApply", req, "withdraw_card_id", "withdraw_fee")
 
 }
+
+//充值申请
 func RechargeApply(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
