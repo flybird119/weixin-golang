@@ -281,7 +281,21 @@ func GetWithdrawCardInfoById(card *pb.StoreWithdrawCard) error {
 func SaveWithdrawApply(tx *sql.Tx, withdraw *pb.StoreWithdrawalsModel) error {
 	query := "insert into withdrawals (store_id,withdraw_card_id,card_type,card_no,card_name,username,withdraw_fee) values('%s','%s',%d,'%s','%s','%s',%d) returning id"
 	query = fmt.Sprintf(query, withdraw.StoreId, withdraw.WithdrawCardId, withdraw.CardType, withdraw.CardNo, withdraw.CardName, withdraw.Username, withdraw.WithdrawFee)
+	log.Debug(query)
 	err := tx.QueryRow(query).Scan(&withdraw.Id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//保存充值记录
+func RechargeApply(recharge *pb.RechargeModel) error {
+	query := "insert into recharge (store_id,recharge_fee,pay_way) values('%s',%d,'%s') returning id"
+	query = fmt.Sprintf(query, recharge.StoreId, recharge.RechargeFee, recharge.PayWay)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&recharge.Id)
 	if err != nil {
 		log.Error(err)
 		return err
