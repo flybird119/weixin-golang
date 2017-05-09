@@ -1,19 +1,11 @@
 package service
 
 import (
-<<<<<<< HEAD
-	"errors"
-
-	"github.com/goushuyun/weixin-golang/errs"
-
-	"github.com/goushuyun/weixin-golang/misc"
-=======
 	"database/sql"
 	"errors"
 
 	accountDb "github.com/goushuyun/weixin-golang/account/db"
 	"github.com/goushuyun/weixin-golang/errs"
->>>>>>> 4a9f0722db9e98903d030f85313d9f1ecb0c7ebf
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
