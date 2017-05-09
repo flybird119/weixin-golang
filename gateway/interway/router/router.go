@@ -8,6 +8,8 @@ import (
 //SetRouterV1 设置seller的router
 func SetRouterV1() *m.Router {
 	v1 := m.NewWithPrefix("/v1")
+	// payment
+	v1.Register("/payment/get_charge", m.Wrap(c.GetCharge))
 
 	// weixin
 	v1.Register("/weixin/get_auth_url", m.Wrap(c.GetAuthURL))

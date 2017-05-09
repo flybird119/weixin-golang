@@ -36,6 +36,9 @@ message PaySuccessCallbackPayload {
     string charge = 6;
     bool succeed = 7;
     int64 amount = 8;
+
+    // metadata 元数据
+    map<string, string> metadata = 9;
 }
 
 message GetChargeReq {
