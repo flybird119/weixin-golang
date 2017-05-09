@@ -33,6 +33,7 @@ var serviceNames = []string{
 	"bc_retail",
 	"bc_statistic",
 	"bc_account",
+	"bc_payment",
 }
 
 func main() {

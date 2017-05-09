@@ -79,13 +79,17 @@ func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*
 
 	// 根据支付方式来分别填充 extra 参数
 	extra := make(map[string]interface{})
-	if req.Channel == "alipay_wap" {
+	if req.Channel == "alipay_wap" || req.Channel == "alipay_pc_direct" {
 		// 支付宝手机网页支付
 		extra["success_url"] = req.SuccessUrl
 	} else if req.Channel == "wx_pub" {
 		// 微信公众号支付
 		extra["open_id"] = req.Openid
 	}
+
+	// 为充值支付添加 metadata 元数据， 以便支付成功通知后识别
+	metadata := make(map[string]interface{})
+	metadata["event"] = "recharge"
 
 	// 封装数据，并请求 charge 对象
 	params := &pingpp.ChargeParams{
@@ -98,7 +102,9 @@ func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*
 		Body:      req.Body,
 		Extra:     extra,
 		Client_ip: req.Ip,
+		Metadata:  metadata,
 	}
+
 	ch, err := charge.New(params)
 	if err != nil {
 		log.Error(err)
