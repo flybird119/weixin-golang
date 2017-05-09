@@ -261,3 +261,44 @@ func GetWithdrawCardInfoByStore(card *pb.StoreWithdrawCard) error {
 	}
 	return nil
 }
+
+//获取提现卡信息
+func GetWithdrawCardInfoById(card *pb.StoreWithdrawCard) error {
+	query := "select id,card_type,card_no,card_name,username from store_withdraw_card where id='%s'"
+	query = fmt.Sprintf(query, card.Id)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&card.Id, &card.Type, &card.CardNo, &card.CardName, &card.Username)
+	if err == sql.ErrNoRows {
+		return nil
+	} else if err != sql.ErrNoRows {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//获取提现卡信息
+func SaveWithdrawApply(tx *sql.Tx, withdraw *pb.StoreWithdrawalsModel) error {
+	query := "insert into withdrawals (store_id,withdraw_card_id,card_type,card_no,card_name,username,withdraw_fee) values('%s','%s',%d,'%s','%s','%s',%d) returning id"
+	query = fmt.Sprintf(query, withdraw.StoreId, withdraw.WithdrawCardId, withdraw.CardType, withdraw.CardNo, withdraw.CardName, withdraw.Username, withdraw.WithdrawFee)
+	log.Debug(query)
+	err := tx.QueryRow(query).Scan(&withdraw.Id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//保存充值记录
+func RechargeApply(recharge *pb.RechargeModel) error {
+	query := "insert into recharge (store_id,recharge_fee,pay_way) values('%s',%d,'%s') returning id"
+	query = fmt.Sprintf(query, recharge.StoreId, recharge.RechargeFee, recharge.PayWay)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&recharge.Id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}

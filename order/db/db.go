@@ -700,7 +700,7 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	//区分退款金额
 
 	if order.RefundFee == 0 {
-		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=4", order.RefundFee)
+		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=4,after_sale_end_at=now()", order.RefundFee)
 	} else {
 		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=2", order.RefundFee)
 	}
@@ -848,4 +848,97 @@ func AfterSaleResultOperation(afterSaleModel *pb.AfterSaleModel) error {
 		return err
 	}
 	return nil
+}
+
+//导出订单data
+func ExportOrderData(order *pb.Order) (details []*pb.OrderDetail, err error) {
+	//需要的项
+
+	query := fmt.Sprintf("select id,mobile,name,address,remark from orders o where 1=1 ")
+	var args []interface{}
+	var condition string
+
+	//检索条件
+	//3.0 根据云店铺
+	if order.StoreId != "" {
+		args = append(args, order.StoreId)
+		condition += fmt.Sprintf(" and o.store_id=$%d", len(args))
+	}
+	//4.0 根据学校
+	if order.SchoolId != "" {
+		args = append(args, order.SchoolId)
+		condition += fmt.Sprintf(" and o.school_id=$%d", len(args))
+	}
+	//5.0 根据付款时间 开始 - 结束
+	if order.StartAt != 0 && order.EndAt != 0 {
+		args = append(args, order.StartAt)
+		condition += fmt.Sprintf(" and extract(epoch from o.pay_at)::integer between $%d and $%d", len(args), len(args)+1)
+		args = append(args, order.EndAt)
+	}
+
+	condition += " order by o.update_at desc"
+	query += condition
+	log.Debugf(query+" args :%#v", args)
+	rows, err := DB.Query(query, args...)
+	if err != nil && err != sql.ErrNoRows {
+		misc.LogErr(err)
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		next := &pb.Order{}
+		orderDetail := &pb.OrderDetail{}
+		//select id,mobile,name,address,remark
+		err = rows.Scan(&next.Id, &next.Mobile, &next.Name, &next.Address, &next.Remark)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		orderitems, err := getExportOrderItems(next)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		orderDetail.Order = next
+		orderDetail.Items = orderitems
+		details = append(details, orderDetail)
+
+	}
+
+	return
+}
+
+//导出订单获取订单项详情
+func getExportOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error) {
+	query := "select oi.id,g.id,oi.type,oi.amount,oi.price,b.title,b.isbn,b.image,b.price from orders_item oi join goods g on oi.goods_id=g.id join books b on g.book_id=b.id where orders_id='%s'"
+	query = fmt.Sprintf(query, order.Id)
+	log.Debugf(query)
+	rows, err := DB.Query(query)
+	//如果出现无结果异常
+	if err == sql.ErrNoRows {
+		return orderitems, nil
+	}
+	if err != nil {
+		misc.LogErr(err)
+		return nil, err
+	}
+	defer rows.Close()
+	//遍历搜索结果
+	for rows.Next() {
+		orderItem := &pb.OrderItem{}
+		orderitems = append(orderitems, orderItem)
+		err = rows.Scan(&orderItem.Id, &orderItem.GoodsId, &orderItem.Type, &orderItem.Amount, &orderItem.Price, &orderItem.BookTitle, &orderItem.BookIsbn, &orderItem.BookImage, &orderItem.OriginPrice)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		locations, err := goodsDB.GetGoodsLocationDetailByIdAndType(orderItem.GoodsId, orderItem.Type)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		orderItem.Locations = locations
+	}
+	return
 }

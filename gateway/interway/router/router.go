@@ -45,6 +45,9 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/update_card", m.Wrap(c.UpdateStoreWithdrawCard))
 	v1.Register("/store/get_store_card", m.Wrap(c.GetWithdrawCardInfoByStore))
 	v1.Register("/store/index_order_num_statistic", m.Wrap(c.StoreHistoryStateOrderNum))
+	v1.Register("/store/withdraw_apply", m.Wrap(c.WithdrawApply))
+	v1.Register("/store/recharge_apply", m.Wrap(c.RechargeApply))
+
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 	v1.Register("/mediastore/refresh_urls", m.Wrap(c.RefreshUrls))
@@ -93,7 +96,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/order/detail", m.Wrap(c.OrderDetailSeller))
 	v1.Register("/order/handle_after_sale", m.Wrap(c.HandleAfterSaleOrder))
 	v1.Register("/order/after_sale_result", m.Wrap(c.AfterSaleOrderHandledResult))
-
+	v1.RegisterGET("/order/export_order", m.Wrap(c.ExportOrder))
 	//retail
 	v1.Register("/retail/add", m.Wrap(c.RetailSubmit))
 	v1.Register("/retail/find", m.Wrap(c.RetailList))

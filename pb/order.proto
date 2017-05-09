@@ -4,6 +4,8 @@ package pb;
 
 import "pb/common.proto";
 import "pb/store.proto";
+import "pb/goods.proto";
+
 service OrderService {
     //提交订单
     rpc OrderSubmit (OrderSubmitModel) returns (OrderSubmitResp);
@@ -31,6 +33,10 @@ service OrderService {
     rpc AfterSaleOrderHandledResult (AfterSaleModel) returns (Void);
     //用户个人中心-订单状态统计
     rpc UserCenterNecessaryOrderCount (UserCenterOrderCount) returns (UserCenterOrderCount);
+    //导出订单
+    rpc ExportOrderData (Order) returns (OrderListResp);
+    //订单分享功能
+    rpc OrderShareOperation (Order) returns (NormalResp);
 }
 
 //订单model
@@ -125,7 +131,7 @@ message OrderItem{
     string book_isbn = 7;
     string book_title = 8;
     int64 origin_price = 9;
-
+    repeated GoodsLocationWithName locations= 10;
 }
 
 message OrderStaff{

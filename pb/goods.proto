@@ -89,7 +89,7 @@ message GoodsSalesModel{            //当前云店商品数量统计
     repeated GoodsLocation location = 13;
 }
 
-
+//图书位置
 message GoodsLocation{
     string id = 1;
     string goods_id = 2;
@@ -103,7 +103,16 @@ message GoodsLocation{
     int64 price = 10;
     int64 operate_type =11; // 0 update 1 del  2 add
 }
-
+//图书位置--带名称
+message GoodsLocationWithName{
+    string goods_id = 1;
+    string storehouse_id = 2;
+    string storehouse_name = 3;
+    string shelf_id = 4;
+    string shelf_name = 5;
+    string floor_id = 6;
+    string floor_name = 7;
+}
 message DelGoodsReq{
     repeated DelGoodsModel data = 1;
 }

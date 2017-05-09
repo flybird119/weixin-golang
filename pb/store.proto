@@ -26,6 +26,10 @@ service StoreService {
   rpc GetWithdrawCardInfoByStore (StoreWithdrawCard) returns (StoreWithdrawCardOpeResp);
   //店铺首页历史订单各个状态统计
   rpc StoreHistoryStateOrderNum (StoreHistoryStateOrderNumModel) returns (StoreHistoryStateOrderNumResp);
+  //申请提现操作
+  rpc WithdrawApply (StoreWithdrawalsModel) returns (NormalResp);
+  //充值操作
+  rpc RechargeApply (RechargeModel) returns (RechargeOperationResp);
 }
 
 //店铺首页历史订单各个状态统计resp
@@ -33,6 +37,39 @@ message StoreHistoryStateOrderNumResp{
     string code = 1;
     string message = 2;
     StoreHistoryStateOrderNumModel data = 3;
+}
+//店铺申请提现记录model
+message StoreWithdrawalsModel{
+    string id = 1;
+    string store_id = 2;
+    string withdraw_card_id = 3;
+    int64 card_type = 4;
+    string card_no = 5;
+    string card_name = 6;
+    string username = 7;
+    int64 withdraw_fee = 8;
+    int64 status = 9;
+    int64 apply_at = 10;
+    int64 complete_at = 11;
+
+}
+//充值
+message RechargeModel{
+    string id = 1;
+    string store_id = 2;
+    int64 recharge_fee = 3;
+    int64 status = 4;
+    int64 apply_at = 5;
+    int64 complete_at = 6;
+    int64 update_at = 7;
+    string pay_way = 8;
+    string trade_no = 9;
+}
+//充值响应model
+message RechargeOperationResp{
+    string code = 1;
+    string message = 2;
+    RechargeModel data = 3;
 }
 //店铺首页历史订单各个状态统计modle
 message StoreHistoryStateOrderNumModel{

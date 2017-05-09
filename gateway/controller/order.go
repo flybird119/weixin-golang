@@ -2,9 +2,14 @@ package controller
 
 import (
 	"net/http"
+	"strconv"
+	"time"
+
+	"github.com/wothing/log"
 
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/misc/token"
+	"github.com/tealeg/xlsx"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -251,6 +256,23 @@ func UserCenterNecessaryOrderCount(w http.ResponseWriter, r *http.Request) {
 }
 
 //订单售后
+func OrderShareOperation(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	c := token.Get(r)
+
+	if c != nil && c.StoreId != "" && c.UserId != "" {
+		req.UserId = c.UserId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+	misc.CallWithResp(w, r, "bc_order", "OrderShareOperation", req, "id")
+}
+
+//订单售后
 func HandleAfterSaleOrder(w http.ResponseWriter, r *http.Request) {
 	req := &pb.AfterSaleModel{}
 	c := token.Get(r)
@@ -281,4 +303,84 @@ func AfterSaleOrderHandledResult(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	misc.CallWithResp(w, r, "bc_order", "AfterSaleOrderHandledResult", req)
+}
+
+//导出订单
+func ExportOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	body := r.FormValue("params")
+	if err := misc.Bytes2Struct([]byte(body), req); err != nil {
+		misc.RespondMessage(w, r, err)
+		return
+	}
+
+	// Call RPC 请求订单详情
+	resp, ctx := &pb.OrderListResp{}, misc.GenContext(r)
+	err := misc.CallSVC(ctx, "bc_order", "ExportOrderData", req, resp)
+	if err != nil {
+		misc.RespondMessage(w, r, err)
+		return
+	}
+
+	// 开始写入Excel
+	var file *xlsx.File
+	var sheet *xlsx.Sheet
+	var row *xlsx.Row
+
+	file = xlsx.NewFile()
+	sheet, err = file.AddSheet("发货单")
+	if err != nil {
+		log.Error(err)
+		res := misc.NewErrResult(errs.ErrInternal, "Error on AddSheet")
+		misc.RespondMessage(w, r, res)
+		return
+	}
+
+	row = sheet.AddRow()
+	head := []string{"订单编号", "收件人", "固话", "手机", "地址", "发货信息", "备注", "代收金额", "保价金额", "业务类型"}
+	row.WriteSlice(&head, len(head))
+
+	for _, detail := range resp.Data {
+		row = sheet.AddRow()
+		row.AddCell().SetString(detail.Order.Id)
+		row.AddCell().SetString(detail.Order.Name)
+		row.AddCell().SetString("")
+		row.AddCell().SetString(detail.Order.Mobile)
+		row.AddCell().SetString(detail.Order.Address)
+
+		goodsInfo := ``
+		for _, item := range detail.Items {
+			itemInfo := item.BookIsbn
+			itemInfo += " " + item.BookTitle
+			if item.Type == 0 {
+				// 新书
+				itemInfo += "[新]" + ` `
+			} else if item.Type == 1 {
+				// 旧书
+				itemInfo += "[旧]" + ` `
+			}
+
+			// 书本数量
+			itemInfo += "x" + strconv.Itoa(int(item.Amount)) + `   `
+			for _, location := range item.Locations {
+				itemInfo += location.StorehouseName + "--" + location.ShelfName + "--" + location.FloorName + `   `
+			}
+
+			goodsInfo += itemInfo
+		}
+
+		row.AddCell().SetString(goodsInfo)
+		row.AddCell().SetString(detail.Order.Remark)
+		row.AddCell().SetString("")
+		row.AddCell().SetString("")
+		row.AddCell().SetString("")
+	}
+
+	filename := "发货单_" + time.Now().Format("20060102-15:04") + ".xlsx"
+	w.Header().Set("Content-Disposition",
+		`attachment; filename="`+filename+`"; filename*=utf-8''`+filename)
+
+	w.Header().Set("Content-Type",
+		`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8`)
+	file.Write(w)
 }

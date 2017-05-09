@@ -81,6 +81,7 @@ func (s *OrderServiceServer) PaySuccess(ctx context.Context, in *pb.Order) (*pb.
 	}
 
 	//2 修改商家账户和管理员账户 以及记录交易记录
+
 	misc.CallRPC(ctx, "bc_account", "PayOverOrderAccountHandle", in)
 
 	return &pb.NormalResp{}, nil
@@ -338,6 +339,11 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
 		}
 
+	} else {
+		_, err := misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", order)
+		if err != nil {
+			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
+		}
 	}
 	tx.Commit()
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
@@ -382,6 +388,44 @@ func (s *OrderServiceServer) UserCenterNecessaryOrderCount(ctx context.Context, 
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	return in, nil
+}
+
+// 获导出订单
+func (s *OrderServiceServer) ExportOrderData(ctx context.Context, in *pb.Order) (*pb.OrderListResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "ExportOrderData", "%#v", in))
+	details, err := orderDB.ExportOrderData(in)
+	if err != nil {
+		log.Warn(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.OrderListResp{Code: "00000", Message: "ok", Data: details}, nil
+}
+
+// 获导出订单
+func (s *OrderServiceServer) OrderShareOperation(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "OrderShareOperation", "%#v", in))
+	userId := in.UserId
+	err := orderDB.GetOrderBaseInfo(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	orderitems, err := orderDB.GetOrderItems(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	for i := 0; i < len(orderitems); i++ {
+		orderitem := orderitems[i]
+		cart := &pb.Cart{UserId: userId, StoreId: in.StoreId, GoodsId: orderitem.GoodsId, Type: orderitem.Type, Amount: orderitem.Amount}
+		misc.CallRPC(ctx, "bc_cart", "CartAdd", cart)
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 //处理售后订单

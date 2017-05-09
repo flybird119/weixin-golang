@@ -502,7 +502,7 @@ func HistoryMonthSales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.St
 			find.OldbookSales = int64(oldbook_sales.Float64)
 		}
 		if online_sales.Valid {
-			find.OnlineSales = int64(oldbook_sales.Float64)
+			find.OnlineSales = int64(online_sales.Float64)
 		}
 		if offline_sales.Valid {
 			find.OfflineSales = int64(offline_sales.Float64)

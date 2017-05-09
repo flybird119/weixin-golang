@@ -9,13 +9,13 @@ import (
 	"github.com/wothing/log"
 
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/goushuyun/weixin-golang/gateway/interway/router"
+	"github.com/goushuyun/weixin-golang/gateway/appway/router"
 	m "github.com/goushuyun/weixin-golang/gateway/middleware"
 )
 
 const (
-	svcName = "bc_interway"
-	port    = 8848
+	svcName = "bc_admin"
+	port    = 8870
 )
 
 var serviceNames = []string{
@@ -29,10 +29,9 @@ var serviceNames = []string{
 	"bc_topic",
 	"bc_weixin",
 	"bc_circular",
+	"bc_cart",
 	"bc_order",
-	"bc_retail",
-	"bc_statistic",
-	"bc_account",
+	"bc_address",
 	"bc_payment",
 }
 
@@ -47,9 +46,7 @@ func main() {
 	n.Use(m.RecoveryMiddleware())
 	n.Use(m.LogMiddleware())
 	n.Use(m.JWTMiddleware())
-	// n.Use(m.TokenRequiredMiddle())
 	n.UseHandler(router.SetRouterV1())
-
 	networkAddr := fmt.Sprintf("0.0.0.0:%d", db.GetPort(port))
 	log.Infof("%s servering on %s", svcName, networkAddr)
 	log.Fatal(http.ListenAndServe(networkAddr, n))

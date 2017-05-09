@@ -61,3 +61,10 @@ func TestNumFormat(t *testing.T) {
 	fmt.Println(totalPriceStr)
 
 }
+
+func TestSubString(t *testing.T) {
+	cardNo := "62284819919020398000"
+	str := SubString(cardNo, len(cardNo)-4, 4)
+	fmt.Print(str + "\n")
+	fmt.Print(len(cardNo))
+}
