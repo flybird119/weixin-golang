@@ -96,6 +96,31 @@ func PaySuccessNotify(w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("The callback obj is %+v\n", obj)
 
+	if p.Metadata["event"] == "recharge" {
+		// recharge success
+		recharge_model := &pb.RechargeModel{
+			Id:          p.OrderNo,
+			RechargeFee: p.Amount,
+			CompleteAt:  p.TimePaid,
+			PayWay:      "alipay_pc_direct",
+			TradeNo:     p.TransactionNo,
+			ChargeId:    p.Id,
+		}
+
+		log.JSON(recharge_model)
+
+		_, err = misc.CallRPC(misc.GenContext(r), "bc_store", "RechargeHandler", recharge_model)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+		}
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.Ok,
+			"message": "ok",
+		})
+		return
+	}
+
 	// 封装支付成功请求对象
 	order := &pb.Order{
 		Id:         p.OrderNo,
