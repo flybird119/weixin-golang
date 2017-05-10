@@ -47,7 +47,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/index_order_num_statistic", m.Wrap(c.StoreHistoryStateOrderNum))
 	v1.Register("/store/withdraw_apply", m.Wrap(c.WithdrawApply))
 	v1.Register("/store/recharge_apply", m.Wrap(c.RechargeApply))
-
+	v1.Register("/store/recharge_handler", m.Wrap(c.RechargeHandler)) //上限需要去掉
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 	v1.Register("/mediastore/refresh_urls", m.Wrap(c.RefreshUrls))

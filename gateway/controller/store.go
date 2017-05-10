@@ -255,3 +255,10 @@ func RechargeApply(w http.ResponseWriter, r *http.Request) {
 	req := &pb.RechargeModel{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "RechargeApply", req, "recharge_fee")
 }
+
+//充值完成处理
+func RechargeHandler(w http.ResponseWriter, r *http.Request) {
+
+	req := &pb.RechargeModel{}
+	misc.CallWithResp(w, r, "bc_store", "RechargeHandler", req, "recharge_fee")
+}
