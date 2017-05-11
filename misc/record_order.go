@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	filename = "/Users/lixiao/project/logs/record.log"
+	filename = "/var/log/bookcloud/record.log"
 )
 
 func LogErrOrder(order *pb.Order, impact string, err error) {
