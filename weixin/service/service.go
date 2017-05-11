@@ -23,6 +23,19 @@ import (
 
 type WeixinServer struct{}
 
+func (s *WeixinServer) GetOfficialOpenid(ctx context.Context, req *pb.GetUserInfoReq) (*pb.WeixinInfo, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetOfficialOpenid", "%#v", req))
+
+	official_openid, err := component.GetOfficalOpenid(req)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.WeixinInfo{Openid: official_openid}, nil
+}
+
 func (s *WeixinServer) GetOfficeAccountInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetOfficeAccountInfoResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetOfficeAccountInfo", "%#v", req))

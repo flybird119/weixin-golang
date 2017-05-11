@@ -8,6 +8,42 @@ import (
 	"github.com/wothing/log"
 )
 
+func SaveOfficialOpenid(user *pb.User) error {
+	query := "insert into users(official_openid) value($1) returning id"
+	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId)
+	if err != nil {
+		log.Error(err)
+		return nil
+	}
+	return nil
+}
+
+func GetUserInfoByOfficialOpenid(user *pb.User) error {
+	// 取出用户的基本信息、对应store_id 的 openid
+	query := "select u.id, u.nickname, u.sex, u.avatar, u.status, m.openid from users u, map_store_users m where m.user_id = u.id and u.official_openid = $1"
+
+	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &user.CurrentStoreOpenid)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func OfficalOpenidExist(official_openid string) (bool, error) {
+	var total int64
+	query := "select count(*) from users where official_openid = $1"
+	err := DB.QueryRow(query, total).Scan(&total)
+
+	if err != nil {
+		log.Error(err)
+		return false, err
+	}
+
+	return total > 0, nil
+}
+
 func SaveUser(user *pb.User) error {
 	// check if user is exist
 	isExist, err := isExist(user)

@@ -17,6 +17,12 @@ import (
 	"github.com/wothing/log"
 )
 
+func GetUserInfo(w http.ResponseWriter, r *http.Request) {
+	req := &pb.WeixinReq{}
+
+	misc.CallWithResp(w, r, "bc_user", "GetUserInfo", req, "store_id", "appid", "appid")
+}
+
 func MsgPush(w http.ResponseWriter, r *http.Request) {
 	log.Debugf("The request body is : %s", r.Context().Value("body"))
 
