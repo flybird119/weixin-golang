@@ -9,7 +9,7 @@ import (
 )
 
 func SaveOfficialOpenid(user *pb.User) error {
-	query := "insert into users(official_openid) value($1) returning id"
+	query := "insert into users(official_openid) values($1) returning id"
 	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId)
 	if err != nil {
 		log.Error(err)

@@ -5,6 +5,7 @@ import (
 
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/misc"
+	"github.com/goushuyun/weixin-golang/misc/token"
 	"golang.org/x/net/context"
 
 	"github.com/goushuyun/weixin-golang/pb"
@@ -54,7 +55,10 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoReq) (
 		}
 	}
 
-	return &pb.GetUserInfoResp{}, nil
+	// sign token
+	token_str := token.SignUserToken(token.AppToken, user.UserId, req.StoreId)
+
+	return &pb.GetUserInfoResp{Code: errs.Ok, Message: "ok", User: user, Token: token_str}, nil
 }
 
 func (s *UserService) GetUserInfoByOpenid(ctx context.Context, req *pb.User) (*pb.User, error) {

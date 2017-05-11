@@ -4,4 +4,4 @@ create table map_store_users (
     store_id text not null,
     user_id text not null,
     openid text not null
-)
+);
