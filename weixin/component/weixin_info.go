@@ -9,6 +9,37 @@ import (
 	"github.com/wothing/log"
 )
 
+func GetOfficalOpenid(req *pb.GetUserInfoReq) (string, error) {
+	// 通过 code 获取openid
+	component_access_token, err := ComponentAccessToken()
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	config := config.GetConf()
+
+	// get access_token
+	access_token_url := "https://api.weixin.qq.com/sns/oauth2/component/access_token?appid=%s&code=%s&grant_type=authorization_code&component_appid=%s&component_access_token=%s"
+
+	access_token_url = fmt.Sprintf(access_token_url, req.Appid, req.Code, config.AppID, component_access_token)
+
+	log.Debug("++++++++++++++++++++++++++++++++++")
+	log.Debugf("get access_token_url is : %s", access_token_url)
+	log.Debug("++++++++++++++++++++++++++++++++++")
+
+	getAcessTokenResp := &GetAcessTokenResp{}
+	err = http.GETWithUnmarshal(access_token_url, getAcessTokenResp)
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	log.Debugf("------------授权 access_token: %s--------------", getAcessTokenResp.AccessToken)
+
+	return getAcessTokenResp.Openid, nil
+}
+
 func GetWeixinInfo(req *pb.WeixinReq) (*pb.WeixinInfo, error) {
 	component_access_token, err := ComponentAccessToken()
 	if err != nil {

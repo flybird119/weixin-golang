@@ -4,6 +4,20 @@ import "pb/common.proto";
 
 service UserService {
     rpc SaveUser (User) returns (User);
+    rpc GetUserInfo (GetUserInfoReq) returns (GetUserInfoResp);
+}
+
+message GetUserInfoReq {
+    string code = 1;
+    string appid = 2;
+    string store_id = 3;
+}
+
+message GetUserInfoResp {
+    string code = 1;
+    string message = 2;
+    User user = 3;
+    string token = 4;
 }
 
 message User {
@@ -11,4 +25,6 @@ message User {
     WeixinInfo weixin_info = 2;
     string store_id = 3;
     int64 status = 4;
+
+    string current_store_openid = 5;
 }

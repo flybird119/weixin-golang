@@ -14,6 +14,14 @@ service WeixinService {
 
     rpc ExtractImageFromWeixin (ExtractImageReq) returns (ExtractImageResp);
     rpc GetOfficeAccountInfo (WeixinReq) returns (GetOfficeAccountInfoResp);
+    rpc GetOfficialOpenid (GetUserInfoReq) returns (WeixinInfo);
+}
+
+message GetWeixinInfoResp {
+    string code = 1;
+    string message = 2;
+    User data = 3;
+    string token = 4;
 }
 
 message GetOfficeAccountInfoResp {
@@ -64,12 +72,6 @@ message OfficialAccount {
     string wechat_id = 12;
 }
 
-message GetWeixinInfoResp {
-    string code = 1;
-    string message = 2;
-    User data = 3;
-    string token = 4;
-}
 
 message WeixinReq {
     string store_id = 1;

@@ -9,6 +9,9 @@ import (
 func SetRouterV1() *m.Router {
 	v1 := m.NewWithPrefix("/v1")
 
+	// user
+	v1.Register("/user/get_user_info", m.Wrap(c.GetUserInfo))
+
 	// payment
 	v1.Register("/payment/get_charge", m.Wrap(c.GetCharge))
 	v1.Register("/payment/pay_success_notify", m.Wrap(c.PaySuccessNotify))
@@ -20,7 +23,6 @@ func SetRouterV1() *m.Router {
 	v1.Register("/weixin/get_js_ticket", m.Wrap(c.GetJsTicket))
 	v1.Register("/weixin/extract_image_from_weixin_to_qiniu", m.Wrap(c.ExtractImg))
 	v1.Register("/weixin/msgpush/:appid", m.Wrap(c.MsgPush))
-	// mediastore
 
 	//school
 	v1.Register("/school/get_store_schools", m.Wrap(c.StoreSchoolsApp))
