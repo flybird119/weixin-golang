@@ -23,21 +23,21 @@ func SetRouterV1() *m.Router {
 	// mediastore
 
 	//school
-	v1.Register("/school/get_store_schools", m.Wrap(c.StoreSchools))
+	v1.Register("/school/get_store_schools", m.Wrap(c.StoreSchoolsApp))
 	v1.Register("/school/get_school_info", m.Wrap(c.GetSchoolById))
 
 	//goods
 	v1.Register("/goods/search", m.Wrap(c.AppSearchGoods))
 
 	//circular
-	v1.Register("/circular/list", m.Wrap(c.CircularList))
+	v1.Register("/circular/list", m.Wrap(c.CircularListApp))
 	//cart
 	v1.Register("/cart/add", m.Wrap(c.CartAdd))
 	v1.Register("/cart/list", m.Wrap(c.CartList))
 	v1.Register("/cart/update", m.Wrap(c.CartUpdate))
 	v1.Register("/cart/del", m.Wrap(c.CartDel))
 	//topic
-	v1.Register("/topic/list", m.Wrap(c.TopicsInfo))
+	v1.Register("/topic/list", m.Wrap(c.TopicsInfoApp))
 	//order
 	v1.Register("/order/submit", m.Wrap(c.OrderSubmit))
 	v1.Register("/order/pay_success", m.Wrap(c.PaySuccess))
@@ -56,7 +56,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/address/my_address", m.Wrap(c.MyAddresses))
 
 	//store
-	v1.Register("/store/info", m.Wrap(c.StoreInfo))
+	v1.Register("/store/info", m.Wrap(c.StoreInfoApp))
 
 	return v1
 }

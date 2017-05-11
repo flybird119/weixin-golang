@@ -78,6 +78,12 @@ func CircularList(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_circular", "CircularList", req)
 }
 
+//CircularList 轮播图list
+func CircularListApp(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Circular{}
+	misc.CallWithResp(w, r, "bc_circular", "CircularList", req)
+}
+
 //CircularList 初始化轮播图
 func CircularInit(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Circular{}

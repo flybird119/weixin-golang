@@ -58,6 +58,12 @@ func StoreSchools(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_school", "StoreSchools", req)
 }
 
+//StoreSchools 店铺下的所有学校
+func StoreSchoolsApp(w http.ResponseWriter, r *http.Request) {
+	req := &pb.School{}
+	misc.CallWithResp(w, r, "bc_school", "StoreSchools", req)
+}
+
 //GetSchoolById 根据学校id获取学校信息
 func GetSchoolById(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
