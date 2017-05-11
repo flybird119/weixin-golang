@@ -1,7 +1,7 @@
 -- 订单表
 CREATE SEQUENCE IF NOT EXISTS recharge_id_seq;
 create table recharge (
-    id text primary key not null default 'rech_'||to_char(now() AT TIME ZONE 'cct', 'yymmdd') || trim(to_char(nextval('recharge_id_seq'), '0000000')),
+    id text primary key not null default 'rech'||to_char(now() AT TIME ZONE 'cct', 'yymmdd') || trim(to_char(nextval('recharge_id_seq'), '0000000')),
     -- 店铺信息
     store_id text not null,                            --店铺id
     --充值金额

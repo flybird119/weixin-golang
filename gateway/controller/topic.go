@@ -92,3 +92,9 @@ func TopicsInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Topic{TokenStoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_topic", "TopicsInfo", req)
 }
+
+//SearchTopics 搜索话题
+func TopicsInfoApp(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Topic{}
+	misc.CallWithResp(w, r, "bc_topic", "TopicsInfo", req)
+}
