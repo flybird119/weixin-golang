@@ -23,6 +23,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/weixin/get_js_ticket", m.Wrap(c.GetJsTicket))
 	v1.Register("/weixin/extract_image_from_weixin_to_qiniu", m.Wrap(c.ExtractImg))
 	v1.Register("/weixin/msgpush/:appid", m.Wrap(c.MsgPush))
+	v1.Register("/weixin/get_user_base_info", m.Wrap(c.GetUserBaseInfo))
 
 	//school
 	v1.Register("/school/get_store_schools", m.Wrap(c.StoreSchools))

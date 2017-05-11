@@ -11,6 +11,9 @@ import (
 func SaveOfficialOpenid(user *pb.User) error {
 	query := "insert into users(official_openid) values($1) returning id"
 	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId)
+
+	log.Debugf("insert into users(official_openid) values('%s') returning id", user.WeixinInfo.Openid)
+
 	if err != nil {
 		log.Error(err)
 		return nil
@@ -23,6 +26,8 @@ func GetUserInfoByOfficialOpenid(user *pb.User) error {
 	query := "select u.id, u.nickname, u.sex, u.avatar, u.status, m.openid from users u, map_store_users m where m.user_id = u.id and u.official_openid = $1"
 
 	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &user.CurrentStoreOpenid)
+
+	log.Debugf("select u.id, u.nickname, u.sex, u.avatar, u.status, m.openid from users u, map_store_users m where m.user_id = u.id and u.official_openid = '%s'", user.WeixinInfo.Openid)
 	if err != nil {
 		log.Error(err)
 		return err

@@ -23,6 +23,58 @@ import (
 
 type WeixinServer struct{}
 
+func (s WeixinServer) GetUserBaseInfo(ctx context.Context, req *pb.WeixinReq) (*pb.GetUserBaseInfoResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetUserBaseInfo", "%#v", req))
+
+	// 获取store_id 所对应的 appid
+	officialAccount, err := db.GetAccountInfoByStoreId(req.StoreId)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// 拿到该 appid 的授权 access_token
+	authorizer_token, err := component.ApiAuthorizerToken(officialAccount.Appid, officialAccount.RefreshToken)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	weixin_info, err := getUserBaseInfo(req.Openid, authorizer_token)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	// 更新weixin_info
+	if weixin_info.Subscribe == 0 {
+		// 未订阅
+		return &pb.GetUserBaseInfoResp{Code: errs.Ok, Message: "no_subscribe"}, nil
+	} else {
+		err = db.UpdateUserInfo(weixin_info)
+		if err != nil {
+			log.Error(err)
+			return nil, errs.Wrap(errors.New(err.Error()))
+		}
+	}
+
+	user := &pb.User{
+		WeixinInfo: weixin_info,
+	}
+
+	// 请求 用户数据
+
+	go func() {
+		err = db.CreateUser2StoreMap(req)
+		if err != nil {
+			log.Error(err)
+			// return nil, errs.Wrap(errors.New(err.Error()))
+		}
+	}()
+	return &pb.GetUserBaseInfoResp{Code: errs.Ok, Message: "ok", Data: user}, nil
+}
+
 func (s *WeixinServer) GetOfficialOpenid(ctx context.Context, req *pb.GetUserInfoReq) (*pb.WeixinInfo, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetOfficialOpenid", "%#v", req))
