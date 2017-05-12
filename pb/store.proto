@@ -168,6 +168,7 @@ message Store{
   SellerInfo seller = 10;
   int64 role = 11;
   string admin_mobile = 12;
+  string appid = 13;
 }
 
 

@@ -71,11 +71,11 @@ func UpdateRealStore(realStore *pb.RealStore) error {
 //GetStoreInfo 获取店铺的信息
 func GetStoreInfo(store *pb.Store) error {
 	//获取店铺基本信息
-	query := "select name,logo,status,profile,extract(epoch from expire_at)::integer,address,business_license,extract(epoch from create_at)::integer from store where id=$1"
+	query := "select appid, name,logo,status,profile,extract(epoch from expire_at)::integer,address,business_license,extract(epoch from create_at)::integer from store where id=$1"
 	var logo, profile, address, businessLicense sql.NullString
-	err := DB.QueryRow(query, store.Id).Scan(&store.Name, &logo, &store.Status, &profile, &store.ExpireAt, &address, &businessLicense, &store.CreateAt)
+	err := DB.QueryRow(query, store.Id).Scan(&store.Appid, &store.Name, &logo, &store.Status, &profile, &store.ExpireAt, &address, &businessLicense, &store.CreateAt)
 
-	log.Debugf("select name,logo,status,profile,extract(epoch from expire_at)::integer,address,business_license,extract(epoch from create_at)::integer from store where id='%s'", store.Id)
+	log.Debugf("select appid, name,logo,status,profile,extract(epoch from expire_at)::integer,address,business_license,extract(epoch from create_at)::integer from store where id='%s'", store.Id)
 
 	if err != nil {
 		log.Debugf("Err:%s !!select name,logo,status,profile,service_mobiles,extract(epoch from s.expire_at)::integer,address,business_license,extract(epoch from s.create_at)::integer where id=%s", err, store.Id)
