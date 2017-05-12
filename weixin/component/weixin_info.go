@@ -9,7 +9,7 @@ import (
 	"github.com/wothing/log"
 )
 
-func GetOfficalOpenid(req *pb.GetUserInfoReq) (string, error) {
+func GetOpenid(req *pb.GetUserInfoReq) (string, error) {
 	// 通过 code 获取openid
 	component_access_token, err := ComponentAccessToken()
 	if err != nil {

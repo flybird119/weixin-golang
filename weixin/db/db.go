@@ -7,6 +7,30 @@ import (
 	"github.com/wothing/log"
 )
 
+func CreateUser2StoreMap(req *pb.WeixinReq) error {
+	query := "insert into map_store_users(store_id, user_id, openid) values($1, $2, $3)"
+
+	_, err := DB.Exec(query, req.StoreId, req.UserId, req.Openid)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func UpdateUserInfo(info *pb.WeixinInfo) error {
+	query := "update users set nickname = $1, sex = $2, avatar = $3"
+
+	_, err := DB.Exec(query, info.Nickname, info.Sex, info.Headimgurl)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
+}
+
 func GetAccountInfoByStoreId(store_id string) (*pb.OfficialAccount, error) {
 	account := &pb.OfficialAccount{}
 

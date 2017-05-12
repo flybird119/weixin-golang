@@ -18,6 +18,26 @@ import (
 	"golang.org/x/net/context"
 )
 
+func getUserBaseInfo(openid, access_token string) (*pb.WeixinInfo, error) {
+	url := "https://api.weixin.qq.com/cgi-bin/user/info?access_token=%s&openid=%s&lang=zh_CN"
+
+	url = fmt.Sprintf(url, access_token, openid)
+
+	weixin_info := pb.WeixinInfo{}
+	resp, err := goreq.Request{Method: "POST", Uri: url}.Do()
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	err = resp.Body.FromJsonTo(weixin_info)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	return &weixin_info, nil
+}
+
 func saveAuthorizerAccessTokenToEtcd(appid, token string) error {
 	key := "/bookcloud/weixin/component/AuthorizerAccessToken/" + appid
 	_, err := globalDB.GetEtcdConn().Set(context.Background(), key, token, &client.SetOptions{TTL: time.Minute * 100})

@@ -1,10 +1,11 @@
 package service
 
 import (
-	"17mei/errs"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
