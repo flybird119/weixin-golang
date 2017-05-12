@@ -39,7 +39,8 @@ func GetUserInfoByOfficialOpenid(user *pb.User) error {
 func OfficalOpenidExist(official_openid string) (bool, error) {
 	var total int64
 	query := "select count(*) from users where official_openid = $1"
-	err := DB.QueryRow(query, total).Scan(&total)
+	err := DB.QueryRow(query, official_openid).Scan(&total)
+	log.Debugf("select count(*) from users where official_openid = '%s'", official_openid)
 
 	if err != nil {
 		log.Error(err)
