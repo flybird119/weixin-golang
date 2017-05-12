@@ -18,7 +18,7 @@ import (
 )
 
 func GetOpenid(w http.ResponseWriter, r *http.Request) {
-	req := &pb.WeixinInfo{}
+	req := &pb.GetUserInfoReq{}
 	err := misc.Request2Struct(r, req, "code", "appid", "store_id")
 	if err != nil {
 		log.Error(err)
@@ -41,7 +41,7 @@ func GetOpenid(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	misc.RespondMessage(w, r, map[string]interface{}{
-		"code":    errs.ErrTokenNotFound,
+		"code":    errs.Ok,
 		"message": "ok",
 		"data":    resp,
 	})
