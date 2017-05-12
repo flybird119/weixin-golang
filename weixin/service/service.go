@@ -105,7 +105,7 @@ func (s *WeixinServer) GetOfficeAccountInfo(ctx context.Context, req *pb.WeixinR
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-
+	oa.StoreId = req.StoreId
 	return &pb.GetOfficeAccountInfoResp{Code: errs.Ok, Message: "ok", Data: oa}, nil
 }
 
