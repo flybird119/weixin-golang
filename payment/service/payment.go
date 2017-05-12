@@ -77,6 +77,12 @@ func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetCharge", "%#v", req))
 
+	log.Debug("------------------------------")
+	log.Debug("------------------------------")
+	log.JSONIndent(req)
+	log.Debug("------------------------------")
+	log.Debug("------------------------------")
+
 	// 根据支付方式来分别填充 extra 参数
 	extra := make(map[string]interface{})
 	if req.Channel == "alipay_wap" || req.Channel == "alipay_pc_direct" {
