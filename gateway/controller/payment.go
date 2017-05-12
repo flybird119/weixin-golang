@@ -118,26 +118,29 @@ func PaySuccessNotify(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.Ok,
 			"message": "ok",
 		})
-		return
+
+	} else if p.Metadata["event"] == "buy_goods" {
+
+		// 封装支付成功请求对象
+		order := &pb.Order{
+			Id:         p.OrderNo,
+			TradeNo:    p.Id,
+			PayChannel: p.Channel,
+		}
+
+		log.Debugf("The order obj is %+v\n", order)
+		_, err = misc.CallRPC(misc.GenContext(r), "bc_order", "PaySuccess", order)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - Something bad happened!"))
+		}
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.Ok,
+			"message": "ok",
+		})
+
 	}
 
-	// 封装支付成功请求对象
-	order := &pb.Order{
-		Id:         p.OrderNo,
-		TradeNo:    p.Id,
-		PayChannel: p.Channel,
-	}
-
-	log.Debugf("The order obj is %+v\n", order)
-	_, err = misc.CallRPC(misc.GenContext(r), "bc_order", "PaySuccess", order)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - Something bad happened!"))
-	}
-	misc.RespondMessage(w, r, map[string]interface{}{
-		"code":    errs.Ok,
-		"message": "ok",
-	})
 }
 
 func GetCharge(w http.ResponseWriter, r *http.Request) {

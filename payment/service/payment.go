@@ -89,7 +89,7 @@ func (s *PaymentService) GetCharge(ctx context.Context, req *pb.GetChargeReq) (*
 
 	// 为充值支付添加 metadata 元数据， 以便支付成功通知后识别
 	metadata := make(map[string]interface{})
-	metadata["event"] = "recharge"
+	metadata["event"] = req.EventType
 
 	// 封装数据，并请求 charge 对象
 	params := &pingpp.ChargeParams{
