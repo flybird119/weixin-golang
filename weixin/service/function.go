@@ -23,7 +23,7 @@ func getUserBaseInfo(openid, access_token string) (*pb.WeixinInfo, error) {
 
 	url = fmt.Sprintf(url, access_token, openid)
 
-	weixin_info := pb.WeixinInfo{}
+	weixin_info := &pb.WeixinInfo{}
 	resp, err := goreq.Request{Method: "POST", Uri: url}.Do()
 	if err != nil {
 		log.Error(err)
@@ -35,7 +35,7 @@ func getUserBaseInfo(openid, access_token string) (*pb.WeixinInfo, error) {
 		return nil, err
 	}
 
-	return &weixin_info, nil
+	return weixin_info, nil
 }
 
 func saveAuthorizerAccessTokenToEtcd(appid, token string) error {

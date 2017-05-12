@@ -19,10 +19,10 @@ func CreateUser2StoreMap(req *pb.WeixinReq) error {
 	return nil
 }
 
-func UpdateUserInfo(info *pb.WeixinInfo) error {
-	query := "update users set nickname = $1, sex = $2, avatar = $3"
+func UpdateUserInfo(info *pb.WeixinInfo, user_id string) error {
+	query := "update users set nickname = $1, sex = $2, avatar = $3 where id = $4"
 
-	_, err := DB.Exec(query, info.Nickname, info.Sex, info.Headimgurl)
+	_, err := DB.Exec(query, info.Nickname, info.Sex, info.Headimgurl, user_id)
 	if err != nil {
 		log.Error(err)
 		return err
