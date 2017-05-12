@@ -75,11 +75,11 @@ func (s WeixinServer) GetUserBaseInfo(ctx context.Context, req *pb.WeixinReq) (*
 	return &pb.GetUserBaseInfoResp{Code: errs.Ok, Message: "ok", Data: user}, nil
 }
 
-func (s *WeixinServer) GetOfficialOpenid(ctx context.Context, req *pb.GetUserInfoReq) (*pb.WeixinInfo, error) {
+func (s *WeixinServer) GetOpenid(ctx context.Context, req *pb.GetUserInfoReq) (*pb.WeixinInfo, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "GetOfficialOpenid", "%#v", req))
+	defer log.TraceOut(log.TraceIn(tid, "GetOpenid", "%#v", req))
 
-	official_openid, err := component.GetOfficalOpenid(req)
+	official_openid, err := component.GetOpenid(req)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))

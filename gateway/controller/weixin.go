@@ -17,6 +17,37 @@ import (
 	"github.com/wothing/log"
 )
 
+func GetOpenid(w http.ResponseWriter, r *http.Request) {
+	req := &pb.WeixinInfo{}
+	err := misc.Request2Struct(r, req, "code", "appid", "store_id")
+	if err != nil {
+		log.Error(err)
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	resp := &pb.WeixinInfo{}
+
+	err = misc.CallSVC(misc.GenContext(r), "bc_weixin", "GetOpenid", req, resp)
+	if err != nil {
+		log.Error(err)
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": err.Error(),
+		})
+		return
+	}
+	misc.RespondMessage(w, r, map[string]interface{}{
+		"code":    errs.ErrTokenNotFound,
+		"message": "ok",
+		"data":    resp,
+	})
+	return
+}
+
 func GetUserBaseInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
 	if c := token.Get(r); c != nil {

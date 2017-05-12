@@ -22,7 +22,7 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoReq) (
 
 	// 根据 code , appid（官方）换取用户官方 openid
 	weixin_info := &pb.WeixinInfo{}
-	err := misc.CallSVC(ctx, "bc_weixin", "GetOfficialOpenid", req, weixin_info)
+	err := misc.CallSVC(ctx, "bc_weixin", "GetOpenid", req, weixin_info)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))

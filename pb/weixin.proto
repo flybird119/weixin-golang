@@ -14,7 +14,7 @@ service WeixinService {
 
     rpc ExtractImageFromWeixin (ExtractImageReq) returns (ExtractImageResp);
     rpc GetOfficeAccountInfo (WeixinReq) returns (GetOfficeAccountInfoResp);
-    rpc GetOfficialOpenid (GetUserInfoReq) returns (WeixinInfo);
+    rpc GetOpenid (GetUserInfoReq) returns (WeixinInfo);
     rpc GetUserBaseInfo (WeixinReq) returns (GetUserBaseInfoResp);
 }
 
