@@ -29,6 +29,10 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoReq) (
 	}
 
 	// after get official_openid, get user info or save user info
+	log.Debug("------------------------------------------------")
+	log.Debugf("The openid is : %s", weixin_info.Openid)
+	log.Debug("------------------------------------------------")
+
 	exist, err := db.OfficalOpenidExist(weixin_info.Openid)
 	if err != nil {
 		log.Error(err)

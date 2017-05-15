@@ -52,7 +52,7 @@ func (s WeixinServer) GetUserBaseInfo(ctx context.Context, req *pb.WeixinReq) (*
 		// 未订阅
 		return &pb.GetUserBaseInfoResp{Code: errs.Ok, Message: "no_subscribe"}, nil
 	} else {
-		err = db.UpdateUserInfo(weixin_info)
+		err = db.UpdateUserInfo(weixin_info, req.UserId)
 		if err != nil {
 			log.Error(err)
 			return nil, errs.Wrap(errors.New(err.Error()))
@@ -105,7 +105,7 @@ func (s *WeixinServer) GetOfficeAccountInfo(ctx context.Context, req *pb.WeixinR
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-
+	oa.StoreId = req.StoreId
 	return &pb.GetOfficeAccountInfoResp{Code: errs.Ok, Message: "ok", Data: oa}, nil
 }
 
