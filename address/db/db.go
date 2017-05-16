@@ -125,8 +125,8 @@ func DelAddress(addresses []*pb.AddressInfo, userId string) error {
 
 //获取用户的地址
 func FindAddressByUser(address *pb.AddressInfo) (addresses []*pb.AddressInfo, err error) {
-	query := "select id,name,tel,address,user_id,is_default,school_id ,store_id from address where user_id=$1 and store_id=$2"
-	log.Debugf("select id,name,tel,address,user_id,is_default,school_id ,store_id from address where user_id='%s' and store_id='%s'", address.UserId, address.StoreId)
+	query := "select id,name,tel,address,user_id,is_default,school_id ,store_id from address where user_id=$1 and store_id=$2 order by id "
+	log.Debugf("select id,name,tel,address,user_id,is_default,school_id ,store_id from address where user_id='%s' and store_id='%s' order by id ", address.UserId, address.StoreId)
 	rows, err := DB.Query(query, address.UserId, address.StoreId)
 	if err == sql.ErrNoRows {
 

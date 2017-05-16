@@ -338,6 +338,22 @@ func GetOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error) {
 			misc.LogErr(err)
 			return nil, err
 		}
+
+		locations, err := goodsDB.GetGoodsLocationDetailByIdAndType(orderItem.GoodsId, orderItem.Type)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		var printLocation string
+		for i := 0; i < len(locations); i++ {
+			if i == 0 {
+				printLocation = locations[i].StorehouseName + "-" + locations[i].ShelfName + "-" + locations[i].FloorName
+			} else {
+				printLocation += locations[i].StorehouseName + "-" + locations[i].ShelfName + "-" + locations[i].FloorName
+
+			}
+		}
+		orderItem.PrintLocation = printLocation
 	}
 	return
 }
