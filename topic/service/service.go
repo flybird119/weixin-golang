@@ -24,7 +24,7 @@ func (s *TopicServiceServer) AddTopic(ctx context.Context, in *pb.Topic) (*pb.No
 	//    限制最多创建20个话题
 	//*****
 	seachTopic := &pb.Topic{TokenStoreId: in.TokenStoreId}
-	topics, err := db.SearchTopics(seachTopic)
+	topics, err, _ := db.SearchTopics(seachTopic)
 
 	if err != nil {
 		log.Debug(err)
@@ -33,13 +33,6 @@ func (s *TopicServiceServer) AddTopic(ctx context.Context, in *pb.Topic) (*pb.No
 	if len(topics) > 20 {
 
 		return nil, errs.Wrap(errors.New("已达创建上限"))
-	}
-
-	//******
-	//  每个话题最多限制15本书
-	//******
-	if len(in.Items) > 15 {
-		return nil, errs.Wrap(errors.New("已超话题最大商品数量"))
 	}
 
 	err = db.AddTopic(in)
@@ -105,19 +98,19 @@ func (s *TopicServiceServer) DelTopicItem(ctx context.Context, in *pb.TopicItem)
 func (s *TopicServiceServer) SearchTopics(ctx context.Context, in *pb.Topic) (*pb.SearchTopicResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "SearchTopics", "%#v", in))
-	topics, err := db.SearchTopics(in)
+	topics, err, totalCount := db.SearchTopics(in)
 	if err != nil {
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	return &pb.SearchTopicResp{Code: "00000", Message: "ok", Data: topics}, nil
+	return &pb.SearchTopicResp{Code: "00000", Message: "ok", Data: topics, TotalCount: totalCount}, nil
 }
 
 //SearchTopics 搜索话题
 func (s *TopicServiceServer) TopicsInfo(ctx context.Context, in *pb.Topic) (*pb.SearchTopicResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "SearchTopics", "%#v", in))
-	topics, err := db.SearchTopics(in)
+	topics, err, totalCount := db.SearchTopics(in)
 	if err != nil {
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
@@ -160,5 +153,5 @@ func (s *TopicServiceServer) TopicsInfo(ctx context.Context, in *pb.Topic) (*pb.
 
 		}
 	}
-	return &pb.SearchTopicResp{Code: "00000", Message: "ok", Data: topics}, nil
+	return &pb.SearchTopicResp{Code: "00000", Message: "ok", Data: topics, TotalCount: totalCount}, nil
 }

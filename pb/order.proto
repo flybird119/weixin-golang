@@ -132,6 +132,7 @@ message OrderItem{
     string book_title = 8;
     int64 origin_price = 9;
     repeated GoodsLocationWithName locations= 10;
+    string print_location = 11;
 }
 
 message OrderStaff{

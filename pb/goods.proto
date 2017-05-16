@@ -87,7 +87,6 @@ message GoodsSalesModel{            //当前云店商品数量统计
     int64 price = 3;
     int64 amount = 4;
     repeated GoodsLocation location = 13;
-    string locations = 5;
 }
 
 //图书位置

@@ -25,12 +25,15 @@ message Topic{
     string token_store_id = 9;
     repeated TopicItem items = 10;
     int64 item_count = 11;
+    int64 page = 12;
+    int64 size = 13;
 }
 
 message SearchTopicResp{
     string code = 1;
     string message = 2;
     repeated Topic data = 3;
+    int64 totalCount = 4;
 }
 
 

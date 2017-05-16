@@ -148,8 +148,9 @@ func DelTopicItem(topicItem *pb.TopicItem) error {
 }
 
 //SearchTopics 搜索话题 topic.Id topic.Title topic.TokenStoreId
-func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
+func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error, totalCount int64) {
 	query := "select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer create_at,extract(epoch from t.update_at)::integer update_at  from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
+	countQuery := "select count(*) from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
 	var args []interface{}
 	var condition string
 	if topic.Id != "" {
@@ -168,18 +169,35 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 		args = append(args, topic.Status)
 		condition += fmt.Sprintf(" and t.status=$%d", len(args))
 	}
+	//计数count
+	countQuery += condition
+	err = DB.QueryRow(countQuery, args...).Scan(&totalCount)
+	if err != nil {
+		return
+	}
+	//如果统计的为零
+	if totalCount == 0 {
+		return
+	}
 
-	condition += " order by t.sort desc"
+	if topic.Page <= 0 {
+		topic.Page = 1
+	}
+	if topic.Size <= 0 {
+		topic.Size = 15
+	}
+
+	condition += " order by t.sort desc "
 	query += condition
 
 	log.Debugf(query+" args:%s", args)
 	rows, err := DB.Query(query, args...)
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, nil, totalCount
 	}
 	if err != nil {
 		misc.LogErr(err)
-		return nil, err
+		return nil, err, totalCount
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -187,23 +205,24 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error) {
 		topic := &pb.Topic{}
 		topics = append(topics, topic)
 		rows.Scan(&topic.Id, &topic.Profile, &topic.Title, &topic.Sort, &topic.Status, &topic.CreateAt, &topic.UpdateAt)
-		items, findErr := GetTopicItemsByTopic(topic.Id)
+		items, findErr := GetTopicItemsByTopic(topic.Id, topic.Page, topic.Size)
 		if err != nil {
 
 			misc.LogErr(findErr)
-			return nil, findErr
+			return nil, findErr, totalCount
 		}
 		topic.ItemCount = int64(len(items))
 
 		topic.Items = items
 	}
-	return topics, err
+	return topics, err, totalCount
 }
 
 //GetTopicItemsByTopic 获取话题项
-func GetTopicItemsByTopic(topic_id string) (items []*pb.TopicItem, err error) {
+func GetTopicItemsByTopic(topic_id string, page, size int64) (items []*pb.TopicItem, err error) {
 	query := "select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=$1 order by id"
-	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=%s order by id", topic_id)
+	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=%s order by id OFFSET %d LIMIT %d ", topic_id, page*size, size)
+	query += fmt.Sprintf(" OFFSET %d LIMIT %d ", page*size, size)
 
 	rows, err := DB.Query(query, topic_id)
 
