@@ -95,6 +95,6 @@ func TopicsInfo(w http.ResponseWriter, r *http.Request) {
 
 //SearchTopics 搜索话题
 func TopicsInfoApp(w http.ResponseWriter, r *http.Request) {
-	req := &pb.Topic{}
+	req := &pb.Topic{Status: 1}
 	misc.CallWithResp(w, r, "bc_topic", "TopicsInfo", req)
 }

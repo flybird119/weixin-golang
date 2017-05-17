@@ -148,7 +148,7 @@ func DelTopicItem(topicItem *pb.TopicItem) error {
 }
 
 //SearchTopics 搜索话题 topic.Id topic.Title topic.TokenStoreId
-func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error, totalCount int64) {
+func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err error, totalCount int64) {
 	query := "select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer create_at,extract(epoch from t.update_at)::integer update_at  from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
 	countQuery := "select count(*) from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
 	var args []interface{}
@@ -179,12 +179,21 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error, totalCount in
 	if totalCount == 0 {
 		return
 	}
-
-	if topic.Page <= 0 {
-		topic.Page = 1
-	}
-	if topic.Size <= 0 {
-		topic.Size = 15
+	var page, size int64
+	if searchType == 1 {
+		page = 1
+		size = 100000
+	} else {
+		if topic.Page <= 0 {
+			page = 1
+		} else {
+			page = topic.Page
+		}
+		if topic.Size <= 0 {
+			size = 15
+		} else {
+			size = topic.Size
+		}
 	}
 
 	condition += " order by t.sort desc "
@@ -205,13 +214,15 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error, totalCount in
 		topic := &pb.Topic{}
 		topics = append(topics, topic)
 		rows.Scan(&topic.Id, &topic.Profile, &topic.Title, &topic.Sort, &topic.Status, &topic.CreateAt, &topic.UpdateAt)
-		items, findErr := GetTopicItemsByTopic(topic.Id, topic.Page, topic.Size)
+
+		items, findErr, totalCount1 := GetTopicItemsByTopic(topic.Id, page, size)
 		if err != nil {
 
 			misc.LogErr(findErr)
 			return nil, findErr, totalCount
 		}
-		topic.ItemCount = int64(len(items))
+
+		topic.ItemCount = int64(totalCount1)
 
 		topic.Items = items
 	}
@@ -219,19 +230,26 @@ func SearchTopics(topic *pb.Topic) (topics []*pb.Topic, err error, totalCount in
 }
 
 //GetTopicItemsByTopic 获取话题项
-func GetTopicItemsByTopic(topic_id string, page, size int64) (items []*pb.TopicItem, err error) {
-	query := "select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=$1 order by id"
-	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=%s order by id OFFSET %d LIMIT %d ", topic_id, page*size, size)
-	query += fmt.Sprintf(" OFFSET %d LIMIT %d ", page*size, size)
+func GetTopicItemsByTopic(topic_id string, page, size int64) (items []*pb.TopicItem, err error, totalCount int64) {
+	query := fmt.Sprintf("select count(*) from topic_item where topic_id='%s'", topic_id)
+	log.Debug(query)
+	err = DB.QueryRow(query).Scan(&totalCount)
+	if err != nil {
+		misc.LogErr(err)
+		return
+	}
+	query = "select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=$1 order by id"
+	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id='%s' order by id OFFSET %d LIMIT %d ", topic_id, (page-1)*size, size)
+	query += fmt.Sprintf(" OFFSET %d LIMIT %d ", (page-1)*size, size)
 
 	rows, err := DB.Query(query, topic_id)
 
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, nil, 0
 	}
 	if err != nil {
 		misc.LogErr(err)
-		return nil, err
+		return
 	}
 	defer rows.Close()
 	for rows.Next() {
@@ -241,8 +259,8 @@ func GetTopicItemsByTopic(topic_id string, page, size int64) (items []*pb.TopicI
 
 		if err != nil {
 			misc.LogErr(err)
-			return nil, err
+			return
 		}
 	}
-	return items, err
+	return
 }

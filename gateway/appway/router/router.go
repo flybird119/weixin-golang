@@ -61,6 +61,7 @@ func SetRouterV1() *m.Router {
 
 	//store
 	v1.Register("/store/info", m.Wrap(c.StoreInfoApp))
+	v1.Register("/store/real_stores", m.Wrap(c.RealStores))
 
 	return v1
 }

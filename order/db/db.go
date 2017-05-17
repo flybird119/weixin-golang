@@ -869,8 +869,8 @@ func AfterSaleResultOperation(afterSaleModel *pb.AfterSaleModel) error {
 //导出订单data
 func ExportOrderData(order *pb.Order) (details []*pb.OrderDetail, err error) {
 	//需要的项
-
-	query := fmt.Sprintf("select id,mobile,name,address,remark from orders o where 1=1 ")
+	//导出代打印订单
+	query := fmt.Sprintf("select id,mobile,name,address,remark from orders o where order_status=1")
 	var args []interface{}
 	var condition string
 
