@@ -40,7 +40,7 @@ func AddAddress(address *pb.AddressInfo) error {
 		misc.LogErr(err)
 		return err
 	}
-	err = UpdateAddress(&pb.AddressInfo{Id: address.Id, SetDefault: 1, UserId: address.UserId})
+	err = UpdateAddress(&pb.AddressInfo{Id: address.Id, SetDefault: 1, UserId: address.UserId, StoreId: address.StoreId})
 	if err != nil {
 		misc.LogErr(err)
 		return err
@@ -75,7 +75,7 @@ func UpdateAddress(address *pb.AddressInfo) error {
 	}
 
 	if address.SetDefault == 1 {
-		query1 := fmt.Sprintf("update address set is_default=false where user_id='%s'", address.UserId)
+		query1 := fmt.Sprintf("update address set is_default=false where user_id='%s' and store_id='%s'", address.UserId, address.StoreId)
 		log.Debug(query1)
 		_, err := DB.Exec(query1)
 		if err != nil {
