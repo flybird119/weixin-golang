@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 
 	. "github.com/goushuyun/weixin-golang/db"
@@ -22,12 +23,20 @@ func SaveOfficialOpenid(user *pb.User) error {
 }
 
 func GetUserInfoByOfficialOpenid(user *pb.User) error {
+	// 备注：map_store_users 中的值是在获取用户微信信息时写入的，所以在这里需要使用左连接SQL（以为此时值不一定有）
 	// 取出用户的基本信息、对应store_id 的 openid
-	query := "select u.id, u.nickname, u.sex, u.avatar, u.status, m.openid from users u, map_store_users m where m.user_id = u.id and u.official_openid = $1"
+	query := "select users.id, users.nickname, users.sex, users.avatar, users.status, map_store_users.openid from users left join map_store_users on users.id = map_store_users.user_id where users.official_openid = $1"
 
-	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &user.CurrentStoreOpenid)
+	// map_store_users 表中 open_id 可能为 null
+	var tmp_openid sql.NullString
 
-	log.Debugf("select u.id, u.nickname, u.sex, u.avatar, u.status, m.openid from users u, map_store_users m where m.user_id = u.id and u.official_openid = '%s'", user.WeixinInfo.Openid)
+	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &tmp_openid)
+
+	if tmp_openid.Valid {
+		user.WeixinInfo.Openid = tmp_openid.String
+	}
+
+	log.Debugf("select users.id, users.nickname, users.sex, users.avatar, users.status, map_store_users.openid from users left join map_store_users on users.id = map_store_users.user_id where users.official_openid = '%s'", user.WeixinInfo.Openid)
 	if err != nil {
 		log.Error(err)
 		return err
