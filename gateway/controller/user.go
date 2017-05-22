@@ -10,5 +10,5 @@ import (
 func GetUserInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.GetUserInfoReq{}
 
-	misc.CallWithResp(w, r, "bc_user", "GetUserInfo", req, "store_id", "appid", "appid")
+	misc.CallWithResp(w, r, "bc_user", "GetUserInfo", req, "store_id", "appid")
 }

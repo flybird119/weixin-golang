@@ -41,6 +41,7 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoReq) (
 
 	user := &pb.User{
 		WeixinInfo: weixin_info,
+		StoreId:    req.StoreId,
 	}
 
 	if exist {
