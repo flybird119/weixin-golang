@@ -26,5 +26,5 @@ message User {
     string store_id = 3;
     int64 status = 4;
 
-    string current_store_openid = 5;
+    string current_store_openid = 5;        //用户对应的当前店铺的 openid 
 }

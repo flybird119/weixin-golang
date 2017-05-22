@@ -10,7 +10,7 @@ message NormalResp {
 }
 
 message WeixinInfo {
-    string openid = 1;
+    string openid = 1;      //用户的官方 openid (即对应趣店吃的openid)
     string nickname = 2;
     int64 sex = 3;
     string headimgurl = 4;

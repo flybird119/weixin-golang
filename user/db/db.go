@@ -33,7 +33,7 @@ func GetUserInfoByOfficialOpenid(user *pb.User) error {
 	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &tmp_openid)
 
 	if tmp_openid.Valid {
-		user.WeixinInfo.Openid = tmp_openid.String
+		user.CurrentStoreOpenid = tmp_openid.String
 	}
 
 	log.Debugf("select users.id, users.nickname, users.sex, users.avatar, users.status, map_store_users.openid from users left join map_store_users on users.id = map_store_users.user_id where users.official_openid = '%s'", user.WeixinInfo.Openid)
