@@ -22,26 +22,49 @@ func SaveOfficialOpenid(user *pb.User) error {
 	return nil
 }
 
+func getMyStoreOpenid(user_id, store_id string) (string, error) {
+	// 获取某个用户 在某个云店铺的 store_id
+	var openid string
+	query := "select openid from map_store_users where user_id = $1 and store_id = $2"
+
+	err := DB.QueryRow(query, user_id, store_id).Scan(&openid)
+
+	if err == sql.ErrNoRows {
+		log.Debug("The user has no openid in this store")
+		return "", nil
+	}
+
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	log.Debugf("select openid from map_store_users where user_id = '%s' and store_id = '%s'", user_id, store_id)
+
+	return openid, nil
+}
+
 func GetUserInfoByOfficialOpenid(user *pb.User) error {
 	// 备注：map_store_users 中的值是在获取用户微信信息时写入的，所以在这里需要使用左连接SQL（以为此时值不一定有）
 	// 取出用户的基本信息、对应store_id 的 openid
-	query := "select users.id, users.nickname, users.sex, users.avatar, users.status, map_store_users.openid from users left join map_store_users on users.id = map_store_users.user_id where users.official_openid = $1 and map_store_users.store_id = $2"
+	query := "select id, nickname, sex, avatar, status from users where official_openid = $1"
 
-	// map_store_users 表中 open_id 可能为 null
-	var tmp_openid sql.NullString
-
-	err := DB.QueryRow(query, user.WeixinInfo.Openid, user.StoreId).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status, &tmp_openid)
-
-	if tmp_openid.Valid {
-		user.CurrentStoreOpenid = tmp_openid.String
-	}
-
-	log.Debugf("select users.id, users.nickname, users.sex, users.avatar, users.status, map_store_users.openid from users left join map_store_users on users.id = map_store_users.user_id where users.official_openid = '%s'", user.WeixinInfo.Openid)
+	err := DB.QueryRow(query, user.WeixinInfo.Openid).Scan(&user.UserId, &user.WeixinInfo.Nickname, &user.WeixinInfo.Sex, &user.WeixinInfo.Headimgurl, &user.Status)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 
+	log.Debugf("select id, nickname, sex, avatar, status from users where official_openid = '%s'", user.WeixinInfo.Openid)
+
+	// 获取用户对应店铺的 openid
+	currentStoreOpenid, err := getMyStoreOpenid(user.UserId, user.StoreId)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	user.CurrentStoreOpenid = currentStoreOpenid
 	return nil
 }
 
