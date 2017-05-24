@@ -4,14 +4,11 @@ import (
 	"errors"
 
 	"github.com/goushuyun/weixin-golang/errs"
-
 	"github.com/goushuyun/weixin-golang/master/db"
 	"github.com/goushuyun/weixin-golang/misc"
-
-	"golang.org/x/net/context"
-
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
+	"golang.org/x/net/context"
 )
 
 type MasterServiceServer struct{}
