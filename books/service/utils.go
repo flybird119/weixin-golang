@@ -3,6 +3,12 @@ package service
 import "github.com/goushuyun/weixin-golang/pb"
 
 func integreteInfo(to, from *pb.Book) *pb.Book {
+	if to == nil && from != nil {
+		return from
+	} else if to == nil && from == nil {
+		return nil
+	}
+
 	if to.Title == "" {
 		to.Title = from.Title
 	}
@@ -35,6 +41,10 @@ func integreteInfo(to, from *pb.Book) *pb.Book {
 }
 
 func bookInfoIsOk(book *pb.Book) bool {
+	if book == nil {
+		return false
+	}
+
 	if book.Publisher != "" && book.Author != "" && book.Isbn != "" && book.Title != "" && book.Image != "" {
 		return true
 	} else {
