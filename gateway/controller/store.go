@@ -241,11 +241,11 @@ func StoreHistoryStateOrderNum(w http.ResponseWriter, r *http.Request) {
 func WithdrawApply(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
-	if c == nil || c.StoreId == "" {
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.StoreWithdrawalsModel{StoreId: c.StoreId}
+	req := &pb.StoreWithdrawalsModel{StoreId: c.StoreId, StaffId: c.SellerId}
 	misc.CallWithResp(w, r, "bc_store", "WithdrawApply", req, "withdraw_card_id", "withdraw_fee")
 
 }

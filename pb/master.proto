@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+
+package pb;
+import "pb/common.proto";
+import "pb/store.proto";
+
+service MasterService {
+    //管理员登陆
+    rpc MasterLogin (Master) returns (NormalResp);
+    //提现列表
+    rpc WithdrawList (StoreWithdrawalsModel) returns (WithdrawalsResp);
+    //开始处理提现
+    rpc WithdrawHandle (StoreWithdrawalsModel) returns (NormalResp);
+    //提现完成
+    rpc WithdrawComplete (StoreWithdrawalsModel) returns (NormalResp);
+    //注册商家列表
+    //修改商家信息
+
+}
+
+//管理员
+message Master{
+    string id = 1;
+    string mobile = 2;
+    string password = 3;
+}

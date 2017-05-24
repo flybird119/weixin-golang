@@ -5,13 +5,14 @@ import (
 	m "github.com/goushuyun/weixin-golang/gateway/middleware"
 )
 
-//SetRouterV1 设置seller的router
+//SetRouterV1
 func SetRouterV1() *m.Router {
 	v1 := m.NewWithPrefix("/v1")
+	//登陆
+	v1.Register("/master/login", m.Wrap(c.MasterLogin))
+	v1.Register("/master/withdraw_list", m.Wrap(c.WithdrawList))
+	v1.Register("/master/withdraw_handle", m.Wrap(c.WithdrawHandle))
+	v1.Register("/master/withdraw_complete", m.Wrap(c.WithdrawComplete))
 
-	// payment
-	v1.Register("/master/get_charge", m.Wrap(c.GetCharge))
-	v1.Register("/master/pay_success_notify", m.Wrap(c.PaySuccessNotify))
-	v1.Register("/master/refund_success_notify", m.Wrap(c.RefundSuccessNotify))
 	return v1
 }

@@ -280,8 +280,8 @@ func GetWithdrawCardInfoById(card *pb.StoreWithdrawCard) error {
 
 //获取提现卡信息
 func SaveWithdrawApply(tx *sql.Tx, withdraw *pb.StoreWithdrawalsModel) error {
-	query := "insert into withdrawals (store_id,withdraw_card_id,card_type,card_no,card_name,username,withdraw_fee) values('%s','%s',%d,'%s','%s','%s',%d) returning id"
-	query = fmt.Sprintf(query, withdraw.StoreId, withdraw.WithdrawCardId, withdraw.CardType, withdraw.CardNo, withdraw.CardName, withdraw.Username, withdraw.WithdrawFee)
+	query := "insert into withdrawals (store_id,withdraw_card_id,card_type,card_no,card_name,username,withdraw_fee,staff_id,apply_phone) values('%s','%s',%d,'%s','%s','%s',%d,'%s','%s') returning id"
+	query = fmt.Sprintf(query, withdraw.StoreId, withdraw.WithdrawCardId, withdraw.CardType, withdraw.CardNo, withdraw.CardName, withdraw.Username, withdraw.WithdrawFee, withdraw.StaffId, withdraw.ApplyPhone)
 	log.Debug(query)
 	err := tx.QueryRow(query).Scan(&withdraw.Id)
 	if err != nil {

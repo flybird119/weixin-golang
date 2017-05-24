@@ -7,6 +7,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	accountDb "github.com/goushuyun/weixin-golang/account/db"
 	baseDb "github.com/goushuyun/weixin-golang/db"
+	sellerDb "github.com/goushuyun/weixin-golang/seller/db"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/wothing/log"
@@ -151,7 +152,15 @@ func (s *StoreServiceServer) WithdrawApply(ctx context.Context, in *pb.StoreWith
 	in.CardNo = card.CardNo
 	in.CardName = card.CardName
 	in.Username = card.Username
+
 	defer tx.Rollback()
+
+	seller, err := sellerDb.GetSellerById(in.StaffId)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	in.ApplyPhone = seller.Mobile
 	//扣除可提现金额
 	err = handleWithdrawApply(tx, in)
 	if err != nil && err.Error() == "sellerNoMoney" {

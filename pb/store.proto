@@ -53,8 +53,26 @@ message StoreWithdrawalsModel{
     int64 status = 9;
     int64 apply_at = 10;
     int64 complete_at = 11;
+    int64 page = 12;
+    int64 size = 13;
+    string mobile = 14;
+    string apply_phone = 15;
+    int64 accept_at = 16;
+    string staff_id = 17;
+    string store_name = 18;
+    int64 balance = 19;
 
 }
+
+//提现列表
+message WithdrawalsResp{
+    string code = 1;
+    string message = 2;
+    int64 total_count = 3;
+    repeated StoreWithdrawalsModel data =4;
+}
+
+
 //充值
 message RechargeModel{
     string id = 1;

@@ -931,6 +931,7 @@ func getExportOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error
 	query = fmt.Sprintf(query, order.Id)
 	log.Debugf(query)
 	rows, err := DB.Query(query)
+
 	//如果出现无结果异常
 	if err == sql.ErrNoRows {
 		return orderitems, nil
