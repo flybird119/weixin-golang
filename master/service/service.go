@@ -81,7 +81,7 @@ func (s *MasterServiceServer) WithdrawComplete(ctx context.Context, in *pb.Store
 	if model == nil {
 		return nil, errs.Wrap(errors.New("bad parameter"))
 	}
-	if model.Status != 1 {
+	if model.Status != 2 {
 		return nil, errs.Wrap(errors.New("bad status"))
 	}
 	in.Status = 3

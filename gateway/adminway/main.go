@@ -18,7 +18,10 @@ const (
 	port    = 8870
 )
 
-var serviceNames = []string{}
+var serviceNames = []string{
+	"bc_master",
+	"bc_store",
+}
 
 func main() {
 	defer log.Infof("%s stopped, bye bye !", svcName)

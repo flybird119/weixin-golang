@@ -14,5 +14,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/master/withdraw_handle", m.Wrap(c.WithdrawHandle))
 	v1.Register("/master/withdraw_complete", m.Wrap(c.WithdrawComplete))
 
+	v1.Register("/master/stores", m.Wrap(c.FindStoreExtraInfo))
+
 	return v1
 }

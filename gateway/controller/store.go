@@ -268,3 +268,10 @@ func RechargeHandler(w http.ResponseWriter, r *http.Request) {
 	req := &pb.RechargeModel{}
 	misc.CallWithResp(w, r, "bc_store", "RechargeHandler", req, "recharge_fee")
 }
+
+//检索店铺额外信息
+func FindStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
+
+	req := &pb.StoreExtraInfo{}
+	misc.CallWithResp(w, r, "bc_store", "FindStoreExtraInfo", req)
+}

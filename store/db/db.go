@@ -6,11 +6,16 @@ import (
 	"fmt"
 	"time"
 
+	schoolDb "github.com/goushuyun/weixin-golang/school/db"
 	"github.com/goushuyun/weixin-golang/seller/role"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
+)
+
+const (
+	BasePoundage = 2
 )
 
 //AddStore 通过手机号和登录密码检查商家是否存在
@@ -21,16 +26,171 @@ func AddStore(store *pb.Store) error {
 	err := DB.QueryRow(query, store.Name, pb.StoreStatus_Normal, now).Scan(&store.Id, &store.CreateAt)
 	store.ExpireAt = now.Unix()
 	if err != nil {
+		log.Error(err)
+		return err
+	}
+	//新建
+	err = AddStoreExtraInfo(store.Id, BasePoundage)
+	if err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
+}
+
+//增补store extra
+func AddStoreExtraInfo(storeId string, poundage int64) error {
+	query := fmt.Sprintf("select id from store_extra_info where store_id='%s'", storeId)
+	log.Debug(query)
+	var id string
+	err := DB.QueryRow(query).Scan(&id)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if id != "" {
+		return nil
+	}
+
+	query = "insert into store_extra_info (store_id,poundage) values('%s',%d)"
+	query = fmt.Sprintf(query, storeId, poundage)
+	log.Debug(query)
+	_, err = DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//获取店铺额外信息
+func GetStoreExtraInfo(model *pb.StoreExtraInfo) error {
+	if model.StoreId == "" && model.Id == "" {
+
+		return errors.New("bad parameter")
+	}
+	query := "select id,store_id,poundage,charges,intention,remark from store_extra_info where 1=1"
+	var condition string
+	if model.StoreId != "" {
+		condition += fmt.Sprintf(" and store_id='%s'", model.StoreId)
+	}
+
+	if model.Id != "" {
+		condition += fmt.Sprintf(" and id='%s'", model.Id)
+	}
+	query += condition
+	log.Debug(query)
+
+	err := DB.QueryRow(query).Scan(&model.Id, &model.StoreId, &model.Poundage, &model.Charges, &model.Intention, &model.Remark)
+	if err == sql.ErrNoRows {
+		return nil
+	}
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//检索店铺额外信息
+func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, totalCount int64, err error) {
+
+	//牵连的表store store_extra_info map_store_seller seller
+	query := fmt.Sprintf("select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d", role.InterAdmin)
+
+	queryCount := fmt.Sprintf("select count(*) from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d", role.InterAdmin)
+
+	//intention store_name mobile
+	var condition string
+	if info.Intention != 0 {
+		condition += fmt.Sprintf(" and sei.intention=%d", info.Intention)
+	}
+	if info.StoreName != "" {
+		condition += fmt.Sprintf(" and s.name='%s'", info.StoreName)
+	}
+	if info.AdminMobile != "" {
+		condition += fmt.Sprintf(" and se.mobile='%s'", info.AdminMobile)
+	}
+	if info.FindStatus != 0 {
+
+		if info.FindStatus == 1 {
+			//未过期
+			condition += fmt.Sprintf(" and s.expire_at>now()")
+
+		} else if info.FindStatus == 2 {
+			//过期
+			condition += fmt.Sprintf(" and s.expire_at<now()")
+		} else {
+			//即将 15天 到期
+			now := time.Now()
+			expireStr := (now.AddDate(0, -15, 0)).Format("2006-01")
+			condition += fmt.Sprintf(" and s.expire_at>now() and to_char(to_timestamp(extract(epoch from s.expire_at)::integer), 'YYYY-MM-DD')>'%s'", expireStr)
+		}
+	}
+	//计算数据总量
+	queryCount += condition
+	log.Debug(queryCount)
+	err = DB.QueryRow(queryCount).Scan(&totalCount)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if totalCount <= 0 {
+
+		return
+	}
+	if info.Page <= 0 {
+		info.Page = 1
+	}
+	if info.Size <= 0 {
+		info.Size = 10
+	}
+	condition += fmt.Sprintf(" order by sei.update_at desc,id desc  OFFSET %d LIMIT %d ", (info.Page-1)*info.Size, info.Size)
+	query += condition
+	log.Debug(query)
+	//获取分页数据
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		err = nil
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		model := &pb.StoreExtraInfo{}
+		models = append(models, model)
+		//select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer
+		err = rows.Scan(&model.Id, &model.StoreId, &model.Poundage, &model.Charges, &model.Intention, &model.Remark, &model.StoreName, &model.AdminMobile, &model.AdminName, &model.StoreCreateAt, &model.StoreExpireAt)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		schools, findErr := schoolDb.GetSchoolsByStore(model.StoreId)
+		if findErr != nil {
+			log.Error(err)
+			err = findErr
+			return
+		}
+		var schoolStr string
+		for i := 0; i < len(schools); i++ {
+			if i == 0 {
+				schoolStr = schools[i].Name
+			} else {
+				schoolStr += "," + schools[i].Name
+			}
+		}
+		model.Schools = schoolStr
+	}
+	return
 }
 
 //UpdateStore 增加商家和店铺的映射
 func UpdateStore(store *pb.Store) error {
 	query := "update store set name=$1,profile=$2 where id=$3"
 	_, err := DB.Query(query, store.Name, store.Profile, store.Id)
-	log.Debugf("==============>update store set name=%s,profile=%s where id=%s", store.Name, store.Profile, store.Id)
+	log.Debugf("update store set name=%s,profile=%s where id=%s", store.Name, store.Profile, store.Id)
 	if err != nil {
 		return err
 	}

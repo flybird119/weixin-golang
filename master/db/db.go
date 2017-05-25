@@ -1,7 +1,9 @@
 package db
 
 import (
+	"crypto/md5"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 
 	. "github.com/goushuyun/weixin-golang/db"
@@ -13,6 +15,7 @@ import (
 func GetUserByPasswordAndMobile(master *pb.Master) error {
 
 	query := "select id from master where mobile='%s' and password='%s'"
+	master.Password = encryPassword(master.Password)
 	query = fmt.Sprintf(query, master.Mobile, master.Password)
 	log.Debugf(query)
 	err := DB.QueryRow(query).Scan(&master.Id)
@@ -27,8 +30,8 @@ func GetUserByPasswordAndMobile(master *pb.Master) error {
 
 //提现列表
 func WithdrawList(model *pb.StoreWithdrawalsModel) (models []*pb.StoreWithdrawalsModel, err error, totalCount int64) {
-	query := "select w.id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::integer,extract(epoch from w.complete_at)::integer ,extract(epoch from w.accept_at)::integer from withdrawals w where 1=1"
-	queryCount := "select count(*) from withdrawals where 1=1"
+	query := "select w.id,w.store_id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::integer,extract(epoch from w.complete_at)::integer ,extract(epoch from w.accept_at)::integer from withdrawals w where 1=1"
+	queryCount := "select count(*) from withdrawals w where 1=1"
 	var condition string
 	if model.Status != 0 {
 		condition += fmt.Sprintf(" and w.status=%d", model.Status)
@@ -76,7 +79,7 @@ func WithdrawList(model *pb.StoreWithdrawalsModel) (models []*pb.StoreWithdrawal
 		models = append(models, withdraw)
 		var complete_at, accept_at sql.NullInt64
 		// w.id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::integer,extract(epoch from w.complete_at)::integer extract(epoch from w.accept_at)
-		err = rows.Scan(&withdraw.Id, &withdraw.CardType, &withdraw.CardNo, &withdraw.CardName, &withdraw.Username, &withdraw.WithdrawFee, &withdraw.Status, &withdraw.ApplyPhone, &withdraw.ApplyAt, &complete_at, &accept_at)
+		err = rows.Scan(&withdraw.Id, &withdraw.StoreId, &withdraw.CardType, &withdraw.CardNo, &withdraw.CardName, &withdraw.Username, &withdraw.WithdrawFee, &withdraw.Status, &withdraw.ApplyPhone, &withdraw.ApplyAt, &complete_at, &accept_at)
 		if err != nil {
 			log.Error(err)
 			return
@@ -89,7 +92,7 @@ func WithdrawList(model *pb.StoreWithdrawalsModel) (models []*pb.StoreWithdrawal
 			withdraw.AcceptAt = accept_at.Int64
 		}
 
-		query = fmt.Sprintf("select s.name,a.balance from store s join account where s.id=a.store_id where s.id='%s'", withdraw.StoreId)
+		query = fmt.Sprintf("select s.name,a.balance from store s join account a on s.id=a.store_id where s.id='%s'", withdraw.StoreId)
 		log.Debug(query)
 		err = DB.QueryRow(query).Scan(&withdraw.StoreName, &withdraw.Balance)
 		if err != nil {
@@ -141,6 +144,7 @@ func UpdateWithdraw(model *pb.StoreWithdrawalsModel) error {
 	if model.CompleteAt != 0 {
 		condition += ",complete_at=now()"
 	}
+	condition += fmt.Sprintf(" where id='%s'", model.Id)
 	query += condition
 	log.Debug(query)
 	_, err := DB.Exec(query)
@@ -150,4 +154,12 @@ func UpdateWithdraw(model *pb.StoreWithdrawalsModel) error {
 	}
 
 	return nil
+}
+
+//private functions
+func encryPassword(password string) string {
+	h := md5.New()
+	h.Write([]byte(password)) // 需要加密的字符串为 sharejs.com
+	result := hex.EncodeToString(h.Sum(nil))
+	return result
 }

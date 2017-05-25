@@ -12,9 +12,15 @@ import (
 	goodsDB "github.com/goushuyun/weixin-golang/goods/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
+	storeDB "github.com/goushuyun/weixin-golang/store/db"
+
 	schoolDB "github.com/goushuyun/weixin-golang/school/db"
 	sellerDB "github.com/goushuyun/weixin-golang/seller/db"
 	"github.com/wothing/log"
+)
+
+const (
+	BasePoundage = 2
 )
 
 //提交数据
@@ -115,7 +121,8 @@ func AddOrderItem(tx *sql.Tx, order *pb.Order, cart *pb.Cart, nowTime time.Time)
 //订单支付成功
 func PaySuccess(order *pb.Order) (isChange bool, err error) {
 	isChange = false
-	var serviceDiscount = 0.02
+	var poundage int64
+	poundage = BasePoundage
 	query := "select order_status,total_fee, freight,goods_fee,store_id,school_id from orders where id=$1"
 	log.Debugf("select order_status,total_fee, freight,goods_fee,store_id,school_id from orders where id=%s", order.Id)
 	err = DB.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.StoreId, &order.SchoolId)
@@ -128,6 +135,16 @@ func PaySuccess(order *pb.Order) (isChange bool, err error) {
 		isChange = true
 		return
 	}
+	info := &pb.StoreExtraInfo{StoreId: order.StoreId}
+	err = storeDB.GetStoreExtraInfo(info)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if info.Id != "" {
+		poundage = info.Poundage
+	}
+	var serviceDiscount = float64(poundage) / 100
 	//修改订单状态  // 计算待体现金额
 	//计算待体现金额
 	withdrawalFeeStr := fmt.Sprintf("%0.0f", float64(order.TotalFee)*(1.00-serviceDiscount))

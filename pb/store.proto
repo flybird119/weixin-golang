@@ -32,6 +32,47 @@ service StoreService {
   rpc RechargeApply (RechargeModel) returns (RechargeOperationResp);
   //充值完成操作
   rpc RechargeHandler (RechargeModel) returns (Void);
+  //获取店铺额外信息
+  rpc GetStoreExtraInfo (StoreExtraInfo) returns (StoreExtraInfoResp);
+  //检索店铺额外信息
+  rpc FindStoreExtraInfo (StoreExtraInfo) returns (StoreExtraInfosResp);
+}
+
+
+
+//云店额外信息
+message StoreExtraInfo{
+    string id = 1;
+    string store_id = 2;
+    int64 poundage  = 3;
+    int64 charges = 4;
+    int64 intention = 5;
+    string remark = 6;
+    int64 create_at = 7;
+    int64 update_at = 8;
+    string store_name = 9;
+    string schools = 10;
+    string admin_mobile = 11;
+    string admin_name = 12;
+    int64 store_create_at = 13;
+    int64 store_expire_at = 14;
+    int64 page = 15;
+    int64 size = 16;
+    int64 find_status = 17;
+}
+
+//云店额外信息响应
+message StoreExtraInfoResp{
+    string code = 1;
+    string message = 2;
+    StoreExtraInfo data= 3;
+}
+//云店额外信息集合响应
+message StoreExtraInfosResp{
+    string code = 1;
+    string message = 2;
+    repeated StoreExtraInfo data= 3;
+    int64 total_count = 4;
 }
 
 //店铺首页历史订单各个状态统计resp
@@ -192,6 +233,6 @@ message Store{
 
 //店铺状态的枚举类型
 enum StoreStatus {
-    Normal =0;
+    Normal = 0;
     Abnormal = 1;
 }

@@ -271,3 +271,27 @@ func (s *StoreServiceServer) StoreHistoryStateOrderNum(ctx context.Context, in *
 	}
 	return &pb.StoreHistoryStateOrderNumResp{Code: "00000", Message: "ok", Data: in}, nil
 }
+
+//获取店铺extrainfo
+func (s *StoreServiceServer) FindStoreExtraInfo(ctx context.Context, in *pb.StoreExtraInfo) (*pb.StoreExtraInfosResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "FindStoreExtraInfo", "%#v", in))
+	models, totalCount, err := db.FindStoreExtraInfo(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.StoreExtraInfosResp{Code: "00000", Message: "ok", Data: models, TotalCount: totalCount}, nil
+}
+
+//获取店铺extrainfo
+func (s *StoreServiceServer) GetStoreExtraInfo(ctx context.Context, in *pb.StoreExtraInfo) (*pb.StoreExtraInfoResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "FindStoreExtraInfo", "%#v", in))
+	err := db.GetStoreExtraInfo(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.StoreExtraInfoResp{Code: "00000", Message: "ok", Data: in}, nil
+}
