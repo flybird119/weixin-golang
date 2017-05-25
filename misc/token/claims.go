@@ -24,13 +24,13 @@ const (
 
 var expires = map[TokenType]time.Duration{
 	AppToken:   time.Hour * 2,
-	InterToken: time.Minute * 10,
+	InterToken: time.Hour * 3,
 	HospToken:  time.Minute * 10,
 }
 
 var maxExpires = map[TokenType]time.Duration{
 	AppToken:   time.Hour * 24 * 30,
-	InterToken: time.Minute * 30,
+	InterToken: time.Hour * 12,
 	HospToken:  time.Minute * 30,
 }
 

@@ -115,6 +115,7 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+
 	api_usage++
 
 	if !bookInfoIsOk(douban_book) {
