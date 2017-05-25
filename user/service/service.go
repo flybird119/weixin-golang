@@ -33,6 +33,10 @@ func (s *UserService) GetUserInfo(ctx context.Context, req *pb.GetUserInfoReq) (
 	log.Debugf("The openid is : %s", weixin_info.Openid)
 	log.Debug("------------------------------------------------")
 
+	if len(weixin_info.Openid) == 0 {
+		return &pb.GetUserInfoResp{Code: errs.Ok, Message: "get_openid_failed"}, nil
+	}
+
 	exist, err := db.OfficalOpenidExist(weixin_info.Openid)
 	if err != nil {
 		log.Error(err)
