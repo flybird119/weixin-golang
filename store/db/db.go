@@ -178,7 +178,7 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 			if i == 0 {
 				schoolStr = schools[i].Name
 			} else {
-				schoolStr += "," + schools[i].Name
+				schoolStr += "、" + schools[i].Name
 			}
 		}
 		model.Schools = schoolStr
@@ -594,5 +594,18 @@ func UpdateStoreExtraInfo(model *pb.StoreExtraInfo) error {
 	}
 	tx.Commit()
 
+	return nil
+}
+
+//根据id获取提现详情
+func GetWithdrawById(model *pb.StoreWithdrawalsModel) error {
+	query := "select id,store_id,status from withdrawals where id='%s'"
+	query = fmt.Sprintf(query, model.Id)
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&model.Id, &model.StoreId, &model.Status)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 	return nil
 }
