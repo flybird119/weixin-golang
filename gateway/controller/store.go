@@ -282,3 +282,9 @@ func SyncStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.StoreExtraInfo{}
 	misc.CallWithResp(w, r, "bc_store", "SyncStoreExtraInfo", req)
 }
+
+//修改店铺增加信息
+func UpdateStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
+	req := &pb.StoreExtraInfo{}
+	misc.CallWithResp(w, r, "bc_store", "UpdateStoreExtraInfo", req, "id")
+}

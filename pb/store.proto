@@ -38,6 +38,8 @@ service StoreService {
   rpc FindStoreExtraInfo (StoreExtraInfo) returns (StoreExtraInfosResp);
   //同步店铺信息和店铺额外信息
   rpc SyncStoreExtraInfo (StoreExtraInfo) returns (Void);
+  //修改店铺增加信息
+  rpc UpdateStoreExtraInfo (StoreExtraInfo) returns (NormalResp);
 }
 
 

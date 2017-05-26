@@ -307,3 +307,15 @@ func (s *StoreServiceServer) SyncStoreExtraInfo(ctx context.Context, in *pb.Stor
 	}
 	return &pb.Void{}, nil
 }
+
+//修改店铺增加信息
+func (s *StoreServiceServer) UpdateStoreExtraInfo(ctx context.Context, in *pb.StoreExtraInfo) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateStoreExtraInfo", "%#v", in))
+	err := db.UpdateStoreExtraInfo(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}

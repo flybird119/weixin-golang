@@ -544,3 +544,55 @@ func SyncStoreExtraInfo() error {
 
 	return nil
 }
+
+//修改店铺增加信息
+func UpdateStoreExtraInfo(model *pb.StoreExtraInfo) error {
+
+	//修改信息包括 截止时期 收费金额 手续费 备注
+	query := "update store_extra_info set update_at=now()"
+
+	tx, err := DB.Begin()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	defer tx.Rollback()
+
+	var condition string
+	if model.Charges != 0 {
+		condition += fmt.Sprintf(",charges=%d", model.Charges)
+	}
+	if model.Poundage != 0 {
+		condition += fmt.Sprintf(",poundage=%d", model.Poundage)
+	}
+	if model.Remark != "" {
+		condition += fmt.Sprintf(",remark='%s'", model.Remark)
+	}
+
+	if model.Intention != 0 {
+		condition += fmt.Sprintf(",intention=%d", model.Intention)
+	}
+	condition += fmt.Sprintf(" where id='%s'", model.Id)
+	condition += " returning store_id"
+	query += condition
+	log.Debug(query)
+	err = tx.QueryRow(query).Scan(&model.StoreId)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	if model.StoreExpireAt != 0 {
+		query = "update store set expire_at=to_timestamp(%d) where id='%s'"
+		query = fmt.Sprintf(query, model.StoreExpireAt, model.StoreId)
+		log.Debug(query)
+		_, err = tx.Exec(query)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+	tx.Commit()
+
+	return nil
+}
