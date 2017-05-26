@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	BasePoundage = 2
+	BasePoundage = 20
 )
 
 //AddStore 通过手机号和登录密码检查商家是否存在
@@ -511,5 +511,36 @@ func RechargeSuccessHandler(tx *sql.Tx, recharge *pb.RechargeModel) error {
 	if recharge.Status > 2 {
 		return errors.New("has changed")
 	}
+	return nil
+}
+
+//同步店铺信息和店铺额外信息
+func SyncStoreExtraInfo() error {
+	query := "select id from store where id not in(select store_id from store_extra_info)"
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+
+		return nil
+	}
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var id string
+		err = rows.Scan(&id)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		err = AddStoreExtraInfo(id, BasePoundage)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+
 	return nil
 }

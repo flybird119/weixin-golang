@@ -295,3 +295,15 @@ func (s *StoreServiceServer) GetStoreExtraInfo(ctx context.Context, in *pb.Store
 	}
 	return &pb.StoreExtraInfoResp{Code: "00000", Message: "ok", Data: in}, nil
 }
+
+//同步店铺信息和店铺额外信息
+func (s *StoreServiceServer) SyncStoreExtraInfo(ctx context.Context, in *pb.StoreExtraInfo) (*pb.Void, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SyncStoreExtraInfo", "%#v", in))
+	err := db.SyncStoreExtraInfo()
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.Void{}, nil
+}

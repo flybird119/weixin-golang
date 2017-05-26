@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	BasePoundage = 2
+	BasePoundage = 20
 )
 
 //提交数据
@@ -144,7 +144,7 @@ func PaySuccess(order *pb.Order) (isChange bool, err error) {
 	if info.Id != "" {
 		poundage = info.Poundage
 	}
-	var serviceDiscount = float64(poundage) / 100
+	var serviceDiscount = float64(poundage) / 1000
 	//修改订单状态  // 计算待体现金额
 	//计算待体现金额
 	withdrawalFeeStr := fmt.Sprintf("%0.0f", float64(order.TotalFee)*(1.00-serviceDiscount))

@@ -15,6 +15,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/master/withdraw_complete", m.Wrap(c.WithdrawComplete))
 
 	v1.Register("/master/stores", m.Wrap(c.FindStoreExtraInfo))
+	v1.Register("/master/sync_store_extra", m.Wrap(c.SyncStoreExtraInfo))
 
 	return v1
 }

@@ -275,3 +275,10 @@ func FindStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.StoreExtraInfo{}
 	misc.CallWithResp(w, r, "bc_store", "FindStoreExtraInfo", req)
 }
+
+//同步店铺信息和店铺额外信息
+func SyncStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
+
+	req := &pb.StoreExtraInfo{}
+	misc.CallWithResp(w, r, "bc_store", "SyncStoreExtraInfo", req)
+}

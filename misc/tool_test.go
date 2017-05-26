@@ -65,7 +65,7 @@ func TestNumFloat(t *testing.T) {
 	price := 51
 	discountStr := fmt.Sprintf("%.3f", float64(2)/100)
 	fmt.Println(discountStr)
-	discount := float64(2) / 100
+	discount := float64(2) / 1000
 	fmt.Println(discount)
 	totalFee := float64(price) * discount
 	fmt.Println(totalFee)
