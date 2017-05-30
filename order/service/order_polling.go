@@ -21,7 +21,7 @@ import (
 
 //注册时间轮询
 func RegisterOrderPolling(cron *cron.Cron) {
-	order_close_task_spec := "0 0/5 * * * *"               //时间轮询表达式 每1分钟 执行一次
+	order_close_task_spec := "0 0/2 * * * *"               //时间轮询表达式 每1分钟 执行一次
 	order_statistic_before_dawn_task_spec := "0 0 1 * * *" //时间轮询表达式 每天凌晨1：00执行一次
 	order_statistic_at_night_task_spec := "0 30 22 * * *"  //时间轮询表达式 每天晚上22：00执行一次
 	order_system_confirm_task_spec := "0 20 0 * * *"       //系统自动确认订单轮询 每日凌晨 0:20

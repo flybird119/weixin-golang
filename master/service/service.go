@@ -25,7 +25,7 @@ func (s *MasterServiceServer) MasterLogin(ctx context.Context, in *pb.Master) (*
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	if in.Id == "" {
-		return &pb.NormalResp{Code: "00000", Message: "notFund"}, nil
+		return &pb.NormalResp{Code: "00000", Message: "notFound"}, nil
 	}
 	//tokenStr := token.SignSellerToken(token.InterToken, sellerInfo.Id, sellerInfo.Mobile, "", 11)
 	//sellerInfo.Token = tokenStr

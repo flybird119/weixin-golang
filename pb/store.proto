@@ -63,6 +63,9 @@ message StoreExtraInfo{
     int64 page = 15;
     int64 size = 16;
     int64 find_status = 17;
+    int64 total_sales = 18;
+    int64 total_goods = 19;
+    int64 sort = 20;
 }
 
 //云店额外信息响应

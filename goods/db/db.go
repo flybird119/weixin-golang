@@ -195,11 +195,11 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 	}
 	if goods.Author != "" {
 		args = append(args, misc.FazzyQuery(goods.Author))
-		condition += fmt.Sprintf(" and b.author like $%d", len(args))
+		condition += fmt.Sprintf(" and Lower(b.author) like Lower($%d)", len(args))
 	}
 	if goods.Publisher != "" {
 		args = append(args, misc.FazzyQuery(goods.Publisher))
-		condition += fmt.Sprintf(" and b.publisher like $%d", len(args))
+		condition += fmt.Sprintf(" and Lower(b.publisher) like Lower($%d)", len(args))
 	}
 
 	if goods.SearchType != -100 {
@@ -263,7 +263,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 
 	if goods.Title != "" {
 		args = append(args, misc.FazzyQuery(goods.Title))
-		condition += fmt.Sprintf(" and b.title like $%d", len(args))
+		condition += fmt.Sprintf(" and Lower(b.title) like Lower($%d)", len(args))
 
 		queryCount += condition
 		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
@@ -277,7 +277,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		}
 
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  title <-> $%d ,g.update_at desc", len(args))
+		condition += fmt.Sprintf(" order by  Lower(title) <-> Lower($%d) ,g.update_at desc", len(args))
 	} else {
 
 		queryCount += condition
@@ -383,12 +383,12 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 		//查找有库存的图书
 		condition += " and ((g.new_book_amount>0) or (g.old_book_amount>0))"
 		args = append(args, misc.FazzyQuery(goods.Title))
-		condition += fmt.Sprintf(" and (b.title like $%d or b.author like $%d or b.publisher like $%d)", len(args), len(args)+1, len(args)+2)
+		condition += fmt.Sprintf(" and ( Lower(b.title) like Lower($%d) or Lower(b.author) like Lower($%d) or Lower(b.publisher) like Lower($%d))", len(args), len(args)+1, len(args)+2)
 		args = append(args, misc.FazzyQuery(goods.Title))
 		args = append(args, misc.FazzyQuery(goods.Title))
 
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  b.title <-> $%d ,g.update_at desc", len(args))
+		condition += fmt.Sprintf(" order by  Lower(b.title) <-> Lower($%d) ,g.update_at desc", len(args))
 	} else {
 		condition += " order by g.update_at desc"
 		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)

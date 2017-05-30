@@ -94,10 +94,9 @@ func GetStoreExtraInfo(model *pb.StoreExtraInfo) error {
 //检索店铺额外信息
 func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, totalCount int64, err error) {
 
-	//牵连的表store store_extra_info map_store_seller seller
-	query := fmt.Sprintf("select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d", role.InterAdmin)
+	query := fmt.Sprintf("select sei.store_id,sum(sg.wechat_order_fee+sg.alipay_order_fee) from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id left join statistic_goods_sales sg on sei.store_id=sg.store_id  where m.role=%d ", role.InterAdmin)
 
-	queryCount := fmt.Sprintf("select count(*) from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d", role.InterAdmin)
+	queryCount := fmt.Sprintf("select count(*) from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id  where m.role=%d ", role.InterAdmin)
 
 	//intention store_name mobile
 	var condition string
@@ -144,7 +143,16 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 	if info.Size <= 0 {
 		info.Size = 10
 	}
-	condition += fmt.Sprintf(" order by sei.update_at desc,id desc  OFFSET %d LIMIT %d ", (info.Page-1)*info.Size, info.Size)
+
+	if info.Sort == 0 {
+		condition += fmt.Sprintf(" GROUP BY sei.store_id order by sei.store_id desc")
+	} else if info.Sort == 1 {
+		condition += fmt.Sprintf(" GROUP BY sei.store_id,s.id order by sum(sg.wechat_order_fee+sg.alipay_order_fee) desc nulls last,sei.store_id desc")
+	} else {
+		condition += fmt.Sprintf(" GROUP BY sei.store_id,s.id order by sum(sg.wechat_order_fee+sg.alipay_order_fee) nulls first,sei.store_id desc")
+	}
+
+	condition += fmt.Sprintf("  OFFSET %d LIMIT %d", (info.Page-1)*info.Size, info.Size)
 	query += condition
 	log.Debug(query)
 	//获取分页数据
@@ -161,12 +169,36 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 	for rows.Next() {
 		model := &pb.StoreExtraInfo{}
 		models = append(models, model)
+		var totalSales sql.NullInt64
 		//select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer
-		err = rows.Scan(&model.Id, &model.StoreId, &model.Poundage, &model.Charges, &model.Intention, &model.Remark, &model.StoreName, &model.AdminMobile, &model.AdminName, &model.StoreCreateAt, &model.StoreExpireAt)
+		err = rows.Scan(&model.StoreId, &totalSales)
+		//校验 valid是否为空
+		if totalSales.Valid {
+			model.TotalSales = totalSales.Int64
+		}
 		if err != nil {
 			log.Error(err)
 			return
 		}
+
+		//获取店铺的必要信息
+		query = fmt.Sprintf("select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d and s.id='%s'", role.InterAdmin, model.StoreId)
+		log.Debug(query)
+		err = DB.QueryRow(query).Scan(&model.Id, &model.StoreId, &model.Poundage, &model.Charges, &model.Intention, &model.Remark, &model.StoreName, &model.AdminMobile, &model.AdminName, &model.StoreCreateAt, &model.StoreExpireAt)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		//获取店铺 上架书籍量
+		query = fmt.Sprintf("select count(*) from goods where store_id='%s' and is_selling=true", model.StoreId)
+		err = DB.QueryRow(query).Scan(&model.TotalGoods)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+
+		//获取每个店铺管理学校列表
 		schools, findErr := schoolDb.GetSchoolsByStore(model.StoreId)
 		if findErr != nil {
 			log.Error(err)
@@ -182,6 +214,7 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 			}
 		}
 		model.Schools = schoolStr
+
 	}
 	return
 }
