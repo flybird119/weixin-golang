@@ -39,6 +39,7 @@ func DeleteLocation(loc *pb.Location) error {
 	return nil
 }
 
+// 获取子孙节点位置
 func GetDescLocation(loc *pb.Location, genaration int64) error {
 	err := GetChildLocations(loc)
 	if err != nil {
@@ -63,6 +64,7 @@ func GetDescLocation(loc *pb.Location, genaration int64) error {
 	return nil
 }
 
+// 获取子节点位置
 func GetChildLocations(loc *pb.Location) error {
 	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1 and store_id = $2 order by create_at ASC"
 
@@ -88,6 +90,7 @@ func GetChildLocations(loc *pb.Location) error {
 	return nil
 }
 
+// 单纯罗列位置
 func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at ASC"
 
@@ -113,10 +116,33 @@ func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 			log.Error(err)
 			return nil, err
 		}
+
+		// 获取子节点数量
+		childrenAmount, err := getChildrenAmount(tempLoc.Id)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+		tempLoc.ChildrenAmount = childrenAmount
+
 		locations = append(locations, tempLoc)
 	}
 
 	return locations, nil
+}
+
+func getChildrenAmount(pid string) (int64, error) {
+	var total int64
+	query := "select count(*) from location where pid = $1"
+	log.Debugf("select count(*) from location where pid = '%s'", pid)
+
+	err := DB.QueryRow(query, pid).Scan(&total)
+	if err != nil {
+		log.Error(err)
+		return total, err
+	}
+
+	return total, nil
 }
 
 func UpdateLocation(loc *pb.Location) error {

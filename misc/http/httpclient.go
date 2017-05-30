@@ -14,6 +14,7 @@ import (
 	"net/http"
 
 	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/wothing/log"
 )
 
 var client = &http.Client{}
@@ -33,6 +34,8 @@ func GET(url string) ([]byte, error) {
 	if err != nil {
 		return nil, errs.NewRpcError(errs.ErrInternal, err.Error())
 	}
+
+	log.Debugf("The response data is : %s", data)
 
 	return data, nil
 }

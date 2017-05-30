@@ -35,6 +35,8 @@ func GetOpenid(req *pb.GetUserInfoReq) (string, error) {
 		return "", err
 	}
 
+	log.JSONIndent(getAcessTokenResp)
+
 	log.Debugf("------------授权 access_token: %s--------------", getAcessTokenResp.AccessToken)
 
 	return getAcessTokenResp.Openid, nil
