@@ -61,6 +61,18 @@ func TestNumFormat(t *testing.T) {
 	fmt.Println(totalPriceStr)
 
 }
+func TestNumFloat(t *testing.T) {
+	price := 51
+	discountStr := fmt.Sprintf("%.3f", float64(2)/100)
+	fmt.Println(discountStr)
+	discount := float64(2) / 1000
+	fmt.Println(discount)
+	totalFee := float64(price) * discount
+	fmt.Println(totalFee)
+	totalPriceStr := fmt.Sprintf("%0.0f", totalFee)
+	fmt.Println(totalPriceStr)
+
+}
 
 func TestSubString(t *testing.T) {
 	cardNo := "62284819919020398000"

@@ -9,6 +9,8 @@ import (
 	"github.com/goushuyun/weixin-golang/misc"
 
 	"github.com/goushuyun/weixin-golang/account/db"
+	storeDb "github.com/goushuyun/weixin-golang/store/db"
+
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
@@ -205,7 +207,22 @@ func (s *AccountServiceServer) FindAccountItems(ctx context.Context, in *pb.Find
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-
+	//遍历
+	for i := 0; i < len(respData.Data); i++ {
+		accountItem := respData.Data[i]
+		if accountItem.ItemType == 20 {
+			if accountItem.OrderId == "" {
+				continue
+			}
+			model := &pb.StoreWithdrawalsModel{Id: accountItem.OrderId}
+			err = storeDb.GetWithdrawById(model)
+			if err != nil {
+				log.Error(err)
+				return nil, errs.Wrap(errors.New(err.Error()))
+			}
+			accountItem.Status = model.Status
+		}
+	}
 	return &pb.FindAccountitemResp{Code: "00000", Message: "ok", Data: respData.Data, TotalCount: respData.TotalCount, TotalIncome: respData.TotalIncome, TotalExpense: respData.TotalExpense}, nil
 }
 

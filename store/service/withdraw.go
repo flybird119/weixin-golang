@@ -7,6 +7,7 @@ import (
 	"github.com/garyburd/redigo/redis"
 	accountDb "github.com/goushuyun/weixin-golang/account/db"
 	baseDb "github.com/goushuyun/weixin-golang/db"
+	sellerDb "github.com/goushuyun/weixin-golang/seller/db"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/wothing/log"
@@ -151,18 +152,27 @@ func (s *StoreServiceServer) WithdrawApply(ctx context.Context, in *pb.StoreWith
 	in.CardNo = card.CardNo
 	in.CardName = card.CardName
 	in.Username = card.Username
+
 	defer tx.Rollback()
+
+	seller, err := sellerDb.GetSellerById(in.StaffId)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	in.ApplyPhone = seller.Mobile
+	//申请记录
+	err = db.SaveWithdrawApply(tx, in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
 	//扣除可提现金额
 	err = handleWithdrawApply(tx, in)
 	if err != nil && err.Error() == "sellerNoMoney" {
 		return &pb.NormalResp{Code: "00000", Message: "sellerNoMoney"}, nil
 	}
-	if err != nil {
-		log.Error(err)
-		return nil, errs.Wrap(errors.New(err.Error()))
-	}
-	//申请记录
-	err = db.SaveWithdrawApply(tx, in)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
@@ -188,7 +198,7 @@ func handleWithdrawApply(tx *sql.Tx, in *pb.StoreWithdrawalsModel) error {
 	}
 	subCardNo := misc.SubString(cardNo, len(cardNo)-4, 4)
 	//提现记录
-	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, ItemType: 20, Remark: "提现到银行卡,尾号:" + subCardNo, ItemFee: -in.WithdrawFee, AccountBalance: sellerAccountBalance.Balance}
+	sellerAccountBalanceItem := &pb.AccountItem{UserType: 1, StoreId: in.StoreId, OrderId: in.Id, ItemType: 20, Remark: "提现到银行卡,尾号:" + subCardNo, ItemFee: -in.WithdrawFee, AccountBalance: sellerAccountBalance.Balance}
 	err = accountDb.AddAccountItemWithTx(tx, sellerAccountBalanceItem)
 	if err != nil {
 		log.Error(err)

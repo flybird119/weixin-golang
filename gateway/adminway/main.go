@@ -9,30 +9,18 @@ import (
 	"github.com/wothing/log"
 
 	"github.com/goushuyun/weixin-golang/db"
-	"github.com/goushuyun/weixin-golang/gateway/appway/router"
+	"github.com/goushuyun/weixin-golang/gateway/adminway/router"
 	m "github.com/goushuyun/weixin-golang/gateway/middleware"
 )
 
 const (
-	svcName = "bc_admin"
+	svcName = "bc_adminway"
 	port    = 8870
 )
 
 var serviceNames = []string{
-	"bc_seller",
+	"bc_master",
 	"bc_store",
-	"bc_mediastore",
-	"bc_school",
-	"bc_location",
-	"bc_books",
-	"bc_goods",
-	"bc_topic",
-	"bc_weixin",
-	"bc_circular",
-	"bc_cart",
-	"bc_order",
-	"bc_address",
-	"bc_payment",
 }
 
 func main() {

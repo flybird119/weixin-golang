@@ -45,6 +45,7 @@ message AccountItem{
     int64   account_balance = 8;
     int64   create_at = 9;
     int64   update_at = 10;
+    int64   status = 11;
 }
 //查找账户项列表提交model
 message FindAccountitemReq{

@@ -32,6 +32,54 @@ service StoreService {
   rpc RechargeApply (RechargeModel) returns (RechargeOperationResp);
   //充值完成操作
   rpc RechargeHandler (RechargeModel) returns (Void);
+  //获取店铺额外信息
+  rpc GetStoreExtraInfo (StoreExtraInfo) returns (StoreExtraInfoResp);
+  //检索店铺额外信息
+  rpc FindStoreExtraInfo (StoreExtraInfo) returns (StoreExtraInfosResp);
+  //同步店铺信息和店铺额外信息
+  rpc SyncStoreExtraInfo (StoreExtraInfo) returns (Void);
+  //修改店铺增加信息
+  rpc UpdateStoreExtraInfo (StoreExtraInfo) returns (NormalResp);
+}
+
+
+
+//云店额外信息
+message StoreExtraInfo{
+    string id = 1;
+    string store_id = 2;
+    int64 poundage  = 3;
+    int64 charges = 4;
+    int64 intention = 5;
+    string remark = 6;
+    int64 create_at = 7;
+    int64 update_at = 8;
+    string store_name = 9;
+    string schools = 10;
+    string admin_mobile = 11;
+    string admin_name = 12;
+    int64 store_create_at = 13;
+    int64 store_expire_at = 14;
+    int64 page = 15;
+    int64 size = 16;
+    int64 find_status = 17;
+    int64 total_sales = 18;
+    int64 total_goods = 19;
+    int64 sort = 20;
+}
+
+//云店额外信息响应
+message StoreExtraInfoResp{
+    string code = 1;
+    string message = 2;
+    StoreExtraInfo data= 3;
+}
+//云店额外信息集合响应
+message StoreExtraInfosResp{
+    string code = 1;
+    string message = 2;
+    repeated StoreExtraInfo data= 3;
+    int64 total_count = 4;
 }
 
 //店铺首页历史订单各个状态统计resp
@@ -53,8 +101,26 @@ message StoreWithdrawalsModel{
     int64 status = 9;
     int64 apply_at = 10;
     int64 complete_at = 11;
+    int64 page = 12;
+    int64 size = 13;
+    string mobile = 14;
+    string apply_phone = 15;
+    int64 accept_at = 16;
+    string staff_id = 17;
+    string store_name = 18;
+    int64 balance = 19;
 
 }
+
+//提现列表
+message WithdrawalsResp{
+    string code = 1;
+    string message = 2;
+    int64 total_count = 3;
+    repeated StoreWithdrawalsModel data =4;
+}
+
+
 //充值
 message RechargeModel{
     string id = 1;
@@ -174,6 +240,6 @@ message Store{
 
 //店铺状态的枚举类型
 enum StoreStatus {
-    Normal =0;
+    Normal = 0;
     Abnormal = 1;
 }

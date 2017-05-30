@@ -241,11 +241,11 @@ func StoreHistoryStateOrderNum(w http.ResponseWriter, r *http.Request) {
 func WithdrawApply(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
-	if c == nil || c.StoreId == "" {
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.StoreWithdrawalsModel{StoreId: c.StoreId}
+	req := &pb.StoreWithdrawalsModel{StoreId: c.StoreId, StaffId: c.SellerId}
 	misc.CallWithResp(w, r, "bc_store", "WithdrawApply", req, "withdraw_card_id", "withdraw_fee")
 
 }
@@ -267,4 +267,24 @@ func RechargeHandler(w http.ResponseWriter, r *http.Request) {
 
 	req := &pb.RechargeModel{}
 	misc.CallWithResp(w, r, "bc_store", "RechargeHandler", req, "recharge_fee")
+}
+
+//检索店铺额外信息
+func FindStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
+
+	req := &pb.StoreExtraInfo{}
+	misc.CallWithResp(w, r, "bc_store", "FindStoreExtraInfo", req)
+}
+
+//同步店铺信息和店铺额外信息
+func SyncStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
+
+	req := &pb.StoreExtraInfo{}
+	misc.CallWithResp(w, r, "bc_store", "SyncStoreExtraInfo", req)
+}
+
+//修改店铺增加信息
+func UpdateStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
+	req := &pb.StoreExtraInfo{}
+	misc.CallWithResp(w, r, "bc_store", "UpdateStoreExtraInfo", req, "id")
 }
