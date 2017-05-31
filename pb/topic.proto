@@ -27,6 +27,8 @@ message Topic{
     int64 item_count = 11;
     int64 page = 12;
     int64 size = 13;
+    int64 topic_page = 14;
+    int64 topic_size = 15;
 }
 
 message SearchTopicResp{

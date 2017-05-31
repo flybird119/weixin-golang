@@ -169,20 +169,13 @@ func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err er
 		args = append(args, topic.Status)
 		condition += fmt.Sprintf(" and t.status=$%d", len(args))
 	}
-	//计数count
-	countQuery += condition
-	err = DB.QueryRow(countQuery, args...).Scan(&totalCount)
-	if err != nil {
-		return
-	}
-	//如果统计的为零
-	if totalCount == 0 {
-		return
-	}
-	var page, size int64
+	var page, size, topic_page, topic_size int64
+
 	if searchType == 1 {
 		page = 1
-		size = 100000
+		size = 100
+		topic_page = 1
+		topic_size = 100
 	} else {
 		if topic.Page <= 0 {
 			page = 1
@@ -194,9 +187,31 @@ func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err er
 		} else {
 			size = topic.Size
 		}
+		if topic.TopicPage <= 0 {
+			topic_page = 1
+		} else {
+			topic_page = topic.TopicPage
+		}
+		if topic.TopicSize <= 0 {
+			topic_size = 15
+		} else {
+			topic_size = topic.TopicSize
+		}
 	}
 
 	condition += " order by t.sort desc "
+	//计数count
+	countQuery += condition
+	err = DB.QueryRow(countQuery, args...).Scan(&totalCount)
+	if err != nil {
+		return
+	}
+	//如果统计的为零
+	if totalCount == 0 {
+		return
+	}
+
+	condition += fmt.Sprintf(" order by t.sort desc  OFFSET %d LIMIT %d")
 	query += condition
 
 	log.Debugf(query+" args:%s", args)

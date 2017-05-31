@@ -391,8 +391,8 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 		condition += fmt.Sprintf(" order by  Lower(b.title) <-> Lower($%d) ,g.update_at desc", len(args))
 	} else {
 		condition += " order by g.update_at desc"
-		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	}
+	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	query += condition
 	log.Debugf(query+"%+v", args)
 	rows, err := DB.Query(query, args...)
