@@ -199,7 +199,6 @@ func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err er
 		}
 	}
 
-	condition += " order by t.sort desc "
 	//计数count
 	countQuery += condition
 	err = DB.QueryRow(countQuery, args...).Scan(&totalCount)
@@ -211,7 +210,7 @@ func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err er
 		return
 	}
 
-	condition += fmt.Sprintf(" order by t.sort desc  OFFSET %d LIMIT %d")
+	condition += fmt.Sprintf(" order by t.sort desc  OFFSET %d LIMIT %d", (topic_page-1)*topic_size, topic_size)
 	query += condition
 
 	log.Debugf(query+" args:%s", args)
