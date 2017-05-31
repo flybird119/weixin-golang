@@ -317,6 +317,7 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 	} else if err != nil {
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	log.Debug("ceshi320")
 	//修改退款状态
 	order.AfterSaleStaffId = in.StaffId
 	err = orderDB.HandleAfterSaleOrder(tx, order)
@@ -324,9 +325,10 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-
+	log.Debug("ceshi328")
 	//查看退款金额是否为0
 	if order.RefundFee != 0 {
+		log.Debug("ceshi331")
 		afterSaleModel, err := orderDB.GetAfterSaleDetail(order)
 		if err != nil {
 			log.Error(err)
@@ -334,18 +336,25 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		}
 		//如果退款金额不为0 ，Callrpc
 		req := &pb.RefundReq{TradeNo: order.TradeNo, Amount: in.RefundFee, Reason: afterSaleModel.Reason}
+		log.Debug("ceshi339")
 		_, err = misc.CallRPC(ctx, "bc_payment", "Refund", req)
+		log.Debug("ceshi340")
 		if err != nil {
+			log.Error(err)
 			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
 		}
 
 	} else {
+		log.Debug("ceshi347")
 		_, err := misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", order)
+		log.Debug("ceshi349")
 		if err != nil {
 			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
 		}
 	}
+	log.Debug("ceshi355")
 	tx.Commit()
+	log.Debug("ceshi357")
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
