@@ -8,14 +8,14 @@ import (
 	"strconv"
 	"time"
 
+	bookDB "github.com/goushuyun/weixin-golang/books/db"
 	. "github.com/goushuyun/weixin-golang/db"
 	goodsDB "github.com/goushuyun/weixin-golang/goods/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
-	storeDB "github.com/goushuyun/weixin-golang/store/db"
-
 	schoolDB "github.com/goushuyun/weixin-golang/school/db"
 	sellerDB "github.com/goushuyun/weixin-golang/seller/db"
+	storeDB "github.com/goushuyun/weixin-golang/store/db"
 	"github.com/wothing/log"
 )
 
@@ -884,7 +884,7 @@ func AfterSaleResultOperation(afterSaleModel *pb.AfterSaleModel) error {
 }
 
 //导出订单data
-func ExportOrderData(order *pb.Order) (details []*pb.OrderDetail, err error) {
+func ExportDeliveryOrderData(order *pb.Order) (details []*pb.OrderDetail, err error) {
 	//需要的项
 	//导出代打印订单
 	query := fmt.Sprintf("select id,mobile,name,address,remark from orders o where order_status=1")
@@ -892,24 +892,14 @@ func ExportOrderData(order *pb.Order) (details []*pb.OrderDetail, err error) {
 	var condition string
 
 	//检索条件
-	//3.0 根据云店铺
+	//检索条件 -- 云店铺
 	if order.StoreId != "" {
 		args = append(args, order.StoreId)
 		condition += fmt.Sprintf(" and o.store_id=$%d", len(args))
 	}
-	//4.0 根据学校
-	if order.SchoolId != "" {
-		args = append(args, order.SchoolId)
-		condition += fmt.Sprintf(" and o.school_id=$%d", len(args))
-	}
-	//5.0 根据付款时间 开始 - 结束
-	if order.StartAt != 0 && order.EndAt != 0 {
-		args = append(args, order.StartAt)
-		condition += fmt.Sprintf(" and extract(epoch from o.pay_at)::integer between $%d and $%d", len(args), len(args)+1)
-		args = append(args, order.EndAt)
-	}
+	//检索条件 -- 订单ids
+	condition += fmt.Sprintf(" and o.id in(%s)  order by o.update_at desc", order.Ids)
 
-	condition += " order by o.update_at desc"
 	query += condition
 	log.Debugf(query+" args :%#v", args)
 	rows, err := DB.Query(query, args...)
@@ -939,6 +929,64 @@ func ExportOrderData(order *pb.Order) (details []*pb.OrderDetail, err error) {
 
 	}
 
+	return
+}
+
+//导出配货单
+func ExportDistributeOrderData(order *pb.Order) (models []*pb.DistributeOrderModel, err error) {
+	query := "select goods_id,type,sum(amount) from orders_item where orders_id in(%s) group by goods_id,type order by goods_id desc"
+	query = fmt.Sprintf(query, order.Ids)
+	log.Debug(query)
+
+	rows, err := DB.Query(query)
+	if err != nil && err != sql.ErrNoRows {
+		misc.LogErr(err)
+		return
+	}
+
+	for rows.Next() {
+		next := &pb.DistributeOrderModel{}
+		models = append(models, next)
+		var goodsId string
+		err = rows.Scan(&goodsId, &next.Type, &next.Num)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		//获取商品信息
+		goods := &pb.Goods{Id: goodsId, StoreId: order.StoreId}
+		err = goodsDB.GetGoodsByIdOrIsbn(goods)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		//获取商品所对应书本详情
+		book := &pb.Book{Id: goods.BookId}
+		err = bookDB.GetBookInfo(book)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		next.Isbn = book.Isbn
+		next.Title = book.Title
+		next.Publisher = book.Publisher
+		//获取商品位置
+		locations, err := goodsDB.GetGoodsLocationDetailByIdAndType(goodsId, next.Type)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, err
+		}
+		var locationStr string
+		for i := 0; i < len(locations); i++ {
+			if i == 0 {
+				locationStr = locations[i].StorehouseName + "--" + locations[i].ShelfName + "--" + locations[i].FloorName
+			} else {
+				locationStr += locations[i].StorehouseName + "--" + locations[i].ShelfName + "--" + locations[i].FloorName
+				locationStr += "，"
+			}
+		}
+		next.Locations = locationStr
+	}
 	return
 }
 

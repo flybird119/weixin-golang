@@ -113,7 +113,6 @@ func ChangAccountBalance(account *pb.Account) error {
 	err = tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
 	if err != nil {
 		log.Error(err)
-		misc.LogErr(err)
 		return err
 	}
 	tx.Commit()
@@ -124,12 +123,13 @@ func ChangAccountBalance(account *pb.Account) error {
 func ChangAccountBalanceWithTx(tx *sql.Tx, account *pb.Account) error {
 	query := "update account set balance=balance+$1,update_at=now() where store_id=$2 returning balance,id"
 	//开启事务
+	log.Debug(query+" args:%s,%d", account.StoreId, account.Balance)
 	err := tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
 	if err != nil {
 		log.Error(err)
-		misc.LogErr(err)
 		return err
 	}
+	log.Debug("hello")
 	if account.Balance < 0 {
 		return errors.New("sellerNoMoney")
 	}

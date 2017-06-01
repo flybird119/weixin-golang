@@ -294,9 +294,6 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	log.Debugf("============================")
-	log.Debugf("===%+v", order)
-	log.Debugf("============================")
 	if order.AfterSaleStatus != 1 {
 		return nil, errs.Wrap(errors.New("order not support after sale service"))
 	}
@@ -308,9 +305,10 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	defer tx.Rollback()
-
+	log.Debug("hello")
 	//检查退款金额 ，refund_fee == 0 ? 特殊处理：CallRPC
 	err = handleAfterSaleOrder(tx, order)
+	log.Debug("hello")
 	//检查用户资金以及记录
 	if err != nil && err.Error() == "sellerNoMoney" {
 		return &pb.NormalResp{Code: "00000", Message: "可提现金额不足，请充值"}, nil
@@ -345,16 +343,13 @@ func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.Af
 		}
 
 	} else {
-		log.Debug("ceshi347")
 		_, err := misc.CallRPC(ctx, "bc_account", "OrderCompleteAccountHandle", order)
-		log.Debug("ceshi349")
-		if err != nil {
+		if err != nil && err.Error() != "code: 10000, message:修改失败，改数据已经在账单项中存在" {
+			log.Error(err)
 			return &pb.NormalResp{Code: "00000", Message: err.Error()}, nil
 		}
 	}
-	log.Debug("ceshi355")
 	tx.Commit()
-	log.Debug("ceshi357")
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
@@ -399,18 +394,32 @@ func (s *OrderServiceServer) UserCenterNecessaryOrderCount(ctx context.Context, 
 	return in, nil
 }
 
-// 获导出订单
-func (s *OrderServiceServer) ExportOrderData(ctx context.Context, in *pb.Order) (*pb.OrderListResp, error) {
+// 导出发货订单
+func (s *OrderServiceServer) ExportDeliveryOrderData(ctx context.Context, in *pb.Order) (*pb.OrderListResp, error) {
 
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "ExportOrderData", "%#v", in))
-	details, err := orderDB.ExportOrderData(in)
+	details, err := orderDB.ExportDeliveryOrderData(in)
 	if err != nil {
 		log.Warn(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
 	return &pb.OrderListResp{Code: "00000", Message: "ok", Data: details}, nil
+}
+
+// 导出配货单
+func (s *OrderServiceServer) ExportDistributeOrderData(ctx context.Context, in *pb.Order) (*pb.DistributeOrdersResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "ExportDistributeOrderData", "%#v", in))
+	models, err := orderDB.ExportDistributeOrderData(in)
+	if err != nil {
+		log.Warn(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.DistributeOrdersResp{Code: "00000", Message: "ok", Data: models}, nil
 }
 
 // 获导出订单
@@ -439,8 +448,15 @@ func (s *OrderServiceServer) OrderShareOperation(ctx context.Context, in *pb.Ord
 
 //处理售后订单
 func handleAfterSaleOrder(tx *sql.Tx, in *pb.Order) error {
+
 	sellerAccountBalance := &pb.Account{StoreId: in.StoreId, Balance: -in.RefundFee}
-	//2.1：	待体现金额资金流向记录
+
+	//如果退款0元，那么不记录
+	if in.RefundFee == 0 {
+
+		return nil
+	}
+
 	err := accountDB.ChangAccountBalanceWithTx(tx, sellerAccountBalance)
 	if err != nil {
 		log.Error(err)
@@ -453,5 +469,6 @@ func handleAfterSaleOrder(tx *sql.Tx, in *pb.Order) error {
 		log.Error(err)
 		go misc.LogErrAccount(sellerAccountBalanceItem, "订单售后-增加记录失败", err)
 	}
+	log.Debug("hello")
 	return nil
 }

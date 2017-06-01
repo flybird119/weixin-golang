@@ -33,8 +33,11 @@ service OrderService {
     rpc AfterSaleOrderHandledResult (AfterSaleModel) returns (Void);
     //用户个人中心-订单状态统计
     rpc UserCenterNecessaryOrderCount (UserCenterOrderCount) returns (UserCenterOrderCount);
-    //导出订单
-    rpc ExportOrderData (Order) returns (OrderListResp);
+    //导出发货订单
+    rpc ExportDeliveryOrderData (Order) returns (OrderListResp);
+    //导出配货单
+    rpc ExportDistributeOrderData (Order) returns (DistributeOrdersResp);
+
     //订单分享功能
     rpc OrderShareOperation (Order) returns (NormalResp);
 }
@@ -83,7 +86,26 @@ message Order{
     string distribute_staff_id = 40;
     string seller_id = 41;
     int64 apply_refund_fee = 42;
+    string ids = 43;
+
 }
+
+//订单配货单
+message DistributeOrderModel{
+    string isbn = 1;
+    string title =2;
+    int64 num = 3;
+    int64 type = 4;
+    string locations = 5;
+    string publisher = 6;
+}
+//订单配货单响应
+message DistributeOrdersResp{
+    string code =1;
+    string message = 2;
+    repeated DistributeOrderModel data = 3;
+}
+
 
 //订单详情model
 message OrderDetail{

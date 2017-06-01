@@ -306,7 +306,7 @@ func AfterSaleOrderHandledResult(w http.ResponseWriter, r *http.Request) {
 }
 
 //导出订单
-func ExportOrder(w http.ResponseWriter, r *http.Request) {
+func ExportDeliveryOrder(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Order{}
 	body := r.FormValue("params")
 	if err := misc.Bytes2Struct([]byte(body), req); err != nil {
@@ -316,12 +316,11 @@ func ExportOrder(w http.ResponseWriter, r *http.Request) {
 
 	// Call RPC 请求订单详情
 	resp, ctx := &pb.OrderListResp{}, misc.GenContext(r)
-	err := misc.CallSVC(ctx, "bc_order", "ExportOrderData", req, resp)
+	err := misc.CallSVC(ctx, "bc_order", "ExportDeliveryOrderData", req, resp)
 	if err != nil {
 		misc.RespondMessage(w, r, err)
 		return
 	}
-
 	// 开始写入Excel
 	var file *xlsx.File
 	var sheet *xlsx.Sheet
@@ -377,6 +376,69 @@ func ExportOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filename := "发货单_" + time.Now().Format("20060102-15:04") + ".xlsx"
+	w.Header().Set("Content-Disposition",
+		`attachment; filename="`+filename+`"; filename*=utf-8''`+filename)
+
+	w.Header().Set("Content-Type",
+		`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet; charset=utf-8`)
+	file.Write(w)
+}
+
+//导出订单
+func ExportDistributeOrder(w http.ResponseWriter, r *http.Request) {
+	body := r.FormValue("params")
+	req := &pb.Order{}
+	if err := misc.Bytes2Struct([]byte(body), req); err != nil {
+		misc.RespondMessage(w, r, err)
+		return
+	}
+
+	// Call RPC 请求订单详情
+	resp, ctx := &pb.DistributeOrdersResp{}, misc.GenContext(r)
+	err := misc.CallSVC(ctx, "bc_order", "ExportDistributeOrderData", req, resp)
+	if err != nil {
+		misc.RespondMessage(w, r, err)
+		return
+	}
+
+	// 开始写入Excel
+	var file *xlsx.File
+	var sheet *xlsx.Sheet
+	var row *xlsx.Row
+
+	file = xlsx.NewFile()
+	sheet, err = file.AddSheet("配货单")
+	if err != nil {
+		log.Error(err)
+		res := misc.NewErrResult(errs.ErrInternal, "Error on AddSheet")
+		misc.RespondMessage(w, r, res)
+		return
+	}
+
+	row = sheet.AddRow()
+	head := []string{"ISBN", "书名", "出版社", "数量", "类别", "库存位置"}
+	row.WriteSlice(&head, len(head))
+
+	for _, detail := range resp.Data {
+		row = sheet.AddRow()
+		row.AddCell().SetString(detail.Isbn)
+		row.AddCell().SetString(detail.Title)
+		row.AddCell().SetString(detail.Publisher)
+		row.AddCell().SetInt(int(detail.Num))
+		if detail.Type == 0 {
+			// 新书
+			row.AddCell().SetString("[新书]")
+
+		} else if detail.Type == 1 {
+			// 旧书
+			row.AddCell().SetString("[旧书]")
+		}
+
+		row.AddCell().SetString(detail.Locations)
+
+	}
+
+	filename := "配货单_" + time.Now().Format("20060102-15:04") + ".xlsx"
 	w.Header().Set("Content-Disposition",
 		`attachment; filename="`+filename+`"; filename*=utf-8''`+filename)
 
