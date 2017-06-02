@@ -149,7 +149,7 @@ func DelTopicItem(topicItem *pb.TopicItem) error {
 
 //SearchTopics 搜索话题 topic.Id topic.Title topic.TokenStoreId
 func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err error, totalCount int64) {
-	query := "select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer create_at,extract(epoch from t.update_at)::integer update_at  from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
+	query := "select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::bigint create_at,extract(epoch from t.update_at)::bigint update_at  from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
 	countQuery := "select count(*) from topic t where exists (select * from topic_item ti where ti.topic_id=t.id) "
 	var args []interface{}
 	var condition string
@@ -224,7 +224,7 @@ func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err er
 	}
 	defer rows.Close()
 	for rows.Next() {
-		//select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::integer t.create_at,extract(epoch from t.update_at)::integer t.update_at,count(ti.id)
+		//select t.id,t.profile,t.title,t.sort,t.status, extract(epoch from t.create_at)::bigint t.create_at,extract(epoch from t.update_at)::bigint t.update_at,count(ti.id)
 		topic := &pb.Topic{}
 		topics = append(topics, topic)
 		rows.Scan(&topic.Id, &topic.Profile, &topic.Title, &topic.Sort, &topic.Status, &topic.CreateAt, &topic.UpdateAt)
@@ -252,8 +252,8 @@ func GetTopicItemsByTopic(topic_id string, page, size int64) (items []*pb.TopicI
 		misc.LogErr(err)
 		return
 	}
-	query = "select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id=$1 order by id"
-	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::integer create_at from topic_item where topic_id='%s' order by id OFFSET %d LIMIT %d ", topic_id, (page-1)*size, size)
+	query = "select id,topic_id,goods_id,status,extract(epoch from create_at)::bigint create_at from topic_item where topic_id=$1 order by id"
+	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::bigint create_at from topic_item where topic_id='%s' order by id OFFSET %d LIMIT %d ", topic_id, (page-1)*size, size)
 	query += fmt.Sprintf(" OFFSET %d LIMIT %d ", (page-1)*size, size)
 
 	rows, err := DB.Query(query, topic_id)

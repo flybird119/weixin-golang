@@ -66,10 +66,10 @@ func GetDescLocation(loc *pb.Location, genaration int64) error {
 
 // 获取子节点位置
 func GetChildLocations(loc *pb.Location) error {
-	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = $1 and store_id = $2 order by create_at ASC"
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::bigint create_at, extract(epoch from update_at)::bigint update_at from location where pid = $1 and store_id = $2 order by create_at ASC"
 
 	rows, err := DB.Query(query, loc.Id, loc.StoreId)
-	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where pid = '%s' and store_id = '%s' order by create_at ASC", loc.Id, loc.StoreId)
+	log.Debugf("select id, level, pid, store_id, name, extract(epoch from create_at)::bigint create_at, extract(epoch from update_at)::bigint update_at from location where pid = '%s' and store_id = '%s' order by create_at ASC", loc.Id, loc.StoreId)
 
 	if err != nil {
 		log.Error(err)
@@ -92,7 +92,7 @@ func GetChildLocations(loc *pb.Location) error {
 
 // 单纯罗列位置
 func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
-	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::integer create_at, extract(epoch from update_at)::integer update_at from location where store_id = $1 %s order by create_at ASC"
+	query := "select id, level, pid, store_id, name, extract(epoch from create_at)::bigint create_at, extract(epoch from update_at)::bigint update_at from location where store_id = $1 %s order by create_at ASC"
 
 	conditions := ""
 	conditions += fmt.Sprintf("and level = %d", loc.Level)

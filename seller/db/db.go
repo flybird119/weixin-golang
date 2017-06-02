@@ -98,9 +98,9 @@ func GetSellerById(sellerId string) (*pb.SellerInfo, error) {
 
 //GetStoresBySeller 通过商家获取所管理的店铺
 func GetStoresBySeller(seller *pb.SellerInfo) (s []*pb.SelfStoresResp_Store, err error) {
-	query := "select s.id,s.name,s.logo,extract(epoch from s.expire_at)::integer,extract(epoch from s.create_at)::integer,ms.role from store s  join map_store_seller ms on  s.id=ms.store_id where ms.seller_id=$1 order by id "
+	query := "select s.id,s.name,s.logo,extract(epoch from s.expire_at)::bigint,extract(epoch from s.create_at)::bigint,ms.role from store s  join map_store_seller ms on  s.id=ms.store_id where ms.seller_id=$1 order by id "
 
-	log.Debugf("select s.id,s.name,s.logo,extract(epoch from s.expire_at)::integer,extract(epoch from s.create_at)::integer,ms.role from store s  join map_store_seller ms on  s.id=ms.store_id where ms.seller_id=%s order by id", seller.Id)
+	log.Debugf("select s.id,s.name,s.logo,extract(epoch from s.expire_at)::bigint,extract(epoch from s.create_at)::bigint,ms.role from store s  join map_store_seller ms on  s.id=ms.store_id where ms.seller_id=%s order by id", seller.Id)
 
 	rows, err := DB.Query(query, seller.Id)
 	//

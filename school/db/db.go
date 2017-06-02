@@ -10,7 +10,7 @@ import (
 
 //SaveSchool 保存学校
 func SaveSchool(school *pb.School) error {
-	query := "insert into school (name,tel,express_fee,store_id,lat,lng) values($1,$2,$3,$4,$5,$6) returning id,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer"
+	query := "insert into school (name,tel,express_fee,store_id,lat,lng) values($1,$2,$3,$4,$5,$6) returning id,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint"
 	log.Debugf("insert into school (name,tel,express_fee,store_id,lat,lng) values( %s,%s,%d,%s,%f,%f ) returning id", school.Name, school.Tel, school.ExpressFee, school.StoreId, school.Lat, school.Lng)
 	err := DB.QueryRow(query, school.Name, school.Tel, school.ExpressFee, school.StoreId, school.Lat, school.Lng).Scan(&school.Id, &school.CreateAt, &school.CreateAt)
 	if err != nil {
@@ -46,8 +46,8 @@ func UpdateExpressFee(school *pb.School) error {
 
 //GetSchoolsByStore根据店铺获取所管理的学校
 func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
-	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=$1 order by create_at"
-	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where store_id=%s order by create_at", storeId)
+	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from school where store_id=$1 order by create_at"
+	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from school where store_id=%s order by create_at", storeId)
 	rows, err := DB.Query(query, storeId)
 
 	if err != nil {
@@ -73,8 +73,8 @@ func GetSchoolsByStore(storeId string) (s []*pb.School, err error) {
 
 //获取学校信息
 func GetSchoolById(schoolId string) (school *pb.School, err error) {
-	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where id=$1"
-	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from school where id='%s'", schoolId)
+	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from school where id=$1"
+	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from school where id='%s'", schoolId)
 	school = &pb.School{}
 	err = DB.QueryRow(query, schoolId).Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt)
 	if err != nil {

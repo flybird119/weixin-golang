@@ -83,8 +83,8 @@ func UpdateCircular(circular *pb.Circular) error {
 
 //CircularList 轮播图列表
 func CircularList(circular *pb.Circular) (circulars []*pb.Circular, err error) {
-	query := "select id,store_id,type,title,profile,image,source_id,extract(epoch from update_at)::integer from circular where store_id=$1 order by id"
-	log.Debugf("select id,store_id,type,title,profile,image,source_id,extract(epoch from update_at)::integer from circular where store_id=%s order by id", circular.StoreId)
+	query := "select id,store_id,type,title,profile,image,source_id,extract(epoch from update_at)::bigint from circular where store_id=$1 order by id"
+	log.Debugf("select id,store_id,type,title,profile,image,source_id,extract(epoch from update_at)::bigint from circular where store_id=%s order by id", circular.StoreId)
 	rows, err := DB.Query(query, circular.StoreId)
 
 	if err != nil {
