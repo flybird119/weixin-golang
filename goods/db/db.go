@@ -182,7 +182,7 @@ func UpdateGoods(goods *pb.Goods) error {
 //SearchGoods 搜索图书 isbn SearchAmount
 func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCount int64) {
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true "
-	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling,g.has_new_book,g.has_old_book"
+	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book"
 	query = fmt.Sprintf(query, param)
 	queryCount := "select count(*) from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true"
 	//动态拼接参数
@@ -309,7 +309,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		var newbookModel *pb.GoodsSalesModel
 		var oldbookModel *pb.GoodsSalesModel
 
-		/**	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling"
+		/**	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling"
 		 */
 		//遍历数据
 		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &searchGoods.HasNewBook, &searchGoods.HasOldBook)
@@ -353,7 +353,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 //SearchGoods 搜索图书 isbn 用于用户端搜索
 func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true and (g.has_new_book=true or g.has_old_book=true)"
-	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::integer,extract(epoch from g.update_at)::integer,g.is_selling,g.has_new_book,g.has_old_book"
+	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book"
 	query = fmt.Sprintf(query, param)
 	//动态拼接参数
 	var args []interface{}
@@ -430,7 +430,7 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 
 //SearchGoodsLoaction 搜索图书的货架位
 func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation, err error) {
-	query := "select id,goods_id,type,storehouse_id,shelf_id,floor_id,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from goods_location where 1=1"
+	query := "select id,goods_id,type,storehouse_id,shelf_id,floor_id,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from goods_location where 1=1"
 	if searchType != -100 {
 		if searchType == 0 {
 			query += fmt.Sprintf(" and type=%d ", 0)
@@ -464,7 +464,7 @@ func SearchGoodsLoaction(goods_id string, searchType int) (l []*pb.GoodsLocation
 
 //获取图书信息 精确搜索
 func GetGoodsByIdOrIsbn(goods *pb.Goods) error {
-	query := "select id,book_id,store_id,isbn,new_book_amount,old_book_amount,new_book_price,old_book_price,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer,is_selling,has_new_book,has_old_book from goods where 1=1"
+	query := "select id,book_id,store_id,isbn,new_book_amount,old_book_amount,new_book_price,old_book_price,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint,is_selling,has_new_book,has_old_book from goods where 1=1"
 
 	var args []interface{}
 	var condition string

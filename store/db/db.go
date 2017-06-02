@@ -20,7 +20,7 @@ const (
 
 //AddStore 通过手机号和登录密码检查商家是否存在
 func AddStore(store *pb.Store) error {
-	query := "insert into store (name,status,expire_at) values($1,$2,$3) returning id,extract(epoch from create_at)::integer "
+	query := "insert into store (name,status,expire_at) values($1,$2,$3) returning id,extract(epoch from create_at)::bigint "
 	now := time.Now()
 	now = now.Add(7 * 24 * time.Hour)
 	err := DB.QueryRow(query, store.Name, pb.StoreStatus_Normal, now).Scan(&store.Id, &store.CreateAt)
@@ -122,7 +122,7 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 			//即将 15天 到期
 			now := time.Now()
 			expireStr := (now.AddDate(0, -15, 0)).Format("2006-01")
-			condition += fmt.Sprintf(" and s.expire_at>now() and to_char(to_timestamp(extract(epoch from s.expire_at)::integer), 'YYYY-MM-DD')>'%s'", expireStr)
+			condition += fmt.Sprintf(" and s.expire_at>now() and to_char(to_timestamp(extract(epoch from s.expire_at)::bigint), 'YYYY-MM-DD')>'%s'", expireStr)
 		}
 	}
 	//计算数据总量
@@ -170,7 +170,7 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 		model := &pb.StoreExtraInfo{}
 		models = append(models, model)
 		var totalSales sql.NullInt64
-		//select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer
+		//select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::bigint,extract(epoch from s.expire_at)::bigint
 		err = rows.Scan(&model.StoreId, &totalSales)
 		//校验 valid是否为空
 		if totalSales.Valid {
@@ -182,7 +182,7 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 		}
 
 		//获取店铺的必要信息
-		query = fmt.Sprintf("select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::integer,extract(epoch from s.expire_at)::integer from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d and s.id='%s'", role.InterAdmin, model.StoreId)
+		query = fmt.Sprintf("select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::bigint,extract(epoch from s.expire_at)::bigint from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d and s.id='%s'", role.InterAdmin, model.StoreId)
 		log.Debug(query)
 		err = DB.QueryRow(query).Scan(&model.Id, &model.StoreId, &model.Poundage, &model.Charges, &model.Intention, &model.Remark, &model.StoreName, &model.AdminMobile, &model.AdminName, &model.StoreCreateAt, &model.StoreExpireAt)
 		if err != nil {
@@ -264,14 +264,14 @@ func UpdateRealStore(realStore *pb.RealStore) error {
 //GetStoreInfo 获取店铺的信息
 func GetStoreInfo(store *pb.Store) error {
 	//获取店铺基本信息
-	query := "select appid, name,logo,status,profile,extract(epoch from expire_at)::integer,address,business_license,extract(epoch from create_at)::integer from store where id=$1"
+	query := "select appid, name,logo,status,profile,extract(epoch from expire_at)::bigint,address,business_license,extract(epoch from create_at)::bigint from store where id=$1"
 	var logo, profile, address, businessLicense sql.NullString
 	err := DB.QueryRow(query, store.Id).Scan(&store.Appid, &store.Name, &logo, &store.Status, &profile, &store.ExpireAt, &address, &businessLicense, &store.CreateAt)
 
-	log.Debugf("select appid, name,logo,status,profile,extract(epoch from expire_at)::integer,address,business_license,extract(epoch from create_at)::integer from store where id='%s'", store.Id)
+	log.Debugf("select appid, name,logo,status,profile,extract(epoch from expire_at)::bigint,address,business_license,extract(epoch from create_at)::bigint from store where id='%s'", store.Id)
 
 	if err != nil {
-		log.Debugf("Err:%s !!select name,logo,status,profile,service_mobiles,extract(epoch from s.expire_at)::integer,address,business_license,extract(epoch from s.create_at)::integer where id=%s", err, store.Id)
+		log.Debugf("Err:%s !!select name,logo,status,profile,service_mobiles,extract(epoch from s.expire_at)::bigint,address,business_license,extract(epoch from s.create_at)::bigint where id=%s", err, store.Id)
 		return err
 	}
 	if logo.Valid {
@@ -324,11 +324,11 @@ func ChangeStoreLogo(image, store_id string) error {
 
 //GetStoreShops 获取店铺下的实习店列表
 func GetStoreShops(storeId string) (r []*pb.RealStore, err error) {
-	query := "select id,name,province_code,city_code,scope_code,address,images ,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from real_shop where store_id=$1"
-	log.Debugf("select id ,name,province_code,city_code,scope_code,address,images ,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from real_shop where store_id=%s", storeId)
+	query := "select id,name,province_code,city_code,scope_code,address,images ,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from real_shop where store_id=$1"
+	log.Debugf("select id ,name,province_code,city_code,scope_code,address,images ,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from real_shop where store_id=%s", storeId)
 	rows, err := DB.Query(query, storeId)
 	if err != nil {
-		log.Errorf("select id ,name,province_code,city_code,scope_code,address,images ,extract(epoch from create_at)::integer,extract(epoch from update_at)::integer from real_shop where store_id=%s", storeId)
+		log.Errorf("select id ,name,province_code,city_code,scope_code,address,images ,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from real_shop where store_id=%s", storeId)
 		log.Error(err)
 		return nil, err
 	}

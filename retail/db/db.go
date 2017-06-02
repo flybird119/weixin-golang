@@ -94,7 +94,7 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 
 //售后检索
 func FindRetails(retail *pb.Retail) (details []*pb.RetailDetail, err error, totalCount int64) {
-	query := "select r.id,r.total_fee,r.store_id,r.school_id,r.handle_staff_id,extract(epoch from r.create_at)::integer,r.goods_fee from retail r where 1=1"
+	query := "select r.id,r.total_fee,r.store_id,r.school_id,r.handle_staff_id,extract(epoch from r.create_at)::bigint,r.goods_fee from retail r where 1=1"
 	countQuery := "select count(*) from retail r where 1=1"
 	var args []interface{}
 	var condition string
@@ -111,7 +111,7 @@ func FindRetails(retail *pb.Retail) (details []*pb.RetailDetail, err error, tota
 
 	if retail.StartAt != 0 && retail.EndAt != 0 {
 		args = append(args, retail.StartAt)
-		condition += fmt.Sprintf(" and extract(epoch from r.create_at)::integer between $%d and $%d", len(args), len(args)+1)
+		condition += fmt.Sprintf(" and extract(epoch from r.create_at)::bigint between $%d and $%d", len(args), len(args)+1)
 		args = append(args, retail.EndAt)
 	}
 
@@ -153,7 +153,7 @@ func FindRetails(retail *pb.Retail) (details []*pb.RetailDetail, err error, tota
 		detail := &pb.RetailDetail{}
 		findRetail := &pb.Retail{}
 		detail.Retail = findRetail
-		// r.id,r.total_fee,r.store_id,r.school_id,r.handle_staff_id,extract(epoch from r.create_at)::integer
+		// r.id,r.total_fee,r.store_id,r.school_id,r.handle_staff_id,extract(epoch from r.create_at)::bigint
 		err = rows.Scan(&findRetail.Id, &findRetail.TotalFee, &findRetail.StoreId, &findRetail.SchoolId, &findRetail.HandleStaffId, &findRetail.CreateAt, &findRetail.GoodsFee)
 		if err != nil {
 			log.Error(err)

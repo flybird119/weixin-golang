@@ -30,7 +30,7 @@ func GetUserByPasswordAndMobile(master *pb.Master) error {
 
 //提现列表
 func WithdrawList(model *pb.StoreWithdrawalsModel) (models []*pb.StoreWithdrawalsModel, err error, totalCount int64) {
-	query := "select w.id,w.store_id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::integer,extract(epoch from w.complete_at)::integer ,extract(epoch from w.accept_at)::integer from withdrawals w where 1=1"
+	query := "select w.id,w.store_id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::bigint,extract(epoch from w.complete_at)::bigint ,extract(epoch from w.accept_at)::bigint from withdrawals w where 1=1"
 	queryCount := "select count(*) from withdrawals w where 1=1"
 	var condition string
 	if model.Status != 0 {
@@ -78,7 +78,7 @@ func WithdrawList(model *pb.StoreWithdrawalsModel) (models []*pb.StoreWithdrawal
 		withdraw := &pb.StoreWithdrawalsModel{}
 		models = append(models, withdraw)
 		var complete_at, accept_at sql.NullInt64
-		// w.id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::integer,extract(epoch from w.complete_at)::integer extract(epoch from w.accept_at)
+		// w.id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::bigint,extract(epoch from w.complete_at)::bigint extract(epoch from w.accept_at)
 		err = rows.Scan(&withdraw.Id, &withdraw.StoreId, &withdraw.CardType, &withdraw.CardNo, &withdraw.CardName, &withdraw.Username, &withdraw.WithdrawFee, &withdraw.Status, &withdraw.ApplyPhone, &withdraw.ApplyAt, &complete_at, &accept_at)
 		if err != nil {
 			log.Error(err)
@@ -106,7 +106,7 @@ func WithdrawList(model *pb.StoreWithdrawalsModel) (models []*pb.StoreWithdrawal
 //根据id获取提现信息
 func GetWithdrawById(withdrawId string) (*pb.StoreWithdrawalsModel, error) {
 
-	query := "select w.id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::integer,extract(epoch from w.complete_at)::integer ,extract(epoch from w.accept_at)::integer from withdrawals w where w.id='%s' "
+	query := "select w.id,w.card_type,w.card_no,w.card_name,w.username,w.withdraw_fee,w.status,w.apply_phone,extract(epoch from w.apply_at)::bigint,extract(epoch from w.complete_at)::bigint ,extract(epoch from w.accept_at)::bigint from withdrawals w where w.id='%s' "
 	query = fmt.Sprintf(query, withdrawId)
 	log.Debug(query)
 	withdraw := &pb.StoreWithdrawalsModel{}

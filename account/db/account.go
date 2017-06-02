@@ -171,14 +171,14 @@ func FindAccountItems(submitModel *pb.FindAccountitemReq) (respModel pb.FindAcco
 	//>24 商家 可提现-售后
 	//>80 商家 所有待结算分类
 	//>81 商家 所有可提现分类
-	query := "select store_id,order_id,remark,item_type,item_fee,account_balance,extract(epoch from create_at)::integer from account_item where 1=1"
+	query := "select store_id,order_id,remark,item_type,item_fee,account_balance,extract(epoch from create_at)::bigint from account_item where 1=1"
 	queryCount := "select count(*) from account_item where 1=1"
 	querySumPlus := "select sum(item_fee) from account_item where item_fee>0"
 	querySumReduce := "select sum(item_fee) from account_item where item_fee<0"
 
 	var condition string
 	if submitModel.StartAt != 0 && submitModel.EndAt != 0 {
-		condition += fmt.Sprintf(" and extract(epoch from create_at)::integer between %d and %d", submitModel.StartAt, submitModel.EndAt)
+		condition += fmt.Sprintf(" and extract(epoch from create_at)::bigint between %d and %d", submitModel.StartAt, submitModel.EndAt)
 	}
 	if submitModel.Type == 80 {
 		condition += fmt.Sprintf(" and item_type in (1,2,4)")
@@ -244,7 +244,7 @@ func FindAccountItems(submitModel *pb.FindAccountitemReq) (respModel pb.FindAcco
 	for rows.Next() {
 		item := &pb.AccountItem{}
 		respModel.Data = append(respModel.Data, item)
-		//store_id,order_id,remark,item_type,item_fee,account_balance,extract(epoch from create_at)::integer from account_item
+		//store_id,order_id,remark,item_type,item_fee,account_balance,extract(epoch from create_at)::bigint from account_item
 		err = rows.Scan(&item.StoreId, &item.OrderId, &item.Remark, &item.ItemType, &item.ItemFee, &item.AccountBalance, &item.CreateAt)
 		if err != nil {
 			log.Error(err)

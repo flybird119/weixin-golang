@@ -178,7 +178,7 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error, totalcou
 	//需要的项
 	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at, distribute_at, confirm_at, close_at sql.NullString
 
-	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer, extract(epoch from o.distribute_at)::integer, o.distribute_staff_id, extract(epoch from o.confirm_at)::integer,extract(epoch from o.close_at)::integer,apply_refund_fee"
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::bigint,extract(epoch from o.pay_at)::bigint,extract(epoch from o.deliver_at)::bigint,extract(epoch from o.print_at)::bigint,extract(epoch from o.complete_at)::bigint,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::bigint,extract(epoch from o.after_sale_end_at)::bigint,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::bigint, extract(epoch from o.distribute_at)::bigint, o.distribute_staff_id, extract(epoch from o.confirm_at)::bigint,extract(epoch from o.close_at)::bigint,apply_refund_fee"
 
 	query := fmt.Sprintf("select %s from orders o where 1=1 ", selectParam)
 	selectCountQuery := "select count(*) from orders o where 1=1"
@@ -229,7 +229,7 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error, totalcou
 	//5.0 根据付款时间 开始 - 结束
 	if order.StartAt != 0 && order.EndAt != 0 {
 		args = append(args, order.StartAt)
-		condition += fmt.Sprintf(" and extract(epoch from o.pay_at)::integer between $%d and $%d", len(args), len(args)+1)
+		condition += fmt.Sprintf(" and extract(epoch from o.pay_at)::bigint between $%d and $%d", len(args), len(args)+1)
 		args = append(args, order.EndAt)
 	}
 	//6.0 订单编号
@@ -447,7 +447,7 @@ func GetOrderBaseInfo(order *pb.Order) error {
 	//需要的项
 	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at, distribute_at, confirm_at, close_at sql.NullString
 
-	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer,extract(epoch from o.distribute_at)::integer,distribute_staff_id,extract(epoch from o.confirm_at)::integer, extract(epoch from o.close_at)::integer,o.apply_refund_fee"
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::bigint,extract(epoch from o.pay_at)::bigint,extract(epoch from o.deliver_at)::bigint,extract(epoch from o.print_at)::bigint,extract(epoch from o.complete_at)::bigint,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::bigint,extract(epoch from o.after_sale_end_at)::bigint,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::bigint,extract(epoch from o.distribute_at)::bigint,distribute_staff_id,extract(epoch from o.confirm_at)::bigint, extract(epoch from o.close_at)::bigint,o.apply_refund_fee"
 
 	query := fmt.Sprintf("select %s from orders o where id=$1 ", selectParam)
 
@@ -495,7 +495,7 @@ func GetOrderBaseInfoByTradeNo(order *pb.Order) error {
 	//需要的项
 	var pay_at, deliver_at, print_at, complete_at, after_sale_apply_at, after_sale_end_at, distribute_at, confirm_at, close_at sql.NullString
 
-	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::integer,extract(epoch from o.pay_at)::integer,extract(epoch from o.deliver_at)::integer,extract(epoch from o.print_at)::integer,extract(epoch from o.complete_at)::integer,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::integer,extract(epoch from o.after_sale_end_at)::integer,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::integer,extract(epoch from o.distribute_at)::integer,distribute_staff_id,extract(epoch from o.confirm_at)::integer, extract(epoch from o.close_at)::integer,o.apply_refund_fee"
+	selectParam := "o.id,o.order_status,o.total_fee,o.freight,o.goods_fee,o.withdrawal_fee,o.user_id,o.mobile,o.name,o.address,o.remark,o.store_id,o.school_id,o.trade_no,o.pay_channel,extract(epoch from o.order_at)::bigint,extract(epoch from o.pay_at)::bigint,extract(epoch from o.deliver_at)::bigint,extract(epoch from o.print_at)::bigint,extract(epoch from o.complete_at)::bigint,o.print_staff_id,o.deliver_staff_id,o.after_sale_staff_id,extract(epoch from o.after_sale_apply_at)::bigint,extract(epoch from o.after_sale_end_at)::bigint,o.after_sale_status,o.after_sale_trad_no,o.refund_fee,o.groupon_id,extract(epoch from o.update_at)::bigint,extract(epoch from o.distribute_at)::bigint,distribute_staff_id,extract(epoch from o.confirm_at)::bigint, extract(epoch from o.close_at)::bigint,o.apply_refund_fee"
 
 	query := fmt.Sprintf("select %s from orders o where trade_no=$1 ", selectParam)
 
@@ -808,7 +808,7 @@ func StoreCenterNecessaryOrderCount(model *pb.StoreHistoryStateOrderNumModel) er
 	now = now.Add(-1 * 24 * time.Hour)
 	yesterDayDateStr := now.Format("2006-01-02")
 	//统计今日处理订单量-以及订单金额
-	query = fmt.Sprintf("select count(*),sum(total_fee),to_char(to_timestamp(extract(epoch from pay_at)::integer), 'YYYY-MM-DD') as d from orders where to_char(to_timestamp(extract(epoch from pay_at)::integer), 'YYYY-MM-DD') in ('%s','%s') and store_id='%s'", yesterDayDateStr, todayDateStr, model.StoreId)
+	query = fmt.Sprintf("select count(*),sum(total_fee),to_char(to_timestamp(extract(epoch from pay_at)::bigint), 'YYYY-MM-DD') as d from orders where to_char(to_timestamp(extract(epoch from pay_at)::bigint), 'YYYY-MM-DD') in ('%s','%s') and store_id='%s'", yesterDayDateStr, todayDateStr, model.StoreId)
 	if model.SchoolId != "" {
 		query += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
 	}
@@ -838,7 +838,7 @@ func StoreCenterNecessaryOrderCount(model *pb.StoreHistoryStateOrderNumModel) er
 	}
 
 	//统计处理的订单量
-	query = fmt.Sprintf("select count(*),to_char(to_timestamp(extract(epoch from pay_at)::integer), 'YYYY-MM-DD') as d from orders where to_char(to_timestamp(extract(epoch from deliver_at)::integer), 'YYYY-MM-DD') in ('%s','%s') and store_id='%s'", yesterDayDateStr, todayDateStr, model.StoreId)
+	query = fmt.Sprintf("select count(*),to_char(to_timestamp(extract(epoch from pay_at)::bigint), 'YYYY-MM-DD') as d from orders where to_char(to_timestamp(extract(epoch from deliver_at)::bigint), 'YYYY-MM-DD') in ('%s','%s') and store_id='%s'", yesterDayDateStr, todayDateStr, model.StoreId)
 	if model.SchoolId != "" {
 		query += fmt.Sprintf(" and school_id='%s'", model.SchoolId)
 	}
