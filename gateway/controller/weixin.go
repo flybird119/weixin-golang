@@ -58,6 +58,7 @@ func GetUserBaseInfo(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_weixin", "GetUserBaseInfo", req, "openid")
 }
@@ -104,6 +105,7 @@ func GetOfficeAccountInfo(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_weixin", "GetOfficeAccountInfo", req, "store_id")
 }
@@ -117,6 +119,7 @@ func ExtractImg(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_weixin", "ExtractImageFromWeixin", req, "server_ids")
 }
@@ -130,6 +133,7 @@ func GetJsTicket(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_weixin", "WeChatJsApiTicket", req, "store_id", "url")
 }
@@ -148,6 +152,7 @@ func GetApiQueryAuth(w http.ResponseWriter, r *http.Request) {
 			"code":    errs.ErrTokenNotFound,
 			"message": "token not found",
 		})
+		return
 	}
 	misc.CallWithResp(w, r, "bc_weixin", "GetOfficialAccountInfo", req, "auth_code")
 }
