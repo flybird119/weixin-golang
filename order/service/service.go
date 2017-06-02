@@ -109,6 +109,7 @@ func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*p
 	in.DeliverStaffId = in.SellerId
 	in.DeliverAt = 1
 	in.OrderStatus = 2
+	in.UpdateAt = 1
 	err = orderDB.UpdateOrder(in)
 	if err != nil {
 		log.Error(err)
@@ -125,6 +126,7 @@ func (s *OrderServiceServer) DistributeOrder(ctx context.Context, in *pb.Order) 
 	//填写操作人 并填写配送的时间并填写配送的时间和更改时间
 	in.DistributeStaffId = in.SellerId
 	in.DistributeAt = 1
+	in.UpdateAt = 1
 	err := orderDB.UpdateOrder(in)
 	if err != nil {
 		log.Error(err)
@@ -152,6 +154,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 	in.ConfirmAt = 1
 	in.OrderStatus = 4
 	in.CompleteAt = 1
+	in.UpdateAt = 1
 	err = orderDB.UpdateOrder(in)
 	if err != nil {
 		log.Error(err)

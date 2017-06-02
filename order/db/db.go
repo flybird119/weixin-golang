@@ -377,10 +377,13 @@ func GetOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error) {
 
 //更改时间
 func UpdateOrder(order *pb.Order) error {
-	query := "update orders set update_at=now()"
+	query := "update orders set id=id"
 
 	var args []interface{}
 	var condition string
+	if order.UpdateAt != 0 {
+		condition += ",update_at=now()"
+	}
 	if order.OrderStatus != 0 {
 		args = append(args, order.OrderStatus)
 		condition += fmt.Sprintf(",order_status=order_status|$%d", len(args))
