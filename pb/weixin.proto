@@ -89,6 +89,8 @@ message WeixinReq {
     string url = 5;
     string openid = 6;
     string user_id = 7;
+
+    string redirect_uri = 8;    //授权回调地址
 }
 
 message GetAuthURLResp{
