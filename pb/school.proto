@@ -15,6 +15,8 @@ service SchoolService{
     rpc StoreSchools (School) returns (SchoolsResp);
     //根据学校的id获取学校信息
     rpc GetSchoolById (School) returns (SchoolResp);
+    //删除学校
+    rpc DelSchool (School) returns (NormalResp);
 
 }
 
@@ -26,11 +28,14 @@ message School{
     string tel = 3;
     int64 express_fee = 4;
     string store_id = 5;
-    double lat = 6;
-    double lng = 7;
-    int64 create_at = 8;
-    int64 update_at = 9;
-    SellerInfo seller = 10;
+    int64 status = 6;
+    double lat = 7;
+    double lng = 8;
+    int64 create_at = 9;
+    int64 update_at = 10;
+    SellerInfo seller = 11;
+    int64 del_at = 12;
+    string del_staff_id = 13;
 
 }
 //通用学校返回model

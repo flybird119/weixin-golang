@@ -57,6 +57,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/school/update", m.Wrap(c.UpdateSchool))
 	v1.Register("/school/update_express_fee", m.Wrap(c.UpdateExpressFee))
 	v1.Register("/school/store_schools", m.Wrap(c.StoreSchools))
+	v1.Register("/school/del", m.Wrap(c.DelSchool))
 
 	// location
 	v1.Register("/location/add_location", m.Wrap(c.AddLocation))
