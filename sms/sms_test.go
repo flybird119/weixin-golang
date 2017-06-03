@@ -32,8 +32,8 @@ func init() {
 }
 
 func TestSms(t *testing.T) {
-	message := []string{"35421"}
-	a := &pb.SMSReq{Type: pb.SMSType_CommonCheckCode, Mobile: "86-17600404379", Message: message}
+	message := []string{"老北京炸酱面", "10月4日", "1238467", "1817953402"}
+	a := &pb.SMSReq{Type: pb.SMSType_AutoConfirmReceipt, Mobile: "18817953402", Message: message}
 	smsClient.SendSMS(ctx, a)
 }
 
@@ -41,5 +41,5 @@ func TestType(t *testing.T) {
 
 	log.Debug(">>>>>>>>>>>>>")
 
-	t.Logf("-----%d----", pb.SMSType_CommonCheckCode)
+	t.Logf("-----%d----", pb.SMSType_Delivery)
 }
