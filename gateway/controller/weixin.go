@@ -159,7 +159,7 @@ func GetApiQueryAuth(w http.ResponseWriter, r *http.Request) {
 
 func GetAuthURL(w http.ResponseWriter, r *http.Request) {
 	req := &pb.WeixinReq{}
-	misc.CallWithResp(w, r, "bc_weixin", "GetAuthURL", req)
+	misc.CallWithResp(w, r, "bc_weixin", "GetAuthURL", req, "redirect_uri")
 }
 
 const (

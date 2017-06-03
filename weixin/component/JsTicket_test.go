@@ -11,7 +11,8 @@ import (
 // }
 
 func TestJsticket(t *testing.T) {
-	ticket, err := JsTicket("wx6d36779ce4dd3dfa", "refreshtoken@@@o509G_ob9H_tvBVV7P2Ba7RbhRmobn1ZV_1GDWgOpOw")
+	ticket, err := JsTicket("wx6d36779ce4dd3dfa", "refreshtoken@@@11TBbayf4_7wqFaWNXEg8Db6EoyuM8m2jIBw-AiI5J4")
+	//
 	if err != nil {
 		log.Error(err)
 	}

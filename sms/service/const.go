@@ -4,7 +4,9 @@ import "github.com/goushuyun/weixin-golang/pb"
 
 var (
 	templateId = map[pb.SMSType]string{
-		pb.SMSType_CommonCheckCode: "164093",
+		pb.SMSType_CommonCheckCode:    "164093",
+		pb.SMSType_Delivery:           "174196",
+		pb.SMSType_AutoConfirmReceipt: "174203",
 	}
 )
 
