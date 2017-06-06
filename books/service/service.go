@@ -111,9 +111,13 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 
 	// get from douban
 	douban_book, err := douban.GetBookInfo(req.Isbn)
-	if err != nil && strings.Index(err.Error(), "404") == -1 {
+	// if err != nil && strings.Index(err.Error(), "404") == -1 {
+	// 	log.Error(err)
+	// 	return nil, errs.Wrap(errors.New(err.Error()))
+	// }
+	if err != nil {
 		log.Error(err)
-		return nil, errs.Wrap(errors.New(err.Error()))
+		// return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
 	api_usage++
