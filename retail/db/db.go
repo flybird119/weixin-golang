@@ -181,7 +181,7 @@ func FindRetails(retail *pb.Retail) (details []*pb.RetailDetail, err error, tota
 	return
 }
 
-//
+//获取线下零售项
 func GetRetailItems(retail *pb.Retail) (items []*pb.RetailItem, err error) {
 	query := "select ri.id,g.id,ri.type,ri.amount,ri.price,b.title,b.isbn,b.image,b.price from retail_item ri join goods g on ri.goods_id=g.id join books b on g.book_id=b.id where retail_id='%s'"
 	query = fmt.Sprintf(query, retail.Id)

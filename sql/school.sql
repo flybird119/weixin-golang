@@ -10,7 +10,9 @@ create table school (
     -- 位置信息
     lat double precision NOT NULL DEFAULT 0,
     lng double precision NOT NULL DEFAULT 0,
-
+    status int default 0, --学校状态 0 正常 1异常
+    del_at timestamptz,
+    del_staff_id text default '',
     create_at timestamptz not null default now(),
 	update_at timestamptz not null default now()
 );

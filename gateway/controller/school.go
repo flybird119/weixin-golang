@@ -75,3 +75,15 @@ func GetSchoolById(w http.ResponseWriter, r *http.Request) {
 	req := &pb.School{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_school", "GetSchoolById", req)
 }
+
+//DelSchool 删除学校
+func DelSchool(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.School{StoreId: c.StoreId, DelStaffId: c.SellerId}
+	misc.CallWithResp(w, r, "bc_school", "DelSchool", req, "id")
+}

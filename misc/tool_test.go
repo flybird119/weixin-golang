@@ -3,6 +3,8 @@ package misc
 import (
 	"fmt"
 	"testing"
+
+	"github.com/gographics/imagick/imagick"
 )
 
 func TestGenCheckCode(t *testing.T) {
@@ -79,4 +81,26 @@ func TestSubString(t *testing.T) {
 	str := SubString(cardNo, len(cardNo)-4, 4)
 	fmt.Print(str + "\n")
 	fmt.Print(len(cardNo))
+}
+
+func TestAddTextImage(t *testing.T) {
+	imagick.Initialize()
+	defer imagick.Terminate()
+	mw := imagick.NewMagickWand()
+	mw.ReadImage("/Users/lixiao/Desktop/base_circular.jpg")
+	defer mw.Destroy()
+
+	dw := imagick.NewDrawingWand()
+	defer dw.Destroy()
+
+	pw := imagick.NewPixelWand()
+	pw.SetColor("red")
+	defer pw.Destroy()
+	dw.SetFont("./simsun.ttc")
+	dw.SetFontSize(20)
+	dw.SetFillColor(pw)
+	dw.SetTextEncoding("UTF-8")
+	mw.AnnotateImage(dw, 20, 20, 0, "@ 你好 Hello...")
+	mw.DrawImage(dw)
+	mw.WriteImage("textlog.jpg")
 }

@@ -199,7 +199,7 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 		}
 
 		//获取每个店铺管理学校列表
-		schools, findErr := schoolDb.GetSchoolsByStore(model.StoreId)
+		schools, findErr := schoolDb.GetSchoolsByStore(model.StoreId, 0)
 		if findErr != nil {
 			log.Error(err)
 			err = findErr

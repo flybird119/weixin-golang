@@ -60,7 +60,7 @@ func (s *SchoolServiceServer) UpdateExpressFee(ctx context.Context, in *pb.Schoo
 //StoreSchools 店铺下的所有学校
 func (s *SchoolServiceServer) StoreSchools(ctx context.Context, in *pb.School) (*pb.SchoolsResp, error) {
 	//获取学校店铺
-	schools, err := db.GetSchoolsByStore(in.StoreId)
+	schools, err := db.GetSchoolsByStore(in.StoreId, in.Status)
 	if err != nil {
 		log.Debug(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
@@ -77,4 +77,15 @@ func (s *SchoolServiceServer) GetSchoolById(ctx context.Context, in *pb.School) 
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	return &pb.SchoolResp{Code: "00000", Message: "ok", Data: serchSchool}, nil
+}
+
+//DelSchool 删除学校
+func (s *SchoolServiceServer) DelSchool(ctx context.Context, in *pb.School) (*pb.NormalResp, error) {
+	//获取学校店铺
+	err := db.DelSchool(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
