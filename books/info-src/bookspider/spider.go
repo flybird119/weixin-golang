@@ -1,22 +1,22 @@
-package misc
+package bookspider
 
 import (
 	"strconv"
 	"strings"
 
 	"github.com/goushuyun/weixin-golang/pb"
-
-	"github.com/goushuyun/weixin-golang/misc/bookspider"
 	"github.com/hu17889/go_spider/core/common/page_items"
 	"github.com/hu17889/go_spider/core/common/request"
 	"github.com/hu17889/go_spider/core/spider"
 )
 
+// "github.com/goushuyun/weixin-golang/misc/bookspider"
+
 //通过爬虫获取图书信息
 func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 
 	//首先从当当上获取图书信息
-	sp := spider.NewSpider(bookspider.NewDangDangListProcesser(), "spiderDangDangList")
+	sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
 	baseURL := "http://search.dangdang.com/?key=ISBN&act=input&category_path=01.00.00.00.00.00&type=01.00.00.00.00.00"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
@@ -29,14 +29,14 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		println("no matches found!")
 	} else {
 		structData(pageItems, book)
-		if book.Isbn == "" {
-		} else {
+		if book.Isbn != "" && isbn == book.Isbn {
+
 			return
 		}
 
 	}
 	//如果当当图书信息为空，那么向amazon获取图书信息
-	sp = spider.NewSpider(bookspider.NewAmazonListProcesser(), "spiderAmazonList")
+	sp = spider.NewSpider(NewAmazonListProcesser(), "spiderAmazonList")
 	baseURL = "https://www.amazon.cn/s/ref=nb_sb_noss?__mk_zh_CN=%E4%BA%9A%E9%A9%AC%E9%80%8A%E7%BD%91%E7%AB%99&url=search-alias%3Dstripbooks&field-keywords=ISBN"
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)
 	req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
@@ -45,10 +45,9 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		println("no matches found!")
 	} else {
 		structData(pageItems, book)
-		if book.Isbn == "" {
-			return nil, nil
+		if book.Isbn != "" && isbn == book.Isbn {
+			return
 		}
-		return
 	}
 	return nil, nil
 }

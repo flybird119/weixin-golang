@@ -1,19 +1,18 @@
 //
-package misc
+package bookspider
 
 import (
 	"fmt"
 	"strings"
 	"testing"
 
-	"github.com/goushuyun/weixin-golang/misc/bookspider"
 	"github.com/hu17889/go_spider/core/common/request"
 	"github.com/hu17889/go_spider/core/spider"
 )
 
 func TestSpiderDangdangList(t *testing.T) {
 	isbn := "9787513914536"
-	sp := spider.NewSpider(bookspider.NewDangDangListProcesser(), "spiderDangDangList")
+	sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
 	baseURL := "http://search.dangdang.com/?key=ISBN&act=input&category_path=01.00.00.00.00.00&type=01.00.00.00.00.00"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
@@ -32,7 +31,7 @@ func TestSpiderDangdangList(t *testing.T) {
 }
 
 func TestSpiderDangdangDetail(t *testing.T) {
-	sp := spider.NewSpider(bookspider.NewDangDangDetailProcesser(), "spiderDangDangDetail")
+	sp := spider.NewSpider(NewDangDangDetailProcesser(), "spiderDangDangDetail")
 	req := request.NewRequest("http://product.dangdang.com/24170700.html", "html", "", "GET", "", nil, nil, nil, nil)
 
 	pageItems := sp.GetByRequest(req)
@@ -47,7 +46,7 @@ func TestSpiderDangdangDetail(t *testing.T) {
 
 func TestSpiderAmazonList(t *testing.T) {
 
-	sp := spider.NewSpider(bookspider.NewAmazonListProcesser(), "spiderAmazonList")
+	sp := spider.NewSpider(NewAmazonListProcesser(), "spiderAmazonList")
 	req := request.NewRequest("https://www.amazon.cn/s/ref=nb_sb_noss?__mk_zh_CN=%E4%BA%9A%E9%A9%AC%E9%80%8A%E7%BD%91%E7%AB%99&url=search-alias%3Dstripbooks&field-keywords=9787508672069", "html", "", "GET", "", nil, nil, nil, nil)
 
 	pageItems := sp.GetByRequest(req)
@@ -58,7 +57,11 @@ func TestSpiderAmazonList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
+<<<<<<< HEAD:misc/spider_test.go
 	book, _ := GetBookInfoBySpider("9787559602404")
+=======
+	book, _ := GetBookInfoBySpider("9787302437413")
+>>>>>>> c6eaf3546cdf61b3eaba67b59bf6499f8168c554:books/info-src/bookspider/spider_test.go
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	println("-----------------------------------OOOOOOM---------------------------------")

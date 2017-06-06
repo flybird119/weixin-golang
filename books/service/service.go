@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/context"
 
 	"github.com/goushuyun/weixin-golang/books/db"
-	"github.com/goushuyun/weixin-golang/books/info-src/douban"
+	"github.com/goushuyun/weixin-golang/books/info-src/bookspider"
 	"github.com/goushuyun/weixin-golang/books/info-src/wanxiang"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
@@ -110,15 +110,14 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 	)
 
 	// get from douban
-	douban_book, err := douban.GetBookInfo(req.Isbn)
-	if err != nil && strings.Index(err.Error(), "404") == -1 {
+	spider_book, err := bookspider.GetBookInfoBySpider(req.Isbn)
+	if err != nil {
 		log.Error(err)
-		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
 	api_usage++
 
-	if !bookInfoIsOk(douban_book) {
+	if !bookInfoIsOk(spider_book) {
 		// get from wanxiang
 		wanxiang_book, err := wanxiang.GetBookInfo(req.Isbn)
 		if err != nil {
@@ -126,11 +125,11 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 			return nil, errs.Wrap(errors.New(err.Error()))
 		}
 		api_usage++
-		final_book = integreteInfo(douban_book, wanxiang_book)
+		final_book = integreteInfo(spider_book, wanxiang_book)
 	}
 
 	if api_usage == 1 {
-		final_book = douban_book
+		final_book = spider_book
 	}
 
 	// API 调用之后，未找到该图书，return
