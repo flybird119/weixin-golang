@@ -515,9 +515,38 @@ func HistoryMonthSales(model *pb.GoodsSalesStatisticModel) (salesModels []*pb.St
 }
 
 //获取所有即将完成的订单
-func GetAllWillCompletOrder() (orders []*pb.Order, err error) {
+func GetAllCompletedOrder() (orders []*pb.Order, err error) {
 	now := time.Now()
 	now = now.AddDate(0, 0, -14)
+	startAt := now.Format("2006-01-02")
+	query := "select id from orders where order_status=3 and to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')<'%s'"
+	query = fmt.Sprintf(query, startAt)
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return orders, nil
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		order := &pb.Order{}
+		orders = append(orders, order)
+		err = rows.Scan(&order.Id)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}
+
+//获取所有即将完成的订单
+func GetAllWillCompletOrder() (orders []*pb.Order, err error) {
+	now := time.Now()
+	now = now.AddDate(0, 0, -13)
 	startAt := now.Format("2006-01-02")
 	query := "select id from orders where order_status=3 and to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')<'%s'"
 	query = fmt.Sprintf(query, startAt)

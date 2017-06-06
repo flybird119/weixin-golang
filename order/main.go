@@ -18,6 +18,7 @@ var svcNames = []string{
 	"bc_cart",
 	"bc_account",
 	"bc_payment",
+	"bc_sms",
 }
 
 func main() {
