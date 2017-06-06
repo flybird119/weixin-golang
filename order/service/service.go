@@ -11,6 +11,7 @@ import (
 	"github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	orderDB "github.com/goushuyun/weixin-golang/order/db"
+	storeDB "github.com/goushuyun/weixin-golang/store/db"
 
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
@@ -115,6 +116,23 @@ func (s *OrderServiceServer) DeliverOrder(ctx context.Context, in *pb.Order) (*p
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+
+	//发送短信
+	//发送短信 --- 获取店铺名称
+	store := &pb.Store{Id: searchOrder.StoreId}
+	err = storeDB.GetStoreInfo(store)
+	if err == nil {
+		//构建发送模版
+		message := []string{store.Name, searchOrder.Id}
+		_, err = misc.CallRPC(ctx, "bc_sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_Delivery, Mobile: searchOrder.Mobile, Message: message})
+		if err != nil {
+			log.Error(err)
+		}
+
+	} else {
+		log.Error(err)
+	}
+
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 

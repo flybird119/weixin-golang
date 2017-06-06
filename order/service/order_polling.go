@@ -1,11 +1,13 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/goushuyun/weixin-golang/errs"
+	"github.com/pborman/uuid"
 
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -14,6 +16,7 @@ import (
 	"github.com/goushuyun/weixin-golang/order/db"
 	schoolDB "github.com/goushuyun/weixin-golang/school/db"
 	storeDB "github.com/goushuyun/weixin-golang/store/db"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/robfig/cron"
 	"github.com/wothing/log"
@@ -25,9 +28,12 @@ func RegisterOrderPolling(cron *cron.Cron) {
 	order_statistic_before_dawn_task_spec := "0 0 1 * * *" //时间轮询表达式 每天凌晨1：00执行一次
 	order_statistic_at_night_task_spec := "0 30 22 * * *"  //时间轮询表达式 每天晚上22：00执行一次
 	order_system_confirm_task_spec := "0 20 0 * * *"       //系统自动确认订单轮询 每日凌晨 0:20
+	order_auto_confirm_notify_task_spec := "0 0 12 * * *"  //系统自动确认订单轮询 每日凌晨 0:20
+	//order_auto_confirm_notify_task_spec := "0 0/1 * * * *" //系统自动确认订单轮询 每日凌晨 0:20
 	// order_system_confirm_task_spec := "0 0/1 * * * *" //系统自动确认订单轮询 每日凌晨 0:20
 	// order_statistic_before_dawn_task_spec := "0 0/1 * * * *" //时间轮询表达式 每天凌晨1：00执行一次
 	// order_statistic_at_night_task_spec := "0 0/3 * * * *"    //时间轮询表达式 每天晚上22：00执行一次
+
 	fmt.Println(order_close_task_spec + order_statistic_before_dawn_task_spec + order_statistic_at_night_task_spec + order_system_confirm_task_spec)
 	//注册检查即将关闭的订单
 	cron.AddFunc(order_close_task_spec, orderCloseHandle)
@@ -37,6 +43,8 @@ func RegisterOrderPolling(cron *cron.Cron) {
 	cron.AddFunc(order_statistic_at_night_task_spec, orderStatisticHandle)
 	//系统定时任务-订单到时自动完成
 	cron.AddFunc(order_system_confirm_task_spec, OrderConirmBySystemHandle)
+	//系统定时任务-自动完成通知
+	cron.AddFunc(order_auto_confirm_notify_task_spec, OrderAutoConfirmNotiryHandle)
 
 }
 
@@ -131,7 +139,7 @@ func SchoolOrdersStatistic(school *pb.School) error {
 //订单到时自动确认
 func OrderConirmBySystemHandle() {
 	//首先获取所有的可以系统判定完成的订单
-	orders, err := db.GetAllWillCompletOrder()
+	orders, err := db.GetAllCompletedOrder()
 	if err != nil {
 		log.Error(err)
 		return
@@ -166,6 +174,7 @@ func ConfirmOrderBySystem(in *pb.Order) error {
 	searchOrder.OrderStatus = 4
 	//商家账户更改
 	OrderCompleteAccountHandle(searchOrder)
+
 	return nil
 }
 
@@ -231,4 +240,48 @@ func OrderCompleteAccountHandle(in *pb.Order) error {
 	}
 
 	return nil
+}
+
+//订单即将自动确认收货handle
+func OrderAutoConfirmNotiryHandle() {
+	orders, err := db.GetAllWillCompletOrder()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	log.Debugf("orders :%+v", orders)
+	for i := 0; i < len(orders); i++ {
+		order := orders[i]
+		OrderAutoConfirmNotify(order)
+	}
+
+}
+
+//订单即将自动确认收货handle
+func OrderAutoConfirmNotify(in *pb.Order) {
+	searchOrder := &pb.Order{Id: in.Id}
+	err := db.GetOrderBaseInfo(searchOrder)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	//发送短信
+	//发送短信 --- 获取店铺名称
+	store := &pb.Store{Id: searchOrder.StoreId}
+	err = storeDB.GetStoreInfo(store)
+	if err == nil {
+		//构建发送模版
+		tm := time.Unix(searchOrder.PayAt, 0)
+		tm = tm.AddDate(0, 0, 14)
+		expireDate := tm.Format("2006-01-02 03:04:05 PM")
+		message := []string{store.Name, expireDate, searchOrder.Id}
+		ctx := metadata.NewContext(context.Background(), metadata.Pairs("tid", uuid.New()))
+		_, err = misc.CallRPC(ctx, "bc_sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_AutoConfirmReceipt, Mobile: searchOrder.Mobile, Message: message})
+		if err != nil {
+			log.Error(err)
+		}
+	} else {
+		log.Error(err)
+	}
+
 }
