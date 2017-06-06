@@ -56,12 +56,22 @@ func TestSpiderAmazonList(t *testing.T) {
 	}
 }
 
+func TestSpiderBookUUList(t *testing.T) {
+	isbn := "9787559602404"
+	sp := spider.NewSpider(NewBookUUListProcesser(), "BookUUlist")
+	baseUrl := "http://search.bookuu.com/AdvanceSearch.php?isbn=ISBN&sm=&zz=&cbs=&dj_s=&dj_e=&bkj_s=&bkj_e=&layer2=&zk=0&cbrq_n=2017&cbrq_y=&cbrq_n1=2017&cbrq_y1=&sjsj=0&orderby=&layer1=1"
+	url := strings.Replace(baseUrl, "ISBN", isbn, -1)
+	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+
+	pageItems := sp.GetByRequest(req)
+	for name, value := range pageItems.GetAll() {
+		println(name + "\t:\t" + value)
+	}
+}
+
 func TestGetBookInfo(t *testing.T) {
-<<<<<<< HEAD:misc/spider_test.go
+
 	book, _ := GetBookInfoBySpider("9787559602404")
-=======
-	book, _ := GetBookInfoBySpider("9787302437413")
->>>>>>> c6eaf3546cdf61b3eaba67b59bf6499f8168c554:books/info-src/bookspider/spider_test.go
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	println("-----------------------------------OOOOOOM---------------------------------")
