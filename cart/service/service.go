@@ -59,6 +59,7 @@ func (s *CartServiceServer) CartList(ctx context.Context, in *pb.Cart) (*pb.Cart
 		carts[i].GoodsDetail = typeGoods
 
 	}
+
 	return &pb.CartListResp{Code: "00000", Message: "ok", Data: carts}, nil
 }
 
