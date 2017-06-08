@@ -132,7 +132,7 @@ func GetSchoolById(schoolId string) (school *pb.School, err error) {
 	log.Debugf("select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from,status,extract(epoch from del_at)::bigint,del_staff_id school where id='%s'", schoolId)
 	school = &pb.School{}
 	var delAt sql.NullInt64
-	err = DB.QueryRow(query, schoolId).Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt, school.Status, &delAt, &school.DelStaffId)
+	err = DB.QueryRow(query, schoolId).Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt, &school.Status, &delAt, &school.DelStaffId)
 	if err != nil {
 		log.Debugf("%#v", err)
 		return nil, err

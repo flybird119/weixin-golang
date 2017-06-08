@@ -57,11 +57,8 @@ func TestSpiderAmazonList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
-<<<<<<< HEAD:misc/spider_test.go
-	book, _ := GetBookInfoBySpider("9787559602404")
-=======
-	book, _ := GetBookInfoBySpider("9787302437413")
->>>>>>> c6eaf3546cdf61b3eaba67b59bf6499f8168c554:books/info-src/bookspider/spider_test.go
+	book, _ := GetBookInfoBySpider("9787541695797")
+
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	println("-----------------------------------OOOOOOM---------------------------------")
