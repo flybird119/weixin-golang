@@ -85,7 +85,6 @@ func (s *DangDangDetailProcesser) Process(p *page.Page) {
 	//获取图书价格
 	price := query.Find("#original-price").Text()
 	price = strings.Trim(price, " \t\n")
-	println("===============================" + price)
 	reg = regexp.MustCompile("(\\d+).\\d{2}")
 	price = reg.FindString(price)
 	//获取isbn
@@ -100,6 +99,9 @@ func (s *DangDangDetailProcesser) Process(p *page.Page) {
 	//获取图片url
 	url, _ := query.Find("#largePicDiv #largePic").Attr("src")
 	url = strings.Trim(url, " \t\n")
+	if edition != "" {
+		edition = "第" + edition + "版"
+	}
 	p.AddField("title", title)
 	p.AddField("remark", remark)
 	p.AddField("author", author)
@@ -108,7 +110,7 @@ func (s *DangDangDetailProcesser) Process(p *page.Page) {
 	p.AddField("price", price)
 	p.AddField("isbn", isbn)
 	p.AddField("image_url", url)
-	p.AddField("edition", "第"+edition+"版")
+	p.AddField("edition", edition)
 
 }
 

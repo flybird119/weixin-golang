@@ -245,15 +245,15 @@ func SearchTopics(topic *pb.Topic, searchType int64) (topics []*pb.Topic, err er
 
 //GetTopicItemsByTopic 获取话题项
 func GetTopicItemsByTopic(topic_id string, page, size int64) (items []*pb.TopicItem, err error, totalCount int64) {
-	query := fmt.Sprintf("select count(*) from topic_item where topic_id='%s'", topic_id)
+	query := fmt.Sprintf("select count(*) from topic_item t where topic_id='%s' and exists(select * from goods g where g.id=t.goods_id and (g.has_new_book=true or g.has_old_book=true))", topic_id)
 	log.Debug(query)
 	err = DB.QueryRow(query).Scan(&totalCount)
 	if err != nil {
 		misc.LogErr(err)
 		return
 	}
-	query = "select id,topic_id,goods_id,status,extract(epoch from create_at)::bigint create_at from topic_item where topic_id=$1 order by id"
-	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::bigint create_at from topic_item where topic_id='%s' order by id OFFSET %d LIMIT %d ", topic_id, (page-1)*size, size)
+	query = "select t.id,t.topic_id,t.goods_id,t.status,extract(epoch from t.create_at)::bigint create_at from topic_item t where topic_id=$1 and exists(select * from goods g where g.id=t.goods_id and (g.has_new_book=true or g.has_old_book=true)) order by id"
+	log.Debugf("select id,topic_id,goods_id,status,extract(epoch from create_at)::bigint create_at from topic_item t where topic_id='%s' order by id OFFSET %d LIMIT %d ", topic_id, (page-1)*size, size)
 	query += fmt.Sprintf(" OFFSET %d LIMIT %d ", (page-1)*size, size)
 
 	rows, err := DB.Query(query, topic_id)

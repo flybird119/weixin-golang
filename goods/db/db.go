@@ -291,8 +291,8 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 			return
 		}
 		condition += " order by g.update_at desc"
-		condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	}
+	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	query += condition
 	log.Debugf(query+"%+v", args)
 	rows, err := DB.Query(query, args...)
