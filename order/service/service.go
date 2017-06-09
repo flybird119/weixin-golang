@@ -188,7 +188,7 @@ func (s *OrderServiceServer) ConfirmOrder(ctx context.Context, in *pb.Order) (*p
 // 申请售后（微信端）
 func (s *OrderServiceServer) AfterSaleApply(ctx context.Context, in *pb.AfterSaleModel) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "PrintOrder", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "AfterSaleApply", "%#v", in))
 	//检查用户有没有资格申请售后
 	serachOrder := &pb.Order{Id: in.OrderId}
 	err := orderDB.GetOrderBaseInfo(serachOrder)

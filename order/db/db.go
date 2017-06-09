@@ -675,6 +675,7 @@ func FillInAfterSaleDetail(aftersaleModel *pb.AfterSaleModel) error {
 	condition += fmt.Sprintf(" and user_id=$%d ", len(args))
 
 	query += condition
+	log.Debugf(query+" args:%+v", args)
 	_, err = DB.Exec(query, args...)
 	if err != nil {
 		log.Error(err)

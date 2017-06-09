@@ -80,3 +80,16 @@ func TestSubString(t *testing.T) {
 	fmt.Print(str + "\n")
 	fmt.Print(len(cardNo))
 }
+
+func TestPointerFunc(t *testing.T) {
+	var p *int
+
+	test(&p)
+	fmt.Println(*p)
+}
+
+func test(p **int) {
+	x := 100
+	*p = &x
+	fmt.Println(**p)
+}
