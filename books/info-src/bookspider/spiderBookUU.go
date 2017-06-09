@@ -5,6 +5,8 @@ import (
 	"regexp"
 	"strings"
 
+	log "github.com/wothing/log"
+
 	"github.com/hu17889/go_spider/core/common/page"
 	"github.com/hu17889/go_spider/core/common/request"
 	"github.com/hu17889/go_spider/core/spider"
@@ -21,14 +23,14 @@ func NewBookUUListProcesser() *BookUUListProcesser {
 // Package goquery (http://godoc.org/github.com/PuerkitoBio/goquery) is used to parse html.
 func (s *BookUUListProcesser) Process(p *page.Page) {
 	if !p.IsSucc() {
-		println(p.Errormsg())
+		log.Debug(p.Errormsg())
 		return
 	}
 
 	query := p.GetHtmlParser()
 
 	selection := query.Find(".s-result-list .result-content .p-name a")
-	println(selection.Size())
+	log.Debug(selection.Size())
 	url, _ := selection.Attr("href")
 	url = strings.Trim(url, " \t\n")
 	sp := spider.NewSpider(NewBookUUDetailProcesser(), "spiderAmazonDetail")
@@ -38,8 +40,8 @@ func (s *BookUUListProcesser) Process(p *page.Page) {
 	if pageItems == nil || pageItems.GetAll() == nil {
 		return
 	}
-	println("-----------------------------------spider.Get---------------------------------")
-	println("url\t:\t" + url)
+	log.Debug("-----------------------------------spider.Get---------------------------------")
+	log.Debug("url\t:\t" + url)
 	for name, value := range pageItems.GetAll() {
 		p.AddField(name, value)
 	}
@@ -61,7 +63,7 @@ func NewBookUUDetailProcesser() *BookUUDetailProcesser {
 // Package goquery (http://godoc.org/github.com/PuerkitoBio/goquery) is used to parse html.
 func (s *BookUUDetailProcesser) Process(p *page.Page) {
 	if !p.IsSucc() {
-		println(p.Errormsg())
+		log.Debug(p.Errormsg())
 		return
 	}
 

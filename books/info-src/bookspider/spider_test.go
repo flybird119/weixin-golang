@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 
+	log "github.com/wothing/log"
+
 	"github.com/hu17889/go_spider/core/common/request"
 	"github.com/hu17889/go_spider/core/spider"
 )
@@ -22,11 +24,11 @@ func TestSpiderDangdangList(t *testing.T) {
 
 	//没爬到数据
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-		println("no matches found!")
+		log.Debug("no matches found!")
 		return
 	}
 	for name, value := range pageItems.GetAll() {
-		println(name + "\t:\t" + value)
+		log.Debug(name + "\t:\t" + value)
 	}
 }
 
@@ -37,10 +39,10 @@ func TestSpiderDangdangDetail(t *testing.T) {
 	pageItems := sp.GetByRequest(req)
 
 	url := pageItems.GetRequest().GetUrl()
-	println("-----------------------------------spider.Get---------------------------------")
-	println("url\t:\t" + url)
+	log.Debug("-----------------------------------spider.Get---------------------------------")
+	log.Debug("url\t:\t" + url)
 	for name, value := range pageItems.GetAll() {
-		println(name + "\t:\t" + value)
+		log.Debug(name + "\t:\t" + value)
 	}
 }
 
@@ -52,7 +54,7 @@ func TestSpiderAmazonList(t *testing.T) {
 	pageItems := sp.GetByRequest(req)
 	pageItems.GetItem("")
 	for name, value := range pageItems.GetAll() {
-		println(name + "\t:\t" + value)
+		log.Debug(name + "\t:\t" + value)
 	}
 }
 
@@ -65,7 +67,7 @@ func TestSpiderBookUUList(t *testing.T) {
 
 	pageItems := sp.GetByRequest(req)
 	for name, value := range pageItems.GetAll() {
-		println(name + "\t:\t" + value)
+		log.Debug(name + "\t:\t" + value)
 	}
 }
 
@@ -74,6 +76,6 @@ func TestGetBookInfo(t *testing.T) {
 
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
-	println("-----------------------------------OOOOOOM---------------------------------")
+	log.Debug("-----------------------------------OOOOOOM---------------------------------")
 
 }
