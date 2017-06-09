@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 
+	log "github.com/wothing/log"
+
 	"github.com/hu17889/go_spider/core/common/page"
 	"github.com/hu17889/go_spider/core/common/request"
 	"github.com/hu17889/go_spider/core/spider"
@@ -19,7 +21,7 @@ func NewDangDangListProcesser() *DangDangListProcesser {
 // Parse html dom here and record the parse result that we want to crawl.
 func (s *DangDangListProcesser) Process(p *page.Page) {
 	if !p.IsSucc() {
-		println(p.Errormsg())
+		log.Debug(p.Errormsg())
 		return
 	}
 
@@ -39,8 +41,8 @@ func (s *DangDangListProcesser) Process(p *page.Page) {
 	if pageItems == nil || pageItems.GetAll() == nil {
 		return
 	}
-	println("-----------------------------------spider.Get---------------------------------")
-	println("url\t:\t" + findUrl)
+	log.Debug("-----------------------------------spider.Get---------------------------------")
+	log.Debug("url\t:\t" + findUrl)
 	for name, value := range pageItems.GetAll() {
 		p.AddField(name, value)
 	}
@@ -61,7 +63,7 @@ func NewDangDangDetailProcesser() *DangDangDetailProcesser {
 // Package goquery (http://godoc.org/github.com/PuerkitoBio/goquery) is used to parse html.
 func (s *DangDangDetailProcesser) Process(p *page.Page) {
 	if !p.IsSucc() {
-		println(p.Errormsg())
+		log.Debug(p.Errormsg())
 		return
 	}
 

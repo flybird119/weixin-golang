@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"strings"
 
+	log "github.com/wothing/log"
+
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/hu17889/go_spider/core/common/page_items"
 	"github.com/hu17889/go_spider/core/common/request"
@@ -26,7 +28,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	//pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
 	//没爬到数据
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-		println("no matches found!")
+		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
 		if book.Isbn != "" && isbn == book.Isbn {
@@ -44,7 +46,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	pageItems = sp.GetByRequest(req)
 	//没爬到数据
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-		println("no matches found!")
+		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
 		if book.Isbn != "" && isbn == book.Isbn {
@@ -62,7 +64,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	// pageItems := sp.GetByRequest(req)
 	// //没爬到数据
 	// if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-	// 	println("no matches found!")
+	// 	log.Debug("no matches found!")
 	// } else {
 	// 	structData(pageItems, book)
 	// 	if book.Isbn != "" && isbn == book.Isbn {
@@ -82,7 +84,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	// //pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
 	// //没爬到数据
 	// if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-	// 	println("no matches found!")
+	// 	log.Debug("no matches found!")
 	// } else {
 	// 	structData(pageItems, book)
 	// 	if book.Isbn != "" && isbn == book.Isbn {
@@ -99,7 +101,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 	pageItems = sp.GetByRequest(req)
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-		println("no matches found!")
+		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
 		if book.Isbn != "" && isbn == book.Isbn {
@@ -117,7 +119,7 @@ func structData(items *page_items.PageItems, book *pb.Book) {
 	publisher, _ := items.GetItem("publisher")
 	pubdate, _ := items.GetItem("pubdate")
 	price, _ := items.GetItem("price")
-	println(price)
+	log.Debug(price)
 	priceFloat, _ := strconv.ParseFloat(price, 64)
 	priceFloat = priceFloat * 100
 	isbn, _ := items.GetItem("isbn")
