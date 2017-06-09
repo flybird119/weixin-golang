@@ -29,4 +29,6 @@ message Book {
     string author_intro = 12;
     int64 create_at = 13;
     int64 level = 14;
+
+    string info_src = 15;
 }
