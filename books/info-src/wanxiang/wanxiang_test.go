@@ -6,10 +6,11 @@ import (
 )
 
 func TestWanxiang(t *testing.T) {
-	_, err := GetBookInfo("9787122087935")
+	book, err := GetBookInfo("9787541695796")
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
+	t.Log(book)
 }
 
 func TestPath(t *testing.T) {

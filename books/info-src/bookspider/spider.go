@@ -14,7 +14,7 @@ import (
 
 //通过爬虫获取图书信息
 func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
-	book = &pb.Book{}
+	book = &pb.Book{InfoSrc: "dangdang"}
 
 	//首先从当当上获取图书信息
 	sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
@@ -36,6 +36,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 
 	}
 	//如果当当图书信息为空 从bookUU上获取数据
+	book.InfoSrc = "bookUU"
 	sp = spider.NewSpider(NewBookUUListProcesser(), "BookUUlist")
 	baseURL = "http://search.bookuu.com/AdvanceSearch.php?isbn=ISBN&sm=&zz=&cbs=&dj_s=&dj_e=&bkj_s=&bkj_e=&layer2=&zk=0&cbrq_n=2017&cbrq_y=&cbrq_n1=2017&cbrq_y1=&sjsj=0&orderby=&layer1=1"
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)
@@ -93,6 +94,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	// }
 
 	//如果bookUU图书信息为空，那么向amazon获取图书信息
+	book.InfoSrc = "amazon"
 	sp = spider.NewSpider(NewAmazonListProcesser(), "spiderAmazonList")
 	baseURL = "https://www.amazon.cn/s/ref=nb_sb_noss?__mk_zh_CN=%E4%BA%9A%E9%A9%AC%E9%80%8A%E7%BD%91%E7%AB%99&url=search-alias%3Dstripbooks&field-keywords=ISBN"
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)

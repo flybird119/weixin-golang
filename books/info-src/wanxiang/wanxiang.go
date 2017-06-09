@@ -38,7 +38,7 @@ func GetBookInfo(isbn string) (*pb.Book, error) {
 	}
 
 	// 向 pb 对象中填充数据
-	book, wanxiangBook := &pb.Book{}, wanxiangResp.Result.Result
+	book, wanxiangBook := &pb.Book{InfoSrc: "wanxiang"}, wanxiangResp.Result.Result
 
 	book.Title = wanxiangBook.Title
 	book.Image = wanxiangBook.Pic
