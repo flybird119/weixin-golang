@@ -20,8 +20,8 @@ var svcNames = []string{
 
 func main() {
 	m := db.NewMicro(svcName, port)
-	m.ReferServices(svcNames...)
 	m.RegisterPG()
+	m.ReferServices(svcNames...)
 	s := grpc.NewServer(grpc.UnaryInterceptor(worpc.UnaryInterceptorChain(worpc.Recovery, worpc.Logging)))
 	pb.RegisterGoodsServiceServer(s, &service.GoodsServiceServer{})
 	s.Serve(m.CreateListener())

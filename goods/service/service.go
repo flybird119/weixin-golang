@@ -46,7 +46,9 @@ func (s *GoodsServiceServer) UpdateGoods(ctx context.Context, in *pb.Goods) (*pb
 func (s *GoodsServiceServer) SearchGoods(ctx context.Context, in *pb.Goods) (*pb.GoodsDetailResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "SearchGoods", "%#v", in))
+	log.Debug("===================0")
 	res, err, totalCount := db.SearchGoods(in)
+	log.Debug("===================5")
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
