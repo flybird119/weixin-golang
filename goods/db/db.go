@@ -398,6 +398,7 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 	rows, err := DB.Query(query, args...)
 
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	defer rows.Close()
