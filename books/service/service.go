@@ -109,9 +109,12 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 		final_book *pb.Book
 	)
 
-	// get from douban
+	// get from spider
 	spider_book, err := bookspider.GetBookInfoBySpider(req.Isbn)
-	if err != nil {
+
+	if err != nil && err.Error() == "not_found" {
+		return &pb.GetBookInfoResp{Code: errs.Ok, Message: "book_not_found"}, nil
+	} else if err != nil {
 		log.Error(err)
 	}
 

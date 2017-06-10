@@ -28,13 +28,8 @@ func GetBookInfo(isbn string) (*pb.Book, error) {
 	err := myhttp.GETWithUnmarshal(url, wanxiangResp)
 	if err != nil {
 		log.Error(err)
-		return nil, err
-	}
-
-	// 处理业务层错误
-	if wanxiangResp.Code != "10000" || wanxiangResp.Result.Status != "0" {
 		log.Debugf("the book 【%s】 is not found", isbn)
-		return nil, errors.New(wanxiangResp.Msg)
+		return nil, errors.New("not_found")
 	}
 
 	// 向 pb 对象中填充数据
