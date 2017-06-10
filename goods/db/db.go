@@ -181,6 +181,7 @@ func UpdateGoods(goods *pb.Goods) error {
 
 //SearchGoods 搜索图书 isbn SearchAmount
 func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCount int64) {
+	log.Debug("===================1")
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true "
 	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book"
 	query = fmt.Sprintf(query, param)
@@ -292,6 +293,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		}
 		condition += " order by g.update_at desc"
 	}
+	log.Debug("===================2")
 	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	query += condition
 	log.Debugf(query+"%+v", args)
@@ -343,7 +345,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 				}
 			}
 		}
-
+		log.Debug("===================4")
 		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
 	}
 
@@ -398,6 +400,7 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 	rows, err := DB.Query(query, args...)
 
 	if err != nil {
+		log.Error(err)
 		return nil, err
 	}
 	defer rows.Close()

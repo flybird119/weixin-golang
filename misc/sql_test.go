@@ -60,7 +60,7 @@ func update1(mobile, nickname, id string) {
 		return
 	}
 	log.Debugf("查询开始")
-	err = tx.QueryRow("select status from seller where id=$1", id).Scan(&status)
+	err = db.DB.QueryRow("select status from seller where id=$1", id).Scan(&status)
 	if err != nil {
 		log.Debugf("查询出错:%+v", err)
 		return

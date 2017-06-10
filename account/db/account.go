@@ -89,7 +89,7 @@ func ChangeAccountWithdrawalFee(account *pb.Account) error {
 		return err
 	}
 	defer tx.Rollback()
-	err = tx.QueryRow(query, account.UnsettledBalance, account.StoreId).Scan(&account.UnsettledBalance, &account.Id)
+	err = DB.QueryRow(query, account.UnsettledBalance, account.StoreId).Scan(&account.UnsettledBalance, &account.Id)
 	if err != nil {
 		log.Error(err)
 		misc.LogErr(err)
@@ -110,7 +110,7 @@ func ChangAccountBalance(account *pb.Account) error {
 		return err
 	}
 	defer tx.Rollback()
-	err = tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
+	err = DB.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -124,7 +124,7 @@ func ChangAccountBalanceWithTx(tx *sql.Tx, account *pb.Account) error {
 	query := "update account set balance=balance+$1,update_at=now() where store_id=$2 returning balance,id"
 	//开启事务
 	log.Debug(query+" args:%s,%d", account.StoreId, account.Balance)
-	err := tx.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
+	err := DB.QueryRow(query, account.Balance, account.StoreId).Scan(&account.Balance, &account.Id)
 	if err != nil {
 		log.Error(err)
 		return err

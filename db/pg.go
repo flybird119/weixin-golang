@@ -38,8 +38,8 @@ func setupPG(dbs string, conn ...int) {
 		db.SetMaxOpenConns(conn[0])
 		db.SetMaxIdleConns(conn[1])
 	default:
-		db.SetMaxOpenConns(20)
-		db.SetMaxIdleConns(5)
+		db.SetMaxOpenConns(50)
+		db.SetMaxIdleConns(10)
 	}
 
 	err = db.Ping()

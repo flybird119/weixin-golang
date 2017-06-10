@@ -24,7 +24,7 @@ func AddRetail(retail *pb.RetailSubmitModel) error {
 		return err
 	}
 	defer tx.Rollback()
-	err = tx.QueryRow(query, retail.TotalFee, retail.StoreId, retail.SchoolId, retail.SellerId).Scan(&retail.RetailId)
+	err = DB.QueryRow(query, retail.TotalFee, retail.StoreId, retail.SchoolId, retail.SellerId).Scan(&retail.RetailId)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -60,7 +60,7 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 	log.Debugf(query+" amount:%d,goodsId=%s", item.Amount, item.GoodsId)
 
 	var amount, price int64
-	err = tx.QueryRow(query, item.Amount, item.GoodsId).Scan(&amount, &price)
+	err = DB.QueryRow(query, item.Amount, item.GoodsId).Scan(&amount, &price)
 	if err != nil {
 		log.Error(err)
 		return
