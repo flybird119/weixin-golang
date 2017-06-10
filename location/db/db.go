@@ -75,7 +75,7 @@ func GetChildLocations(loc *pb.Location) error {
 		log.Error(err)
 		return err
 	}
-
+	defer rows.Close()
 	for rows.Next() {
 		tmp := &pb.Location{}
 		err := rows.Scan(&tmp.Id, &tmp.Level, &tmp.Pid, &tmp.StoreId, &tmp.Name, &tmp.CreateAt, &tmp.UpdateAt)
@@ -107,7 +107,7 @@ func ListLocation(loc *pb.Location) ([]*pb.Location, error) {
 		log.Error(err)
 		return nil, err
 	}
-
+	defer rows.Close()
 	locations := []*pb.Location{}
 	for rows.Next() {
 		tempLoc := &pb.Location{}
