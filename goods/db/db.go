@@ -267,6 +267,8 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		condition += fmt.Sprintf(" and Lower(b.title) like Lower($%d)", len(args))
 
 		queryCount += condition
+		log.Debug(queryCount+" args :%+v", args)
+		log.Debug("===================search count")
 		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
 		if err != nil {
 			log.Error(err)
@@ -282,6 +284,8 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 	} else {
 
 		queryCount += condition
+		log.Debug(queryCount+" args :%+v", args)
+		log.Debug("===================search count")
 		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
 		if err != nil {
 			log.Error(err)
