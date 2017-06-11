@@ -568,7 +568,7 @@ func DelGoodsLocation(goodsLocation *pb.GoodsLocation) error {
 	//删除货架位置
 	query := "delete from goods_location where goods_id=$1 and id=$2"
 	log.Debugf("delete from goods_location where goods_id=%s and id=%s", goodsLocation.GoodsId, goodsLocation.Id)
-	_, err := DB.Query(query, goodsLocation.GoodsId, goodsLocation.Id)
+	_, err := DB.Exec(query, goodsLocation.GoodsId, goodsLocation.Id)
 	if err != nil {
 		misc.LogErr(err)
 		return err
