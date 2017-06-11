@@ -10,6 +10,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"time"
 
 	_ "github.com/lib/pq"
 	"github.com/wothing/log"
@@ -37,9 +38,11 @@ func setupPG(dbs string, conn ...int) {
 	case 2:
 		db.SetMaxOpenConns(conn[0])
 		db.SetMaxIdleConns(conn[1])
+		db.SetConnMaxLifetime(30 * time.Second)
 	default:
-		db.SetMaxOpenConns(50)
-		db.SetMaxIdleConns(10)
+		db.SetMaxOpenConns(40)
+		db.SetMaxIdleConns(5)
+		db.SetConnMaxLifetime(30 * time.Second)
 	}
 
 	err = db.Ping()
