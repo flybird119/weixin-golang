@@ -947,7 +947,7 @@ func ExportDistributeOrderData(order *pb.Order) (models []*pb.DistributeOrderMod
 		misc.LogErr(err)
 		return
 	}
-
+	defer rows.Close()
 	for rows.Next() {
 		next := &pb.DistributeOrderModel{}
 		models = append(models, next)
