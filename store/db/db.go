@@ -476,7 +476,7 @@ func SaveWithdrawApply(tx *sql.Tx, withdraw *pb.StoreWithdrawalsModel) error {
 	query := "insert into withdrawals (store_id,withdraw_card_id,card_type,card_no,card_name,username,withdraw_fee,staff_id,apply_phone) values('%s','%s',%d,'%s','%s','%s',%d,'%s','%s') returning id"
 	query = fmt.Sprintf(query, withdraw.StoreId, withdraw.WithdrawCardId, withdraw.CardType, withdraw.CardNo, withdraw.CardName, withdraw.Username, withdraw.WithdrawFee, withdraw.StaffId, withdraw.ApplyPhone)
 	log.Debug(query)
-	err := DB.QueryRow(query).Scan(&withdraw.Id)
+	err := tx.QueryRow(query).Scan(&withdraw.Id)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -536,7 +536,7 @@ func RechargeSuccessHandler(tx *sql.Tx, recharge *pb.RechargeModel) error {
 	condition += fmt.Sprintf(",status=status+1 where id='%s' returning status", recharge.Id)
 	query += condition
 	log.Debug(query)
-	err := DB.QueryRow(query).Scan(&recharge.Status)
+	err := tx.QueryRow(query).Scan(&recharge.Status)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -609,7 +609,7 @@ func UpdateStoreExtraInfo(model *pb.StoreExtraInfo) error {
 	condition += " returning store_id"
 	query += condition
 	log.Debug(query)
-	err = DB.QueryRow(query).Scan(&model.StoreId)
+	err = tx.QueryRow(query).Scan(&model.StoreId)
 	if err != nil {
 		log.Error(err)
 		return err

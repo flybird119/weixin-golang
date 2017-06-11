@@ -37,7 +37,7 @@ func OrderSubmit(tx *sql.Tx, carts []*pb.Cart, orderModel *pb.OrderSubmitModel) 
 	//首选创建goods，然后创建订单项
 	query := "insert into orders (total_fee,freight,user_id,mobile,name,address,remark,store_id,school_id,order_at,goods_fee,withdrawal_fee ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,0) returning id"
 	log.Debugf(query+"args : %#v", school.ExpressFee, school.ExpressFee, orderModel.UserId, orderModel.Mobile, orderModel.Name, orderModel.Address, orderModel.Remark, orderModel.StoreId, orderModel.SchoolId, nowTime)
-	err = DB.QueryRow(query, school.ExpressFee, school.ExpressFee, orderModel.UserId, orderModel.Mobile, orderModel.Name, orderModel.Address, orderModel.Remark, orderModel.StoreId, orderModel.SchoolId, nowTime).Scan(&order.Id)
+	err = tx.QueryRow(query, school.ExpressFee, school.ExpressFee, orderModel.UserId, orderModel.Mobile, orderModel.Name, orderModel.Address, orderModel.Remark, orderModel.StoreId, orderModel.SchoolId, nowTime).Scan(&order.Id)
 	if err != nil {
 		misc.LogErr(err)
 		return nil, "", err
@@ -55,7 +55,7 @@ func OrderSubmit(tx *sql.Tx, carts []*pb.Cart, orderModel *pb.OrderSubmitModel) 
 	}
 	query = "select order_status,total_fee,freight,goods_fee,user_id,mobile,name,address,remark,store_id,school_id,groupon_id from orders where id=$1"
 	log.Debugf("select order_status,total_fee,freight,goods_fee,user_id,mobile,name,address,remark,store_id,school_id,groupon_id from orders where id='%s'", order.Id)
-	err = DB.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.UserId, &order.Mobile, &order.Name, &order.Address, &order.Remark, &order.StoreId, &order.SchoolId, &order.GrouponId)
+	err = tx.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.UserId, &order.Mobile, &order.Name, &order.Address, &order.Remark, &order.StoreId, &order.SchoolId, &order.GrouponId)
 	if err != nil {
 		misc.LogErr(err)
 		return nil, "", err
@@ -76,7 +76,7 @@ func AddOrderItem(tx *sql.Tx, order *pb.Order, cart *pb.Cart, nowTime time.Time)
 	if cart.Type == 0 {
 		query = "update goods set new_book_amount=new_book_amount-$1 where id=$2 returning new_book_amount,new_book_price,has_new_book"
 		log.Debugf("update goods set new_book_amount=new_book_amount-%d where id='%s'returning new_book_amount,new_book_price,has_new_book", cart.Amount, cart.GoodsId)
-		err = DB.QueryRow(query, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
+		err = tx.QueryRow(query, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
 		if err != nil {
 			misc.LogErr(err)
 			return "", err
@@ -88,7 +88,7 @@ func AddOrderItem(tx *sql.Tx, order *pb.Order, cart *pb.Cart, nowTime time.Time)
 	} else {
 		query = "update goods set old_book_amount=old_book_amount-$1 where id=$2 returning old_book_amount,old_book_price,has_old_book"
 		log.Debugf("update goods set old_book_amount=old_book_amount-%d where id='%s'returning old_book_amount,old_book_price,has_old_book", cart.Amount, cart.GoodsId)
-		err = DB.QueryRow(query, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
+		err = tx.QueryRow(query, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
 		if err != nil {
 			misc.LogErr(err)
 			return "", err
@@ -697,7 +697,7 @@ func CloseOrder(order *pb.Order) error {
 		return err
 	}
 	defer tx.Rollback()
-	err = DB.QueryRow(query, 8, order.Id, order.UserId).Scan(&order.OrderStatus)
+	err = tx.QueryRow(query, 8, order.Id, order.UserId).Scan(&order.OrderStatus)
 	if err != nil {
 		log.Error(err)
 		misc.LogErr(err)
@@ -746,7 +746,7 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	condition += fmt.Sprintf(" where id='%s' returning after_sale_status", order.Id)
 	query += condition
 	log.Debugf(query)
-	err := DB.QueryRow(query).Scan(&order.AfterSaleStatus)
+	err := tx.QueryRow(query).Scan(&order.AfterSaleStatus)
 	if err != nil {
 		log.Error(err)
 		misc.LogErr(err)
