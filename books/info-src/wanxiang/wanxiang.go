@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	myhttp "github.com/goushuyun/weixin-golang/misc/http"
 	"github.com/goushuyun/weixin-golang/pb"
@@ -41,8 +42,9 @@ func GetBookInfo(isbn string) (*pb.Book, error) {
 	book.Publisher = wanxiangBook.Publisher
 	book.Pubdate = wanxiangBook.Pubdate
 	book.Subtitle = wanxiangBook.Edition
-	book.Summary = wanxiangBook.Summary
+	book.Summary = strings.Replace(wanxiangBook.Summary, "\u0000", "", -1)
 
+	// handle isbn
 	if wanxiangBook.Isbn == "" && wanxiangBook.Isbn10 != "" {
 		isbn13, err := isbnconversion.ISBN10to13(wanxiangBook.Isbn10)
 		if err != nil {
@@ -54,6 +56,7 @@ func GetBookInfo(isbn string) (*pb.Book, error) {
 		book.Isbn = wanxiangBook.Isbn
 	}
 
+	// handle price
 	if wanxiangBook.Price != "" {
 		priceStr := digitsRegexp.FindString(wanxiangBook.Price)
 		if priceInt, err := strconv.ParseFloat(priceStr, 64); err == nil {
@@ -64,6 +67,5 @@ func GetBookInfo(isbn string) (*pb.Book, error) {
 		}
 	}
 
-	log.JSON(book)
 	return book, nil
 }
