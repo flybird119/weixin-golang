@@ -47,7 +47,7 @@ func SaveBook(book *pb.Book) error {
 	//save book info, which level plus one and return new ID
 	query := "insert into books(store_id, title, isbn, price, author, publisher, pubdate, subtitle, image, summary, author_intro, level) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) returning id"
 
-	log.Debugf("insert into books(store_id, title, isbn, price, author, publisher, pubdate, subtitle, image, summary, author_intro, level) values('%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d) returning id", book.StoreId, book.Title, book.Isbn, book.Price, book.Author, book.Publisher, book.Pubdate, book.Subtitle, book.Image, book.AuthorIntro, book.Level+1)
+	log.Debugf("insert into books(store_id, title, isbn, price, author, publisher, pubdate, subtitle, image, summary, author_intro, level) values('%s', '%s', '%s', %d, '%s', '%s', '%s', '%s', '%s', '%s', '%s', %d) returning id", book.StoreId, book.Title, book.Isbn, book.Price, book.Author, book.Publisher, book.Pubdate, book.Subtitle, book.Image, book.Summary, book.AuthorIntro, book.Level+1)
 
 	err := DB.QueryRow(query, book.StoreId, book.Title, book.Isbn, book.Price, book.Author, book.Publisher, book.Pubdate, book.Subtitle, book.Image, book.Summary, book.AuthorIntro, book.Level+1).Scan(&book.Id)
 
