@@ -305,7 +305,7 @@ func (s *OrderServiceServer) CloseOrder(ctx context.Context, in *pb.Order) (*pb.
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
-//处理售后订单--未完成
+//处理售后订单
 func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.AfterSaleModel) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "HandleAfterSaleOrder", "%#v", in))

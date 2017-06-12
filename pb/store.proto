@@ -66,7 +66,18 @@ message StoreExtraInfo{
     int64 total_sales = 18;
     int64 total_goods = 19;
     int64 sort = 20;
+    repeated StoreSchoolOrdersNumModel school_order_nums = 21;
+
 }
+
+//学校每日统计
+message StoreSchoolOrdersNumModel{
+    int64 closed_order_num = 1;
+    int64 online_order_num = 2;
+    int64 offline_order_num = 3;
+    string school_id = 4;
+}
+
 
 //云店额外信息响应
 message StoreExtraInfoResp{

@@ -13,7 +13,7 @@ create table statistic_goods_sales(
     online_new_book_sales_fee       INT                     NOT NULL            DEFAULT 0,      --当天线上新书销售额
     online_old_book_sales_fee       INT                     NOT NULL            DEFAULT 0,      --当天线上旧书销售额
     send_order_num                  INT                     NOT NULL            DEFAULT 0,      --当天配送的订单量（订单已发货）
-
+    closed_order_num                INT                     NOT NULL            DEFAULT 0,      --当天关闭订单量
     --售后统计
     after_sale_num                  INT                     NOT NULL            DEFAULT 0,      --当天售后新增数量
     after_sale_handled_num          INT                     NOT NULL            DEFAULT 0,      --售后处理数量

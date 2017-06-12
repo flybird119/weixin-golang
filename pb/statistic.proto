@@ -36,6 +36,7 @@ message GoodsSalesStatisticModel{
     string statistic_at = 20;
     int64 start_at = 21;
     int64 end_at = 22;
+    int64 closed_order_num = 23;
 }
 
 //图书销量统计model

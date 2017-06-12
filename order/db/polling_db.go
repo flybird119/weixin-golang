@@ -140,6 +140,14 @@ func OnlineGoodsSalesStatistic(goodsSalesStatisticModel *pb.GoodsSalesStatisticM
 	if totalFee.Valid {
 		goodsSalesStatisticModel.AfterSaleHandledFee = totalFee.Int64
 	}
+	//5.0 统计日关闭订单量
+	query = "select count(*) from orders where to_char(to_timestamp(extract(epoch from order_at )::bigint), 'YYYY-MM-DD')=$1 and school_id=$2 and order_status=8"
+	log.Debugf("select count(*) from orders where to_char(to_timestamp(extract(epoch from order_at )::bigint), 'YYYY-MM-DD')='%s' and school_id='%s'", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
+	err = DB.QueryRow(query, goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId).Scan(&goodsSalesStatisticModel.ClosedOrderNum)
+	if err != nil && err != sql.ErrNoRows {
+		log.Error(err)
+		return err
+	}
 	return nil
 }
 
@@ -230,18 +238,12 @@ func AddGoodsSalesStatistic(model *pb.GoodsSalesStatisticModel, time time.Time) 
 		return err
 	}
 	defer tx.Rollback()
-	query := "insert into statistic_goods_sales (store_id,school_id,alipay_order_num,alipay_order_fee,wechat_order_num,wechat_order_fee,online_new_book_sales_fee,online_old_book_sales_fee,send_order_num,after_sale_num,after_sale_handled_num,after_sale_handled_fee,offline_new_book_sales_fee,offline_old_book_sales_fee,offline_order_num,statistic_at) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)"
-	log.Debugf("insert into statistic_goods_sales (store_id,school_id,alipay_order_num,alipay_order_fee,wechat_order_num,wechat_order_fee,online_new_book_sales_fee,online_old_book_sales_fee,send_order_num,after_sale_num,after_sale_handled_num,after_sale_handled_fee,offline_new_book_sales_fee,offline_old_book_sales_fee,offline_order_num,statistic_at) values('%s','%s',%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,'%+v')", model.StoreId, model.SchoolId, model.AlipayOrderNum, model.AlipayOrderFee, model.WechatOrderNum, model.WechatOrderFee, model.OnlineNewBookSalesFee, model.OnlineOldBookSalesFee, model.SendOrderNum, model.AfterSaleNum, model.AfterSaleHandledNum, model.AfterSaleHandledFee, model.OfflineNewBookSalesFee, model.OfflineOldBookSalesFee, model.OfflineOrderNum, time)
-	_, err = tx.Exec(query, model.StoreId, model.SchoolId, model.AlipayOrderNum, model.AlipayOrderFee, model.WechatOrderNum, model.WechatOrderFee, model.OnlineNewBookSalesFee, model.OnlineOldBookSalesFee, model.SendOrderNum, model.AfterSaleNum, model.AfterSaleHandledNum, model.AfterSaleHandledFee, model.OfflineNewBookSalesFee, model.OfflineOldBookSalesFee, model.OfflineOrderNum, time)
+	query := "insert into statistic_goods_sales (store_id,school_id,alipay_order_num,alipay_order_fee,wechat_order_num,wechat_order_fee,online_new_book_sales_fee,online_old_book_sales_fee,send_order_num,after_sale_num,after_sale_handled_num,after_sale_handled_fee,offline_new_book_sales_fee,offline_old_book_sales_fee,offline_order_num,statistic_at,closed_order_num) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)"
+	log.Debugf("insert into statistic_goods_sales (store_id,school_id,alipay_order_num,alipay_order_fee,wechat_order_num,wechat_order_fee,online_new_book_sales_fee,online_old_book_sales_fee,send_order_num,after_sale_num,after_sale_handled_num,after_sale_handled_fee,offline_new_book_sales_fee,offline_old_book_sales_fee,offline_order_num,statistic_at,closed_order_num) values('%s','%s',%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,%d,'%+v',%d)", model.StoreId, model.SchoolId, model.AlipayOrderNum, model.AlipayOrderFee, model.WechatOrderNum, model.WechatOrderFee, model.OnlineNewBookSalesFee, model.OnlineOldBookSalesFee, model.SendOrderNum, model.AfterSaleNum, model.AfterSaleHandledNum, model.AfterSaleHandledFee, model.OfflineNewBookSalesFee, model.OfflineOldBookSalesFee, model.OfflineOrderNum, time, model.ClosedOrderNum)
+	_, err = tx.Exec(query, model.StoreId, model.SchoolId, model.AlipayOrderNum, model.AlipayOrderFee, model.WechatOrderNum, model.WechatOrderFee, model.OnlineNewBookSalesFee, model.OnlineOldBookSalesFee, model.SendOrderNum, model.AfterSaleNum, model.AfterSaleHandledNum, model.AfterSaleHandledFee, model.OfflineNewBookSalesFee, model.OfflineOldBookSalesFee, model.OfflineOrderNum, time, model.ClosedOrderNum)
 	if err != nil {
 		log.Error(err)
 		return err
-	}
-	_, err = HasThisDayGoodsSalesData(model.SchoolId, model.StatisticAt)
-
-	if err != nil {
-		log.Error(err)
-		return nil
 	}
 	tx.Commit()
 	return nil

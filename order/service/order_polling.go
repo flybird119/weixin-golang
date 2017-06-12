@@ -31,7 +31,7 @@ func RegisterOrderPolling(cron *cron.Cron) {
 	order_auto_confirm_notify_task_spec := "0 0 12 * * *"  //系统自动确认订单轮询 每日凌晨 0:20
 	//order_auto_confirm_notify_task_spec := "0 0/1 * * * *" //系统自动确认订单轮询 每日凌晨 0:20
 	// order_system_confirm_task_spec := "0 0/1 * * * *" //系统自动确认订单轮询 每日凌晨 0:20
-	// order_statistic_before_dawn_task_spec := "0 0/1 * * * *" //时间轮询表达式 每天凌晨1：00执行一次
+	//order_statistic_before_dawn_task_spec := "0 0/1 * * * *" //时间轮询表达式 每天凌晨1：00执行一次
 	// order_statistic_at_night_task_spec := "0 0/3 * * * *"    //时间轮询表达式 每天晚上22：00执行一次
 
 	fmt.Println(order_close_task_spec + order_statistic_before_dawn_task_spec + order_statistic_at_night_task_spec + order_system_confirm_task_spec)

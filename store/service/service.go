@@ -287,7 +287,7 @@ func (s *StoreServiceServer) FindStoreExtraInfo(ctx context.Context, in *pb.Stor
 //获取店铺extrainfo
 func (s *StoreServiceServer) GetStoreExtraInfo(ctx context.Context, in *pb.StoreExtraInfo) (*pb.StoreExtraInfoResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "FindStoreExtraInfo", "%#v", in))
+	defer log.TraceOut(log.TraceIn(tid, "GetStoreExtraInfo", "%#v", in))
 	err := db.GetStoreExtraInfo(in)
 	if err != nil {
 		log.Error(err)

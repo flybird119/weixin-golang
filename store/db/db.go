@@ -180,7 +180,13 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 			log.Error(err)
 			return
 		}
-
+		//查询项
+		/**
+		> 1 获取店铺的必要信息
+		> 2 获取店铺 上架书籍量
+		> 3 获取每个店铺管理学校列表
+		> 4 获取云店订单数量（按学校分）
+		*/
 		//获取店铺的必要信息
 		query = fmt.Sprintf("select sei.id, sei.store_id,sei.poundage,sei.charges,sei.intention,sei.remark,s.name,se.mobile,se.nickname,extract(epoch from s.create_at)::bigint,extract(epoch from s.expire_at)::bigint from store s join store_extra_info sei  on s.id=sei.store_id join map_store_seller m on m.store_id=s.id join seller se on m.seller_id=se.id where m.role=%d and s.id='%s'", role.InterAdmin, model.StoreId)
 		log.Debug(query)
@@ -215,6 +221,30 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 		}
 		model.Schools = schoolStr
 
+		//获取云店订单数量
+		query = "select sg.school_id, sum(sg.alipay_order_num+sg.wechat_order_num),sum(sg.offline_order_num),sum(sg.closed_order_num) from statistic_goods_sales sg where sg.store_id='%s' group by sg.school_id"
+		query = fmt.Sprintf(query, model.StoreId)
+		log.Debug(query)
+		rows, err = DB.Query(query)
+		if err == sql.ErrNoRows {
+			err = nil
+			return
+		}
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		defer rows.Close()
+
+		for rows.Next() {
+			schoolOrderNums := &pb.StoreSchoolOrdersNumModel{}
+			model.SchoolOrderNums = append(model.SchoolOrderNums, schoolOrderNums)
+			err = rows.Scan(&schoolOrderNums.SchoolId, &schoolOrderNums.OnlineOrderNum, &schoolOrderNums.OfflineOrderNum, &schoolOrderNums.ClosedOrderNum)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+		}
 	}
 	return
 }
