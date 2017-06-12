@@ -36,7 +36,7 @@ func CartAdd(cart *pb.Cart) error {
 		//购物车有此商品
 		query = "update cart set amount=amount+$1 where id=$2"
 		log.Debugf("update cart set amount=amount+%d where id=%s", cart.Amount, cart.Id)
-		_, err := DB.Query(query, cart.Amount, cart.Id)
+		_, err := DB.Exec(query, cart.Amount, cart.Id)
 		if err != nil {
 			misc.LogErr(err)
 			return err
