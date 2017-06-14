@@ -89,3 +89,14 @@ func (s *SchoolServiceServer) DelSchool(ctx context.Context, in *pb.School) (*pb
 	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
+
+//DelSchool 删除学校
+func (s *SchoolServiceServer) UpdateSchoolRecylingState(ctx context.Context, in *pb.School) (*pb.NormalResp, error) {
+	//获取学校店铺
+	err := db.UpdateSchoolRecylingState(in)
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}

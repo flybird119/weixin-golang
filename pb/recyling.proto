@@ -20,7 +20,7 @@ message RecylingAppointTime{
     string week = 1;
     int64 start_at = 2;
     int64 end_at = 3;
-    bool is_work = 4; 
+    bool is_work = 4;
 }
 
 //回收订单 model
@@ -39,12 +39,16 @@ message RecylingOrder{
     int64 appoint_end_at = 11;
     int64 create_at = 12;
     int64 update_at = 13;
+    string seller_remark = 14;
     // --> 请求部分
-    string sort_by = 14;      //分类方式
-    string sequence_by = 15;  //排序方式  asc | desc
-    int64 page = 16;
-    int64 size = 17;
+    string sort_by = 15;      //分类方式
+    string sequence_by = 16;  //排序方式  asc | desc
+    int64 page = 17;
+    int64 size = 18;
 }
+
+
+
 
 //回收图片
 message RecylingImage{

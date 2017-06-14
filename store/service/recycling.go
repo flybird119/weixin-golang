@@ -91,3 +91,18 @@ func (s *StoreServiceServer) GetStoreRecylingOrderList(ctx context.Context, in *
 
 	return &pb.RecylingOrderListResp{Code: "00000", Message: "ok", Data: models, TotalCount: totalCount}, nil
 }
+
+//UpdateRecylingOrder 更改回收订单
+func (s *StoreServiceServer) UpdateRecylingOrder(ctx context.Context, in *pb.RecylingOrder) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateRecylingOrder", "%#v", in))
+
+	err := db.UpdateRecylingOrder(in)
+
+	if err != nil {
+		log.Debug(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}

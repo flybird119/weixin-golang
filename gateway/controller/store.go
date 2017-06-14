@@ -336,3 +336,15 @@ func GetStoreRecylingOrderList(w http.ResponseWriter, r *http.Request) {
 	req := &pb.RecylingOrder{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "GetStoreRecylingOrderList", req, "school_id")
 }
+
+//设置云店回收信息
+func UpdateRecylingOrder(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.RecylingOrder{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "UpdateRecylingOrder", req, "id")
+}

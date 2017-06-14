@@ -13,6 +13,8 @@ service SchoolService{
     rpc UpdateExpressFee (School) returns (NormalResp);
     //获取云店铺的学校列表
     rpc StoreSchools (School) returns (SchoolsResp);
+    //更改回收学校回收状态
+    rpc UpdateSchoolRecylingState (School) returns (NormalResp);
     //根据学校的id获取学校信息
     rpc GetSchoolById (School) returns (SchoolResp);
     //删除学校
@@ -36,8 +38,11 @@ message School{
     SellerInfo seller = 11;
     int64 del_at = 12;
     string del_staff_id = 13;
-
+    bool is_recyling = 14;
+    repeated string school_ids = 15;
 }
+//学校集合
+
 //通用学校返回model
 message SchoolResp{
     string code = 1;

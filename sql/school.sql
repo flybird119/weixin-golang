@@ -13,6 +13,7 @@ create table school (
     status int default 0, --学校状态 0 正常 1异常
     del_at timestamptz,
     del_staff_id text default '',
+    is_recyling bool default true,
     create_at timestamptz not null default now(),
 	update_at timestamptz not null default now()
 );

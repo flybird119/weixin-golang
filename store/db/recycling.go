@@ -208,3 +208,31 @@ func GetStoreRecylingOrderList(recylingOrder *pb.RecylingOrder) (models []*pb.Re
 	return
 
 }
+
+//更改回收订单
+func UpdateRecylingOrder(recylingOrder *pb.RecylingOrder) error {
+	//更改回收状态
+	//回收状态 1 待处理 2 搁置中 3 已完成
+	query := "update recyling_order set update_at=now()"
+
+	if recylingOrder.State == 2 || recylingOrder.State == 3 {
+		query += fmt.Sprintf(",state=%d", recylingOrder.State)
+	}
+
+	if recylingOrder.SellerRemark != "" {
+		query += fmt.Sprintf(",seller_remark='%s'", recylingOrder.SellerRemark)
+	}
+
+	if recylingOrder.AppointStartAt != 0 && recylingOrder.AppointEndAt != 0 {
+		query += fmt.Sprintf(",appoint_start_at=to_timestamp(%d),appoint_end_at=to_timestamp(%d)", recylingOrder.AppointStartAt, recylingOrder.AppointEndAt)
+	}
+
+	query += fmt.Sprintf(" where id='%s' and store_id='%s'", recylingOrder.Id, recylingOrder.StoreId)
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}

@@ -76,6 +76,18 @@ func GetSchoolById(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_school", "GetSchoolById", req)
 }
 
+//GetSchoolById 根据学校id获取学校信息
+func UpdateSchoolRecylingState(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.School{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_school", "UpdateSchoolRecylingState", req, "school_ids")
+}
+
 //DelSchool 删除学校
 func DelSchool(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)

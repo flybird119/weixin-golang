@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
@@ -91,7 +92,7 @@ func DelSchool(school *pb.School) error {
 
 //GetSchoolsByStore根据店铺获取所管理的学校
 func GetSchoolsByStore(storeId string, status int64) (s []*pb.School, err error) {
-	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint,status,extract(epoch from del_at)::bigint,del_staff_id from school where 1=1"
+	query := "select id, name ,tel,express_fee,lat,lng,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint,status,extract(epoch from del_at)::bigint,del_staff_id,is_recyling from school where 1=1"
 
 	var condition string
 	if status != 3 {
@@ -111,7 +112,7 @@ func GetSchoolsByStore(storeId string, status int64) (s []*pb.School, err error)
 		s = append(s, &school)
 		school.StoreId = storeId
 		var delAt sql.NullInt64
-		err = rows.Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt, &school.Status, &delAt, &school.DelStaffId)
+		err = rows.Scan(&school.Id, &school.Name, &school.Tel, &school.ExpressFee, &school.Lat, &school.Lng, &school.CreateAt, &school.UpdateAt, &school.Status, &delAt, &school.DelStaffId, &school.IsRecyling)
 		if err != nil {
 			log.Errorf("%+v", err)
 		}
@@ -168,4 +169,45 @@ func getRetailCountBySchool(schoolId string) (int64, error) {
 		return 0, err
 	}
 	return totalCount, nil
+}
+
+//更改回收学校回收状态
+func UpdateSchoolRecylingState(school *pb.School) error {
+	//更新设为true
+	query := "update school set is_recyling=true where 1=1"
+	queryFalse := "update school set is_recyling=false where 1=1"
+	var condition string
+	var falseCondition string
+	var idArray []interface{}
+	if len(school.SchoolIds) > 0 {
+		condition += " and id in (${ids})"
+		falseCondition += " and id not in (${ids})"
+		condition = strings.Replace(condition, "${"+"ids"+"}",
+			strings.Repeat(",'%s'", len(school.SchoolIds))[1:], -1)
+
+		falseCondition = strings.Replace(falseCondition, "${"+"ids"+"}",
+			strings.Repeat(",'%s'", len(school.SchoolIds))[1:], -1)
+		for _, s := range school.SchoolIds {
+			idArray = append(idArray, s)
+		}
+		condition = fmt.Sprintf(condition, idArray...)
+		falseCondition = fmt.Sprintf(falseCondition, idArray...)
+	}
+	condition += fmt.Sprintf(" and store_id='%s'", school.StoreId)
+
+	query += condition
+	queryFalse += falseCondition
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	log.Debug(queryFalse)
+	_, err = DB.Exec(queryFalse)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
 }
