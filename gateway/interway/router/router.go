@@ -113,5 +113,12 @@ func SetRouterV1() *m.Router {
 	//account
 	v1.Register("/account/find_list", m.Wrap(c.FindAccountItems))
 	v1.Register("/account/seller_account", m.Wrap(c.AccountStatistic))
+
+	//recyling
+
+	v1.Register("/store/store_recyling_info", m.Wrap(c.AccessStoreRecylingInfo))
+	v1.Register("/store/update_store_recyling_info", m.Wrap(c.UpdateStoreRecylingInfo))
+	v1.Register("/store/recyling_order_list", m.Wrap(c.GetStoreRecylingOrderList))
+
 	return v1
 }

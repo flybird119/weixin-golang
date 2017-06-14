@@ -288,3 +288,51 @@ func UpdateStoreExtraInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.StoreExtraInfo{}
 	misc.CallWithResp(w, r, "bc_store", "UpdateStoreExtraInfo", req, "id")
 }
+
+//获取云店回收信息
+func AccessStoreRecylingInfo(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	var storeId string
+	if c != nil && c.StoreId != "" {
+		storeId = c.StoreId
+	}
+	req := &pb.Recyling{StoreId: storeId}
+	misc.CallWithResp(w, r, "bc_store", "AccessStoreRecylingInfo", req)
+}
+
+//提交预约订单接口
+func UserSubmitRecylingOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.RecylingOrder{}
+	misc.CallWithResp(w, r, "bc_store", "UserSubmitRecylingOrder", req, "store_id", "school_id", "user_id", "mobile", "addr", "appoint_start_at", "appoint_end_at")
+}
+
+//查看预约中的回收订单接口
+func UserAccessPendingRecylingOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.RecylingOrder{}
+	misc.CallWithResp(w, r, "bc_store", "UserAccessPendingRecylingOrder", req, "user_id")
+}
+
+//设置云店回收信息
+func UpdateStoreRecylingInfo(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Recyling{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "UpdateStoreRecylingInfo", req, "id")
+}
+
+//设置云店回收信息
+func GetStoreRecylingOrderList(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.RecylingOrder{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "GetStoreRecylingOrderList", req, "school_id")
+}

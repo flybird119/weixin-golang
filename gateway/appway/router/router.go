@@ -63,5 +63,10 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/info", m.Wrap(c.StoreInfoApp))
 	v1.Register("/store/real_stores", m.Wrap(c.RealStores))
 
+	//recyling
+	v1.Register("/recyling/my_recyling_order", m.Wrap(c.UserAccessPendingRecylingOrder))
+	v1.Register("/recyling/submit_recyling_order", m.Wrap(c.UserSubmitRecylingOrder))
+	v1.Register("/recyling/store_recyling_info", m.Wrap(c.AccessStoreRecylingInfo))
+
 	return v1
 }

@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package pb;
+
+
+//回收 model
+message Recyling {
+    string id = 1;
+    string store_id = 2;
+    repeated RecylingAppointTime appoint_times = 3;
+    int64 status = 4;
+    string summary = 5;
+    string qrcode_url = 6;
+    int64 create_at = 7;
+    int64 update_at = 8;
+}
+
+//预约时间 model
+message RecylingAppointTime{
+    string week = 1;
+    int64 start_at = 2;
+    int64 end_at = 3;
+    bool is_work = 4; 
+}
+
+//回收订单 model
+message RecylingOrder{
+    // --> 数据库字段
+    string id = 1;
+    string store_id = 2;
+    string school_id = 3;
+    string user_id = 4;
+    repeated RecylingImage images = 5;
+    int64 state = 6;
+    string remark = 7;
+    string addr = 8;
+    string mobile = 9;
+    int64 appoint_start_at = 10;
+    int64 appoint_end_at = 11;
+    int64 create_at = 12;
+    int64 update_at = 13;
+    // --> 请求部分
+    string sort_by = 14;      //分类方式
+    string sequence_by = 15;  //排序方式  asc | desc
+    int64 page = 16;
+    int64 size = 17;
+}
+
+//回收图片
+message RecylingImage{
+    string url = 1;
+}
+
+//商家回收信息 resp
+message RecylingResp{
+    string code = 1;
+    string message = 2;
+    Recyling data = 3;
+}
+
+//回收订单详情 resp
+message RecylingOrderResp{
+    string code = 1;
+    string message = 2;
+    RecylingOrder data = 3;
+}
+
+//商家回收列表响应 resp
+message RecylingOrderListResp{
+    string code = 1;
+    string message = 2;
+    repeated RecylingOrder data = 3;
+    int64 total_count = 4;
+}

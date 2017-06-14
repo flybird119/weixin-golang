@@ -20,12 +20,11 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 
 	//首先从当当上获取图书信息
 	sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
-	baseURL := "http://search.dangdang.com/?key=ISBN&act=input&category_path=01.00.00.00.00.00&type=01.00.00.00.00.00"
+	baseURL := "http://search.dangdang.com/?key=ISBN&ddsale=1"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 
 	pageItems := sp.GetByRequest(req)
-	//pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
 	//没爬到数据
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
 		log.Debug("no matches found!")
@@ -33,6 +32,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		structData(pageItems, book)
 		if book.Isbn != "" && isbn == book.Isbn {
 			//如果获取到数据，返回
+			log.Debugf("%+v", book)
 			return
 		}
 
@@ -52,6 +52,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		structData(pageItems, book)
 		if book.Isbn != "" && isbn == book.Isbn {
 			//如果获取到数据，返回
+			log.Debugf("%+v", book)
 			return
 		}
 
@@ -108,6 +109,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		structData(pageItems, book)
 		if book.Isbn != "" && isbn == book.Isbn {
 			//如果获取到数据，返回
+			log.Debugf("%+v", book)
 			return
 		}
 	}

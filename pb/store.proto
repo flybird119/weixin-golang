@@ -3,18 +3,30 @@ syntax = "proto3";
 package pb;
 import "pb/common.proto";
 import "pb/seller.proto";
-
+import "pb/recyling.proto";
 service StoreService {
+  //===========店铺基本操作部分==========================
+  //增加云店接口
   rpc AddStore (Store) returns (AddStoreResp);
+  //更新云店接口
   rpc UpdateStore (Store) returns (NormalResp);
+  //云店增加实体店接口
   rpc AddRealStore (RealStore) returns (AddRealStoreResp);
+  //云店更改实体店接口
   rpc UpdateRealStore (RealStore) returns (NormalResp);
+  //云店信息接口
   rpc StoreInfo (Store) returns (AddStoreResp);
+  //更换云店logo接口
   rpc ChangeStoreLogo (Store) returns (NormalResp);
+  //云店实体店列表接口
   rpc RealStores (Store) returns (RealStoresResp);
+  //选择进入云店接口
   rpc EnterStore (Store) returns (AddStoreResp);
+  //检查短信验证码接口
   rpc CheckCode (RegisterModel) returns (NormalResp);
+  //转让云店铺接口
   rpc TransferStore (TransferStoreReq) returns (AddStoreResp);
+  //云店删除实体店接口
   rpc DelRealStore (RealStore) returns (NormalResp);
   //获取提现账号管理的手机验证码
   rpc GetCardOperSmsCode (SmsCardSubmitModel) returns (NormalResp);
@@ -32,6 +44,8 @@ service StoreService {
   rpc RechargeApply (RechargeModel) returns (RechargeOperationResp);
   //充值完成操作
   rpc RechargeHandler (RechargeModel) returns (Void);
+
+  //===========店铺补充信息部分==========================
   //获取店铺额外信息
   rpc GetStoreExtraInfo (StoreExtraInfo) returns (StoreExtraInfoResp);
   //检索店铺额外信息
@@ -40,6 +54,22 @@ service StoreService {
   rpc SyncStoreExtraInfo (StoreExtraInfo) returns (Void);
   //修改店铺增加信息
   rpc UpdateStoreExtraInfo (StoreExtraInfo) returns (NormalResp);
+
+   //===========店铺回收操作部分==========================
+   //----------用户 商家 共同部分-------------
+   //获取云店回收信息
+   rpc AccessStoreRecylingInfo (Recyling) returns (RecylingResp);
+
+   //----------用户部分接口-------------
+   //提交预约订单接口
+   rpc UserSubmitRecylingOrder (RecylingOrder) returns (RecylingOrderResp);
+   //查看预约中的回收订单接口
+   rpc UserAccessPendingRecylingOrder (RecylingOrder) returns (RecylingOrderResp);
+   //----------商家部分接口-------------
+   //设置云店回收信息
+   rpc UpdateStoreRecylingInfo (Recyling) returns (NormalResp);
+   //获取云店回收订单列表
+   rpc GetStoreRecylingOrderList (RecylingOrder) returns (RecylingOrderListResp);
 }
 
 
