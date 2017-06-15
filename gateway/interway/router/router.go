@@ -58,7 +58,6 @@ func SetRouterV1() *m.Router {
 	v1.Register("/school/update_express_fee", m.Wrap(c.UpdateExpressFee))
 	v1.Register("/school/store_schools", m.Wrap(c.StoreSchools))
 	v1.Register("/school/del", m.Wrap(c.DelSchool))
-	v1.Register("/school/update_school_recyling_state", m.Wrap(c.UpdateSchoolRecylingState))
 
 	// location
 	v1.Register("/location/add_location", m.Wrap(c.AddLocation))
@@ -120,6 +119,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/recyling/update_store_recyling_info", m.Wrap(c.UpdateStoreRecylingInfo))
 	v1.Register("/recyling/recyling_order_list", m.Wrap(c.GetStoreRecylingOrderList))
 	v1.Register("/recyling/update_recyling_order", m.Wrap(c.UpdateRecylingOrder))
+	v1.Register("/recyling/update_school_recyling_state", m.Wrap(c.UpdateSchoolRecylingState))
 
 	return v1
 }

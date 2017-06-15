@@ -32,7 +32,7 @@ func (s *StoreServiceServer) AccessStoreRecylingInfo(ctx context.Context, in *pb
 func (s *StoreServiceServer) UserSubmitRecylingOrder(ctx context.Context, in *pb.RecylingOrder) (*pb.RecylingOrderResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UserSubmitRecylingOrder", "%#v", in))
-
+	in.State = 1
 	err := db.UserSubmitRecylingOrder(in)
 
 	if err != nil && err.Error() == "alreadyExists" {

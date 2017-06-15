@@ -47,7 +47,7 @@ func AccessStoreRecylingInfo(recyling *pb.Recyling) error {
 //提交预约订单接口
 func UserSubmitRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 
-	searchOrder := &pb.RecylingOrder{UserId: recylingOrder.UserId}
+	searchOrder := &pb.RecylingOrder{UserId: recylingOrder.UserId, StoreId: recylingOrder.StoreId}
 	err := UserAccessPendingRecylingOrder(searchOrder)
 	if err != nil {
 		log.Error(err)
@@ -83,9 +83,9 @@ func UserSubmitRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 //查看预约中的回收订单接口
 func UserAccessPendingRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 
-	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from recyling_order where state in(1,2) and lp_user_id='%s'"
+	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from recyling_order where state in(1,2) and lp_user_id='%s' and store_id='%s'"
 	log.Debug(query)
-	query = fmt.Sprintf(query, recylingOrder.UserId)
+	query = fmt.Sprintf(query, recylingOrder.UserId, recylingOrder.StoreId)
 	var images []*pb.RecylingImage
 	var imageStr string
 	err := DB.QueryRow(query).Scan(&recylingOrder.Id, &recylingOrder.StoreId, &recylingOrder.SchoolId, &recylingOrder.UserId, &imageStr, &recylingOrder.State, &recylingOrder.Remark, &recylingOrder.Addr, &recylingOrder.Mobile, &recylingOrder.AppointStartAt, &recylingOrder.AppointEndAt, &recylingOrder.CreateAt, &recylingOrder.UpdateAt)
