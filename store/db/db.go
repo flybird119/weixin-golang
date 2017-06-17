@@ -225,24 +225,24 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 		query = "select sg.school_id, sum(sg.alipay_order_num+sg.wechat_order_num),sum(sg.offline_order_num),sum(sg.closed_order_num) from statistic_goods_sales sg where sg.store_id='%s' group by sg.school_id"
 		query = fmt.Sprintf(query, model.StoreId)
 		log.Debug(query)
-		rows, err = DB.Query(query)
+		rows1, err := DB.Query(query)
 		if err == sql.ErrNoRows {
 			err = nil
-			return
+			continue
 		}
 		if err != nil {
 			log.Error(err)
-			return
+			return models, totalCount, err
 		}
-		defer rows.Close()
+		defer rows1.Close()
 
-		for rows.Next() {
+		for rows1.Next() {
 			schoolOrderNums := &pb.StoreSchoolOrdersNumModel{}
 			model.SchoolOrderNums = append(model.SchoolOrderNums, schoolOrderNums)
-			err = rows.Scan(&schoolOrderNums.SchoolId, &schoolOrderNums.OnlineOrderNum, &schoolOrderNums.OfflineOrderNum, &schoolOrderNums.ClosedOrderNum)
+			err = rows1.Scan(&schoolOrderNums.SchoolId, &schoolOrderNums.OnlineOrderNum, &schoolOrderNums.OfflineOrderNum, &schoolOrderNums.ClosedOrderNum)
 			if err != nil {
 				log.Error(err)
-				return
+				return models, totalCount, err
 			}
 		}
 	}

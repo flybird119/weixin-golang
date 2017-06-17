@@ -2,7 +2,14 @@ package misc
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"regexp"
+	"strings"
 	"testing"
+
+	"github.com/tealeg/xlsx"
 )
 
 func TestGenCheckCode(t *testing.T) {
@@ -92,4 +99,48 @@ func test(p **int) {
 	x := 100
 	*p = &x
 	fmt.Println(**p)
+}
+
+func TestDownloadAndAnaly(t *testing.T) {
+	res, _ := http.Get("http://image.goushuyun.cn/Exceltest.xls")
+	file, _ := os.Create("hello.xls")
+	io.Copy(file, res.Body)
+	xlFile, err := xlsx.OpenFile("hello.xlsx")
+	if err != nil {
+		fmt.Printf("err :%+v", err)
+	}
+	var i int
+	for _, sheet := range xlFile.Sheets {
+		for _, row := range sheet.Rows {
+			if i == 0 {
+				i++
+				continue
+			}
+			value, _ := row.Cells[1].String()
+			fmt.Printf("%s\n", value)
+			if value == "" {
+				break
+			}
+			i = i + 1
+			fmt.Printf("%d\n", (i))
+
+			// for _, cell := range row.Cells {
+			// 	text, _ := cell.String()
+			// 	fmt.Printf("%s\n", text)
+			// }
+		}
+	}
+	//os.Remove("hello.xls")
+}
+func TestUrlSubString(t *testing.T) {
+	uri := "http://image.goushuyun.cn/Exceltest.xls"
+	splitStringArray := strings.Split(uri, "/")
+	fmt.Println(splitStringArray)
+	fmt.Println(splitStringArray[len(splitStringArray)-1])
+
+	reg := regexp.MustCompile("\\.xlsx$")
+	edition := reg.FindString(uri)
+	fmt.Println(edition)
+	fmt.Println(edition == "")
+
 }

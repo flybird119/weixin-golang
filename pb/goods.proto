@@ -6,18 +6,29 @@ import "pb/books.proto";
 import "pb/common.proto";
 
 service GoodsService{
-    rpc AddGoods (Goods) returns (NormalResp);               //添加商品
-    rpc UpdateGoods (Goods) returns (NormalResp);            //更新商品
-    rpc SearchGoods (Goods) returns (GoodsDetailResp);      //查找商品
-    rpc GetGoodsByIdOrIsbn (Goods) returns (NormalGoodsResp);//通过isbn获取商品
-    rpc GetGoodsTypeInfo (TypeGoods) returns (TypeGoodsResp); //查询商品单类型
-    rpc DelOrRemoveGoods (DelGoodsReq) returns (NormalResp);  //删除或者下架商品
-    rpc GoodsLocationOperate (GoodsLocation) returns (GoodsLocationResp); //书本货架操作
-    rpc AppSearchGoods (Goods) returns (GoodsDetailResp);   //手机端查找商品 ,去除location
+    //添加商品
+    rpc AddGoods (Goods) returns (NormalResp);
+    //更新商品
+    rpc UpdateGoods (Goods) returns (NormalResp);
+    //查找商品
+    rpc SearchGoods (Goods) returns (GoodsDetailResp);
+    //通过isbn获取商品
+    rpc GetGoodsByIdOrIsbn (Goods) returns (NormalGoodsResp);
+    //查询商品单类型
+    rpc GetGoodsTypeInfo (TypeGoods) returns (TypeGoodsResp);
+    //删除或者下架商品
+    rpc DelOrRemoveGoods (DelGoodsReq) returns (NormalResp);
+    //书本货架操作
+    rpc GoodsLocationOperate (GoodsLocation) returns (GoodsLocationResp);
+    //手机端查找商品 ,去除location
+    rpc AppSearchGoods (Goods) returns (GoodsDetailResp);
+    //批量上传文件
+    rpc GoodsBactchUploadOperate (GoodsBatchUploadModel) returns (NormalResp);
+
 }
 
 
-
+//商品model
 message Goods{
     string id = 1;
     string book_id = 2;
@@ -44,6 +55,32 @@ message Goods{
     bool has_new_book = 23;
     bool has_old_book = 24;
 }
+
+//商品批量处理模型
+message GoodsBatchUploadModel{
+    // -- 数据库表字段映射 --
+    string id  = 1;
+    string store_id = 2;
+    int64 success_num = 3;
+    int64 failed_num = 4;
+    int64 state = 5;
+    int64 type  = 6;
+    int64 discount = 7;
+    string storehouse_id = 8;
+    string shelf_id = 9;
+    string floor_id = 10;
+    string error_reason = 11;
+    string origin_file = 12;
+    string origin_filename = 13;
+    string error_file = 14;
+    int64 create_at = 15;
+    int64 complete_at = 16;
+    int64 update_at = 17;
+    //检索条件
+    int64 page = 18;
+    int64 size = 19;
+}
+
 
 message TypeGoods{
     string id = 1;
