@@ -40,11 +40,12 @@ message RecylingOrder{
     int64 create_at = 12;
     int64 update_at = 13;
     string seller_remark = 14;
+    string avatar = 15;
     // --> 请求部分
-    string sort_by = 15;      //分类方式
-    string sequence_by = 16;  //排序方式  asc | desc
-    int64 page = 17;
-    int64 size = 18;
+    string sort_by = 16;      //分类方式
+    string sequence_by = 17;  //排序方式  asc | desc
+    int64 page = 18;
+    int64 size = 19;
 }
 
 

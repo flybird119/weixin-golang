@@ -102,3 +102,17 @@ func AppSearchGoods(w http.ResponseWriter, r *http.Request) {
 	// call RPC to handle request
 	misc.CallWithResp(w, r, "bc_goods", "AppSearchGoods", req)
 }
+
+//AppSearchGoods 搜索图书 isbn 用于用户端搜索
+func GoodsBactchUploadOperate(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.GoodsBatchUploadModel{StoreId: c.StoreId}
+
+	// call RPC to handle request
+	misc.CallWithResp(w, r, "bc_goods", "GoodsBactchUploadOperate", req, "discount", "storehouse_id", "shelf_id", "floor_id", "origin_file", "origin_filename")
+}

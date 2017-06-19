@@ -54,6 +54,8 @@ message Goods{
     string publisher = 22;
     bool has_new_book = 23;
     bool has_old_book = 24;
+    string str_num = 25;
+    string err_msg = 26;
 }
 
 //商品批量处理模型

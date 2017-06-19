@@ -2,12 +2,12 @@ package misc
 
 import (
 	"fmt"
-	"io"
-	"net/http"
-	"os"
 	"regexp"
 	"strings"
+	"sync"
 	"testing"
+
+	"github.com/goushuyun/weixin-golang/pb"
 
 	"github.com/tealeg/xlsx"
 )
@@ -102,34 +102,29 @@ func test(p **int) {
 }
 
 func TestDownloadAndAnaly(t *testing.T) {
-	res, _ := http.Get("http://image.goushuyun.cn/Exceltest.xls")
-	file, _ := os.Create("hello.xls")
-	io.Copy(file, res.Body)
+
 	xlFile, err := xlsx.OpenFile("hello.xlsx")
 	if err != nil {
 		fmt.Printf("err :%+v", err)
 	}
-	var i int
-	for _, sheet := range xlFile.Sheets {
-		for _, row := range sheet.Rows {
-			if i == 0 {
-				i++
-				continue
-			}
-			value, _ := row.Cells[1].String()
-			fmt.Printf("%s\n", value)
-			if value == "" {
-				break
-			}
-			i = i + 1
-			fmt.Printf("%d\n", (i))
-
-			// for _, cell := range row.Cells {
-			// 	text, _ := cell.String()
-			// 	fmt.Printf("%s\n", text)
-			// }
+	var books []*pb.Goods
+	sheet := xlFile.Sheets[0]
+	for _, row := range sheet.Rows {
+		isbn, _ := row.Cells[0].String()
+		numStr, _ := row.Cells[1].String()
+		if isbn == "" {
+			break
 		}
+		book := &pb.Goods{Isbn: isbn, StrNum: numStr}
+		books = append(books, book)
 	}
+
+	splitList, _ := splitGoodsList(50, books)
+	fmt.Printf("%+v\n", len(splitList))
+	fmt.Println("======================")
+	fmt.Printf("%+v\n", splitList[791])
+	fmt.Println("======================")
+	fmt.Printf("%+v\n", splitList[792])
 	//os.Remove("hello.xls")
 }
 func TestUrlSubString(t *testing.T) {
@@ -143,4 +138,61 @@ func TestUrlSubString(t *testing.T) {
 	fmt.Println(edition)
 	fmt.Println(edition == "")
 
+}
+
+func splitGoodsList(batchSize int, goodsList []*pb.Goods) (splitList [][]*pb.Goods, err error) {
+
+	for i := 0; i < len(goodsList); i += batchSize {
+
+		if i+batchSize >= len(goodsList) {
+			splitList = append(splitList, goodsList[i:])
+		} else {
+			splitList = append(splitList, goodsList[i:i+batchSize])
+		}
+	}
+	return
+}
+
+func TestSplitUpload(t *testing.T) {
+	var array1 []int = []int{1, 2, 3, 4, 5, 6, 7}
+	var array2 []int
+	var done bool
+	c := make(chan int)
+	var wg sync.WaitGroup
+	wg.Add(1)
+	totalNum := len(array1)
+	currentNum := 0
+	numChan := make(chan int)
+	go func(c chan int, wg *sync.WaitGroup, array1 []int) {
+		defer wg.Done()
+		defer close(c)
+		fmt.Printf("%#v", array1)
+		for i := 0; i < len(array1); i++ {
+			c <- array1[i]
+			numChan <- 1
+		}
+
+	}(c, &wg, array1)
+	for {
+		var v int
+		var ok bool
+		select {
+		case v, ok = <-c:
+			if ok {
+				fmt.Println("\nchan:", v)
+			}
+		case v, _ = <-numChan:
+			fmt.Println("\nnum:", v)
+			currentNum += v
+		}
+
+		if currentNum == totalNum {
+			break
+		}
+
+	}
+	wg.Wait()
+	done = true
+	fmt.Println(done)
+	fmt.Println("sfsdfsf", len(array2))
 }

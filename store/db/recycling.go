@@ -53,7 +53,7 @@ func UserSubmitRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 		log.Error(err)
 		return err
 	}
-	if searchOrder.Id != "" {
+	if searchOrder.Id != "" && searchOrder.State != 3 {
 		return errors.New("alreadyExists")
 	}
 
@@ -83,12 +83,12 @@ func UserSubmitRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 //查看预约中的回收订单接口
 func UserAccessPendingRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 
-	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from recyling_order where state in(1,2) and lp_user_id='%s' and store_id='%s'"
+	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint,seller_remark from recyling_order where state in(1,2,3) and lp_user_id='%s' and store_id='%s' order by appoint_start_at desc limit 1"
 	log.Debug(query)
 	query = fmt.Sprintf(query, recylingOrder.UserId, recylingOrder.StoreId)
 	var images []*pb.RecylingImage
 	var imageStr string
-	err := DB.QueryRow(query).Scan(&recylingOrder.Id, &recylingOrder.StoreId, &recylingOrder.SchoolId, &recylingOrder.UserId, &imageStr, &recylingOrder.State, &recylingOrder.Remark, &recylingOrder.Addr, &recylingOrder.Mobile, &recylingOrder.AppointStartAt, &recylingOrder.AppointEndAt, &recylingOrder.CreateAt, &recylingOrder.UpdateAt)
+	err := DB.QueryRow(query).Scan(&recylingOrder.Id, &recylingOrder.StoreId, &recylingOrder.SchoolId, &recylingOrder.UserId, &imageStr, &recylingOrder.State, &recylingOrder.Remark, &recylingOrder.Addr, &recylingOrder.Mobile, &recylingOrder.AppointStartAt, &recylingOrder.AppointEndAt, &recylingOrder.CreateAt, &recylingOrder.UpdateAt, &recylingOrder.SellerRemark)
 	if err == sql.ErrNoRows {
 		return nil
 	}
@@ -143,11 +143,11 @@ func UpdateStoreRecylingInfo(recyling *pb.Recyling) error {
 
 //获取云店回收订单列表
 func GetStoreRecylingOrderList(recylingOrder *pb.RecylingOrder) (models []*pb.RecylingOrder, err error, totalCount int64) {
-	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint from recyling_order where 1=1"
-	queryCount := "select count(*) from recyling_order where 1=1 "
+	query := "select r.id,r.store_id,r.school_id,r.lp_user_id,r.images,r.state,r.remark,r.addr,r.mobile,extract(epoch from r.appoint_start_at)::bigint,extract(epoch from r.appoint_end_at)::bigint,extract(epoch from r.create_at)::bigint,extract(epoch from r.update_at)::bigint,r.seller_remark,u.avatar from recyling_order r left join users u on u.id=r.lp_user_id  where 1=1 "
+	queryCount := "select count(*) from recyling_order r where 1=1 "
 	var condition string
 	if recylingOrder.State != 0 {
-		condition += fmt.Sprintf(" and state=%d", recylingOrder.State)
+		condition += fmt.Sprintf(" and r.state=%d", recylingOrder.State)
 	}
 	if recylingOrder.SortBy == "" {
 		recylingOrder.SortBy = " appoint_start_at"
@@ -155,7 +155,7 @@ func GetStoreRecylingOrderList(recylingOrder *pb.RecylingOrder) (models []*pb.Re
 	if recylingOrder.SequenceBy == "" {
 		recylingOrder.SequenceBy = " desc"
 	}
-	condition += fmt.Sprintf(" and school_id='%s' and store_id='%s'", recylingOrder.SchoolId, recylingOrder.StoreId)
+	condition += fmt.Sprintf(" and r.school_id='%s' and r.store_id='%s'", recylingOrder.SchoolId, recylingOrder.StoreId)
 
 	if recylingOrder.Page <= 0 {
 		recylingOrder.Page = 1
@@ -176,7 +176,7 @@ func GetStoreRecylingOrderList(recylingOrder *pb.RecylingOrder) (models []*pb.Re
 
 		return
 	}
-	condition += fmt.Sprintf("  order by %s %s OFFSET %d LIMIT %d ", recylingOrder.SortBy, recylingOrder.SequenceBy, (recylingOrder.Page-1)*recylingOrder.Size, recylingOrder.Size)
+	condition += fmt.Sprintf("  order by r.%s %s OFFSET %d LIMIT %d ", recylingOrder.SortBy, recylingOrder.SequenceBy, (recylingOrder.Page-1)*recylingOrder.Size, recylingOrder.Size)
 	query += condition
 	log.Debug(query)
 	rows, err := DB.Query(query)
@@ -194,10 +194,14 @@ func GetStoreRecylingOrderList(recylingOrder *pb.RecylingOrder) (models []*pb.Re
 		models = append(models, order)
 		var images []*pb.RecylingImage
 		var imageStr string
-		err = rows.Scan(&order.Id, &order.StoreId, &order.SchoolId, &order.UserId, &imageStr, &order.State, &order.Remark, &order.Addr, &order.Mobile, &order.AppointStartAt, &order.AppointEndAt, &order.CreateAt, &order.UpdateAt)
+		var avatar sql.NullString
+		err = rows.Scan(&order.Id, &order.StoreId, &order.SchoolId, &order.UserId, &imageStr, &order.State, &order.Remark, &order.Addr, &order.Mobile, &order.AppointStartAt, &order.AppointEndAt, &order.CreateAt, &order.UpdateAt, &order.SellerRemark, &avatar)
 		if err != nil {
 			log.Error(err)
 			return
+		}
+		if avatar.Valid {
+			order.Avatar = avatar.String
 		}
 		if err := json.Unmarshal([]byte(imageStr), &images); err != nil {
 			log.Debug(err)

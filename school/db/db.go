@@ -194,7 +194,7 @@ func UpdateSchoolRecylingState(school *pb.School) error {
 		falseCondition = fmt.Sprintf(falseCondition, idArray...)
 	}
 	condition += fmt.Sprintf(" and store_id='%s'", school.StoreId)
-
+	falseCondition += fmt.Sprintf(" and store_id='%s'", school.StoreId)
 	query += condition
 	queryFalse += falseCondition
 	log.Debug(query)

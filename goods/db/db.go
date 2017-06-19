@@ -3,7 +3,6 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
@@ -88,14 +87,13 @@ func AddGoodsLocation(loc *pb.GoodsLocation) error {
 		query = query + " set old_book_amount=old_book_amount+$1,old_book_price=$2, has_old_book=true"
 		debugQuery = debugQuery + " set old_book_amount=old_book_amount+%d,old_book_price=%d,has_old_book=true"
 	}
-	updateTime := time.Now()
 	//打开销售状态
-	query = query + ",update_at=$3,is_selling=true where id=$4"
-	debugQuery = debugQuery + ",update_at=%f,is_selling=true where id=%s"
+	query = query + ",update_at=now(),is_selling=true where id=$3"
+	debugQuery = debugQuery + ",update_at=now(),is_selling=true where id=%s"
 
 	//修改时间
-	log.Debugf(debugQuery, loc.Amount, loc.Price, updateTime, loc.GoodsId)
-	_, err = DB.Exec(query, loc.Amount, loc.Price, updateTime, loc.GoodsId)
+	log.Debugf(debugQuery, loc.Amount, loc.Price, loc.GoodsId)
+	_, err = DB.Exec(query, loc.Amount, loc.Price, loc.GoodsId)
 	if err != nil {
 		log.Errorf("%+v", err)
 		return err

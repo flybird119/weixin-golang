@@ -122,10 +122,10 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 
 	if !bookInfoIsOk(spider_book) {
 		// get from wanxiang
-		wanxiang_book, err := wanxiang.GetBookInfo(req.Isbn)
-		if err != nil {
+		wanxiang_book, err1 := wanxiang.GetBookInfo(req.Isbn)
+		if err1 != nil {
 			log.Error(err)
-			return nil, errs.Wrap(errors.New(err.Error()))
+			return nil, errs.Wrap(errors.New(err1.Error()))
 		}
 		api_usage++
 		final_book = integreteInfo(spider_book, wanxiang_book)
