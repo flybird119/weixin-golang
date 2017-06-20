@@ -52,7 +52,7 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 
 	//声明全局失败记录
 	var failedRechord []*pb.Goods
-	var updateUploadModel *pb.GoodsBatchUploadModel
+	updateUploadModel := &pb.GoodsBatchUploadModel{Id: in.Id}
 
 	// 2 下载表格文件
 	splitStringArray := strings.Split(in.OriginFile, "/")
@@ -136,15 +136,23 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 	wg.Wait()
 
 	fmt.Println("uploadOver")
-	for i := 0; i < len(failedRechord); i++ {
-		fmt.Printf("------isbn:%s------num:%s------reason:%s", failedRechord[i].Isbn, failedRechord[i].StrNum, failedRechord[i].ErrMsg)
+	//构建错误列表
+	if len(failedRechord) > 0 {
+		failedFilename := in.Id + ".xlsx"
+		failedFileUrl, err := createFailedExcel(failedRechord, failedFilename)
+		if err != nil {
+			updateUploadModel.ErrorReason = "保存错误文件失败"
+		} else {
+			updateUploadModel.ErrorFile = failedFileUrl
+		}
+
 	}
 
 	//数量
 	updateUploadModel.SuccessNum = int64(len(goodsList) - len(failedRechord))
 	updateUploadModel.FailedNum = int64(len(failedRechord))
 	//状态更新
-
+	updateUploadModel.State = 3
 	//更新操作
 	db.UpdateBatchUpload(updateUploadModel)
 
@@ -204,9 +212,39 @@ func readExcelByXls(name string) (books []*pb.Goods, err error) {
 	return
 }
 
-// xlsx 写文件
+// xlsx 写文件 并上传到七牛云
 
-// 上传文件到七牛云
+func createFailedExcel(failedRechord []*pb.Goods, filename string) (fileUrl string, err error) {
+	var file *xlsx.File
+	var sheet *xlsx.Sheet
+	var row *xlsx.Row
+
+	file = xlsx.NewFile()
+	sheet, err = file.AddSheet("列表")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	row = sheet.AddRow()
+	head := []string{"ISBN", "数量", "错误原因"}
+	row.WriteSlice(&head, len(head))
+
+	for _, goods := range failedRechord {
+		row = sheet.AddRow()
+		row.AddCell().SetString(goods.Isbn)
+		row.AddCell().SetString(goods.StrNum)
+		row.AddCell().SetString(goods.ErrMsg)
+	}
+	err = file.Save(filename)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	//上传到七牛云
+
+	return
+}
 
 // goodsList 分组
 func splitGoodsList(batchSize int, goodsList []*pb.Goods) (splitList [][]*pb.Goods, err error) {
