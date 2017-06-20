@@ -39,6 +39,19 @@ func (s *GoodsServiceServer) GoodsBactchUploadOperate(ctx context.Context, in *p
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
+////获取批量上传数据
+func (s *GoodsServiceServer) GoodsBactchUploadList(ctx context.Context, in *pb.GoodsBatchUploadModel) (*pb.GoodsBatchUploadModelListResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GoodsBactchUploadList", "%#v", in))
+	// 1 首先保存记录
+	models, err, totalCount := db.GoodsBactchUploadList(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.GoodsBatchUploadModelListResp{Code: "00000", Message: "ok", Data: models, TotalCount: totalCount}, nil
+}
+
 //下载文件
 func downloadRemoteExcel(originFileUrl string, filename string) {
 	res, _ := http.Get(originFileUrl)
