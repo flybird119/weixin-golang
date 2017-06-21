@@ -24,6 +24,8 @@ service GoodsService{
     rpc AppSearchGoods (Goods) returns (GoodsDetailResp);
     //批量上传文件
     rpc GoodsBactchUploadOperate (GoodsBatchUploadModel) returns (NormalResp);
+    //获取批量上传数据
+    rpc  GoodsBactchUploadList (GoodsBatchUploadModel) returns (GoodsBatchUploadModelListResp);
 
 }
 
@@ -81,8 +83,19 @@ message GoodsBatchUploadModel{
     //检索条件
     int64 page = 18;
     int64 size = 19;
+    //返回信息
+    string storehouse_name = 20;
+    string shelf_name = 21;
+    string floor_name = 22;
 }
 
+//商品批量上传列表响应model
+message GoodsBatchUploadModelListResp{
+    string code = 1;
+    string message = 2;
+    repeated GoodsBatchUploadModel data = 3;
+    int64 total_count = 4;
+}
 
 message TypeGoods{
     string id = 1;

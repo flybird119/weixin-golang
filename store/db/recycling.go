@@ -83,7 +83,7 @@ func UserSubmitRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 //查看预约中的回收订单接口
 func UserAccessPendingRecylingOrder(recylingOrder *pb.RecylingOrder) error {
 
-	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint,seller_remark from recyling_order where state in(1,2,3) and lp_user_id='%s' and store_id='%s' order by appoint_start_at desc limit 1"
+	query := "select id,store_id,school_id,lp_user_id,images,state,remark,addr,mobile,extract(epoch from appoint_start_at)::bigint,extract(epoch from appoint_end_at)::bigint,extract(epoch from create_at)::bigint,extract(epoch from update_at)::bigint,seller_remark from recyling_order where state in(1,2,3) and lp_user_id='%s' and store_id='%s' order by create_at desc limit 1"
 	log.Debug(query)
 	query = fmt.Sprintf(query, recylingOrder.UserId, recylingOrder.StoreId)
 	var images []*pb.RecylingImage
