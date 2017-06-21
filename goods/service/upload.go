@@ -288,7 +288,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 		return errors.New("图书数量不合法")
 	}
 	//校验isbn是否正确
-	reg := regexp.MustCompile("(\\d[- ]*){12}[\\d]")
+	reg := regexp.MustCompile("^(\\d[- ]*){12}[\\d]$")
 	isbn := reg.FindString(goods.Isbn)
 	isbn = strings.Replace(isbn, "-", "", -1)
 	isbn = strings.Replace(isbn, " ", "", -1)

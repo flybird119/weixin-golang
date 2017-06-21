@@ -6,7 +6,7 @@ create table goods_batch_upload(
     store_id        text            not null,                                 --云店铺id
     success_num     int             not null            default 0,                 --成功数量
     failed_num      int             not null            default 0,                 --失败数量
-    state           int             not null            default 0,                 --状态 1 导入中 2 失败  3 导入完成
+    state           int             not null            default 1,                 --状态 1 导入中 2 失败  3 导入完成
     type            int             not null            default 0,                 --上传类型 0新书 1 旧书
     discount        int             not null            ,                          --折扣
     storehouse_id   text            not null            default '',                --仓库id

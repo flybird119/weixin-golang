@@ -7,7 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/goushuyun/weixin-golang/mediastore/service"
+	"github.com/wothing/log"
+
 	"github.com/goushuyun/weixin-golang/pb"
 
 	"github.com/tealeg/xlsx"
@@ -213,14 +214,28 @@ func TestWriteExcelAndSave(t *testing.T) {
 	row = sheet.AddRow()
 	cell = row.AddCell()
 	cell.Value = "I am a cell!"
-	key, err := service.PutExcelFile(file)
-	if err != nil {
-		fmt.Print(err)
-
-	}
-	fmt.Println(key)
+	// key, err := service.PutExcelFile(file)
+	// if err != nil {
+	// 	fmt.Print(err)
+	//
+	// }
+	// fmt.Println(key)
 	// err = file.Save("MyXLSXFile.xlsx")
 	// if err != nil {
 	// 	fmt.Printf(err.Error())
 	// }
+}
+
+func TestIsbnInjust(t *testing.T) {
+	isbnStr := "9787301176917"
+	reg := regexp.MustCompile("^(\\d[- ]*){12}[\\d]$")
+	isbn := reg.FindString(isbnStr)
+	isbn = strings.Replace(isbn, "-", "", -1)
+	isbn = strings.Replace(isbn, " ", "", -1)
+	if isbn == "" {
+		log.Debug("isbn不正确")
+
+	} else {
+		log.Debug("hhh")
+	}
 }

@@ -155,7 +155,10 @@ func GetStoreRecylingOrderList(recylingOrder *pb.RecylingOrder) (models []*pb.Re
 	if recylingOrder.SequenceBy == "" {
 		recylingOrder.SequenceBy = " desc"
 	}
-	condition += fmt.Sprintf(" and r.school_id='%s' and r.store_id='%s'", recylingOrder.SchoolId, recylingOrder.StoreId)
+	if recylingOrder.SchoolId != "" {
+		condition += fmt.Sprintf(" and r.school_id='%s'", recylingOrder.SchoolId)
+	}
+	condition += fmt.Sprintf(" r.store_id='%s'", recylingOrder.StoreId)
 
 	if recylingOrder.Page <= 0 {
 		recylingOrder.Page = 1
