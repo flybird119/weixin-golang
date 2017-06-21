@@ -16,6 +16,7 @@ type MediastoreServer struct {
 	Test bool
 }
 
+// extract image from weixin server and upload to qiniu
 func (s *MediastoreServer) ExtractImageFromWeixinToQiniu(ctx context.Context, req *pb.ExtractReq) (*pb.ExtractResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "ExtractImageFromWeixinToQiniu", "%#v", req))
@@ -36,6 +37,7 @@ func (s *MediastoreServer) ExtractImageFromWeixinToQiniu(ctx context.Context, re
 	return &pb.ExtractResp{QiniuKeys: qiniu_keys}, nil
 }
 
+// refresh urls
 func (s *MediastoreServer) RefreshUrls(ctx context.Context, req *pb.RefreshReq) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "RefreshUrls", "%#v", req))

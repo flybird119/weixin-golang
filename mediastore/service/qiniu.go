@@ -17,6 +17,7 @@ import (
 
 	"github.com/goushuyun/weixin-golang/pb"
 
+	"github.com/tealeg/xlsx"
 	"github.com/wothing/log"
 	"qiniupkg.com/api.v7/kodo"
 	"qiniupkg.com/api.v7/kodocli"
@@ -60,6 +61,41 @@ func init() {
 	zone := 0
 	cli = kodo.New(zone, nil)
 	uploader = kodocli.NewUploader(zone, nil) // 构建一个uploader
+}
+
+// put Excel file
+func PutExcelFile(excel *xlsx.File) (key string, err error) {
+	f, err := ioutil.TempFile("", "tmp")
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+	defer os.Remove(f.Name())
+
+	err = excel.Write(f)
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	file_name := f.Name()[strings.LastIndex(f.Name(), "/")+1:] + ".xlsx"
+
+	key = "tmp_30min/" + file_name
+	token, _ := makeToken(pb.MediaZone_Test, key)
+
+	fi, err := f.Stat()
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	err = uploader.Rput(context.Background(), nil, token, key, f, fi.Size(), nil)
+	if err != nil {
+		log.Error(err)
+		return "", err
+	}
+
+	return key, nil
 }
 
 func upload(url string, zone pb.MediaZone, appid string) (key string, err error) {
@@ -107,14 +143,21 @@ func uploadLocal(filepath string, zone pb.MediaZone, filename string) (err error
 
 func putLittleFile(token, filename string, body io.ReadCloser, length int64) {
 
-	log.Debug("<>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<>>>")
-
 	err := uploader.Put(nil, nil, token, filename, body, length, nil)
 	if err != nil {
 		log.Error(err)
+		return
 	}
 	body.Close()
 	log.Infof("file %s upload complete", filename)
+}
+
+func tryPut(token, key string, file *os.File, filesize int64) {
+	err := uploader.Rput(context.Background(), nil, token, key, file, filesize, nil)
+	if err != nil {
+		log.Error(err)
+		return
+	}
 }
 
 func putLargeFile(token, filename string, body io.ReadCloser, length int64) {
