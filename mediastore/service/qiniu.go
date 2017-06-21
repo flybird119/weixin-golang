@@ -80,7 +80,7 @@ func PutExcelFile(excel *xlsx.File) (key string, err error) {
 
 	file_name := f.Name()[strings.LastIndex(f.Name(), "/")+1:] + ".xlsx"
 
-	key = "tmp_30min/" + file_name
+	key = "tmp_30days/" + file_name
 	token, _ := makeToken(pb.MediaZone_Test, key)
 
 	fi, err := f.Stat()
