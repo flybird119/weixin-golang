@@ -334,7 +334,7 @@ func GetStoreRecylingOrderList(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.RecylingOrder{StoreId: c.StoreId}
-	misc.CallWithResp(w, r, "bc_store", "GetStoreRecylingOrderList", req, "school_id")
+	misc.CallWithResp(w, r, "bc_store", "GetStoreRecylingOrderList", req)
 }
 
 //设置云店回收信息

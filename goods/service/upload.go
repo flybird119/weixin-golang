@@ -15,6 +15,7 @@ import (
 
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/goods/db"
+	"github.com/goushuyun/weixin-golang/mediastore/service"
 	"github.com/pborman/uuid"
 
 	"github.com/goushuyun/weixin-golang/misc"
@@ -151,8 +152,7 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 	fmt.Println("uploadOver")
 	//构建错误列表
 	if len(failedRechord) > 0 {
-		failedFilename := in.Id + ".xlsx"
-		failedFileUrl, err := createFailedExcel(failedRechord, failedFilename)
+		failedFileUrl, err := createFailedExcel(failedRechord)
 		if err != nil {
 			updateUploadModel.ErrorReason = "保存错误文件失败"
 		} else {
@@ -227,7 +227,7 @@ func readExcelByXls(name string) (books []*pb.Goods, err error) {
 
 // xlsx 写文件 并上传到七牛云
 
-func createFailedExcel(failedRechord []*pb.Goods, filename string) (fileUrl string, err error) {
+func createFailedExcel(failedRechord []*pb.Goods) (fileUrl string, err error) {
 	var file *xlsx.File
 	var sheet *xlsx.Sheet
 	var row *xlsx.Row
@@ -248,11 +248,13 @@ func createFailedExcel(failedRechord []*pb.Goods, filename string) (fileUrl stri
 		row.AddCell().SetString(goods.StrNum)
 		row.AddCell().SetString(goods.ErrMsg)
 	}
-	err = file.Save(filename)
+
+	fileUrl, err = service.PutExcelFile(file)
 	if err != nil {
-		log.Error(err)
+		log.Debug(err)
 		return
 	}
+	log.Debug(fileUrl)
 
 	//上传到七牛云
 
@@ -286,7 +288,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 		return errors.New("图书数量不合法")
 	}
 	//校验isbn是否正确
-	reg := regexp.MustCompile("(\\d[- ]*){12}[\\d]")
+	reg := regexp.MustCompile("^(\\d[- ]*){12}[\\d]$")
 	isbn := reg.FindString(goods.Isbn)
 	isbn = strings.Replace(isbn, "-", "", -1)
 	isbn = strings.Replace(isbn, " ", "", -1)

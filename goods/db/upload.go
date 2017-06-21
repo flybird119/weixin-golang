@@ -74,7 +74,6 @@ func GoodsBactchUploadList(model *pb.GoodsBatchUploadModel) (models []*pb.GoodsB
 	idParam += fmt.Sprintf(" and extract(epoch from create_at)::bigint>%d", now.Unix())
 	queryCount := fmt.Sprintf(query, paramCount, model.StoreId, idParam)
 	query = fmt.Sprintf(query, param, model.StoreId, idParam)
-
 	//查询条数
 	log.Debug(queryCount)
 	err = DB.QueryRow(queryCount).Scan(&totalCount)
@@ -95,7 +94,7 @@ func GoodsBactchUploadList(model *pb.GoodsBatchUploadModel) (models []*pb.GoodsB
 	if model.Size <= 0 {
 		model.Size = 15
 	}
-	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (model.Page-1)*model.Size, model.Size)
+	condition += fmt.Sprintf(" order by create_at desc OFFSET %d LIMIT %d ", (model.Page-1)*model.Size, model.Size)
 	query += condition
 	log.Debug(query)
 	rows, err := DB.Query(query)
