@@ -7,6 +7,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/goushuyun/weixin-golang/mediastore/service"
 	"github.com/goushuyun/weixin-golang/pb"
 
 	"github.com/tealeg/xlsx"
@@ -212,8 +213,14 @@ func TestWriteExcelAndSave(t *testing.T) {
 	row = sheet.AddRow()
 	cell = row.AddCell()
 	cell.Value = "I am a cell!"
-	err = file.Save("MyXLSXFile.xlsx")
+	key, err := service.PutExcelFile(file)
 	if err != nil {
-		fmt.Printf(err.Error())
+		fmt.Print(err)
+
 	}
+	fmt.Println(key)
+	// err = file.Save("MyXLSXFile.xlsx")
+	// if err != nil {
+	// 	fmt.Printf(err.Error())
+	// }
 }
