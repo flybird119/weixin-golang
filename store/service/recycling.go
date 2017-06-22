@@ -1,8 +1,9 @@
 package service
 
 import (
-	"17mei/errs"
 	"errors"
+
+	"github.com/goushuyun/weixin-golang/errs"
 
 	"golang.org/x/net/context"
 

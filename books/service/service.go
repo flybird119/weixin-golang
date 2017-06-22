@@ -14,7 +14,6 @@ import (
 
 	"github.com/goushuyun/weixin-golang/books/db"
 	"github.com/goushuyun/weixin-golang/books/info-src/bookspider"
-	"github.com/goushuyun/weixin-golang/books/info-src/wanxiang"
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 )
@@ -111,32 +110,29 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 
 	// get from spider
 	spider_book, err := bookspider.GetBookInfoBySpider(req.Isbn)
-
-	if err != nil && err.Error() == "not_found" {
-		return &pb.GetBookInfoResp{Code: errs.Ok, Message: "book_not_found"}, nil
-	} else if err != nil {
+	if err != nil {
 		log.Error(err)
 	}
 
 	api_usage++
 
-	if !bookInfoIsOk(spider_book) {
-		// get from wanxiang
-		wanxiang_book, err1 := wanxiang.GetBookInfo(req.Isbn)
-		if err1 != nil {
-			log.Error(err)
-			return nil, errs.Wrap(errors.New(err1.Error()))
-		}
-		api_usage++
-		final_book = integreteInfo(spider_book, wanxiang_book)
-	}
+	// if !bookInfoIsOk(spider_book) {
+	// 	// get from wanxiang
+	// 	wanxiang_book, err1 := wanxiang.GetBookInfo(req.Isbn)
+	// 	if err1 != nil {
+	// 		log.Error(err)
+	// 		return nil, errs.Wrap(errors.New(err1.Error()))
+	// 	}
+	// 	api_usage++
+	// 	final_book = integreteInfo(spider_book, wanxiang_book)
+	// }
 
 	if api_usage == 1 {
 		final_book = spider_book
 	}
 
-	// API 调用之后，未找到该图书，return
-	if final_book == nil {
+	// API 调用之后，未找到该图书，或者图书信息不完善 return
+	if final_book == nil || !bookInfoIsOk(final_book) {
 		return &pb.GetBookInfoResp{Code: errs.Ok, Message: "book_not_found"}, nil
 	}
 
