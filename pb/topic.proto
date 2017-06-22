@@ -50,6 +50,6 @@ message TopicItem{
     int64 book_price = 8;        //原价
     int64 stock = 9;             //库存量
     string topic_id = 10;         //话题id
-    int64 status = 11;          //状态
+    int64 status = 11;           //状态
     int64 create_at = 12;       //创建时间
 }
