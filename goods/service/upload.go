@@ -309,7 +309,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	}
 	if bookResp == nil || bookResp.Code != errs.Ok || bookResp.Message == "book_not_found" {
 		log.Debug("没找到图书")
-		return errors.New("未找到改图书")
+		return errors.New("未找到该图书，请手动上传")
 	}
 	book := bookResp.Data
 	log.Debug(book)

@@ -141,6 +141,9 @@ message GoodsSalesModel{            //当前云店商品数量统计
     repeated GoodsLocation location = 13;
 }
 
+message MapGoodsTopic{
+    string topic_id = 1;
+}
 //图书位置
 message GoodsLocation{
     string id = 1;
@@ -187,5 +190,6 @@ message GoodsSearchResult{
     string store_id = 3;
     GoodsSalesModel new_book = 4;
     GoodsSalesModel old_book = 5;
-    int64 update_at = 6;
+    repeated MapGoodsTopic associated_topics = 6;
+    int64 update_at = 7;
 }

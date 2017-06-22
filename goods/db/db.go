@@ -266,7 +266,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 
 		queryCount += condition
 		log.Debug(queryCount+" args :%+v", args)
-		log.Debug("===================search count")
+
 		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
 		if err != nil {
 			log.Error(err)
@@ -283,7 +283,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 
 		queryCount += condition
 		log.Debug(queryCount+" args :%+v", args)
-		log.Debug("===================search count")
+
 		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
 		if err != nil {
 			log.Error(err)
@@ -295,7 +295,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		}
 		condition += " order by g.update_at desc"
 	}
-	log.Debug("===================2")
+
 	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	query += condition
 	log.Debugf(query+"%+v", args)
@@ -347,11 +347,44 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 				}
 			}
 		}
-		log.Debug("===================4")
-		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
+
+		//获取关联topic
+		topics, topicErr := getGoodsRelationAboutTipic(searchGoods.Id)
+		if err != nil {
+			log.Error(topicErr)
+			err = topicErr
+			return
+		}
+		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.Id, StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel, AssociatedTopics: topics})
 	}
 
 	return r, nil, totalCount
+}
+
+func getGoodsRelationAboutTipic(goodsId string) (topics []*pb.MapGoodsTopic, err error) {
+	queryTopic := fmt.Sprintf("select distinct topic_id from topic_item where goods_id='%s'", goodsId)
+	log.Debug(queryTopic)
+	rows, err := DB.Query(queryTopic)
+	if err == sql.ErrNoRows {
+		err = nil
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		topic := &pb.MapGoodsTopic{}
+		topics = append(topics, topic)
+		err = rows.Scan(&topic.TopicId)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+
+	return
 }
 
 //SearchGoods 搜索图书 isbn 用于用户端搜索

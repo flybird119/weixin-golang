@@ -135,7 +135,6 @@ func (s *AmazonDetailProcesser) Process(p *page.Page) {
 	p.AddField("isbn", isbn)
 	p.AddField("image_url", url)
 	p.AddField("edition", edition)
-
 }
 
 func (s *AmazonDetailProcesser) Finish() {

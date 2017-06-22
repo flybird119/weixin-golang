@@ -57,44 +57,6 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		}
 
 	}
-	// //如果当当图书信息为空 从bookUU上获取数据
-	// sp := spider.NewSpider(NewBookUUListProcesser(), "BookUUlist")
-	// baseURL := "http://search.bookuu.com/AdvanceSearch.php?isbn=ISBN&sm=&zz=&cbs=&dj_s=&dj_e=&bkj_s=&bkj_e=&layer2=&zk=0&cbrq_n=2017&cbrq_y=&cbrq_n1=2017&cbrq_y1=&sjsj=0&orderby=&layer1=1"
-	// url := strings.Replace(baseURL, "ISBN", isbn, -1)
-	// req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
-	//
-	// pageItems := sp.GetByRequest(req)
-	// //没爬到数据
-	// if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-	// 	log.Debug("no matches found!")
-	// } else {
-	// 	structData(pageItems, book)
-	// 	if book.Isbn != "" && isbn == book.Isbn {
-	// 		//如果获取到数据，返回
-	// 		return
-	// 	}
-	//
-	// }
-	//
-	// //首先从当当上获取图书信息
-	// sp = spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
-	// baseURL = "http://search.dangdang.com/?key=ISBN&act=input&category_path=01.00.00.00.00.00&type=01.00.00.00.00.00"
-	// url = strings.Replace(baseURL, "ISBN", isbn, -1)
-	// req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
-	//
-	// pageItems = sp.GetByRequest(req)
-	// //pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
-	// //没爬到数据
-	// if pageItems == nil || len(pageItems.GetAll()) <= 0 {
-	// 	log.Debug("no matches found!")
-	// } else {
-	// 	structData(pageItems, book)
-	// 	if book.Isbn != "" && isbn == book.Isbn {
-	// 		//如果获取到数据，返回
-	// 		return
-	// 	}
-	//
-	// }
 
 	//如果bookUU图书信息为空，那么向amazon获取图书信息
 	book.InfoSrc = "amazon"
@@ -111,6 +73,8 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 			//如果获取到数据，返回
 			log.Debugf("%+v", book)
 			return
+		} else {
+			log.Debug("not found")
 		}
 	}
 	return nil, nil
