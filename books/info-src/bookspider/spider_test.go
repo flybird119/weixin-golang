@@ -13,7 +13,7 @@ import (
 )
 
 func TestSpiderDangdangList(t *testing.T) {
-	isbn := "9787513914536"
+	isbn := "9780596001193"
 	sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
 	baseURL := "http://search.dangdang.com/?key=ISBN&act=input&category_path=01.00.00.00.00.00&type=01.00.00.00.00.00"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
