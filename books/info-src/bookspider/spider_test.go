@@ -3,6 +3,7 @@ package bookspider
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -18,7 +19,6 @@ func TestSpiderDangdangList(t *testing.T) {
 	baseURL := "http://search.dangdang.com/?key=ISBN&act=input&category_path=01.00.00.00.00.00&type=01.00.00.00.00.00"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
-
 	pageItems := sp.GetByRequest(req)
 	//pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
 
@@ -32,6 +32,24 @@ func TestSpiderDangdangList(t *testing.T) {
 	}
 }
 
+func TestSpiderJDList(t *testing.T) {
+	isbn := "9787301091319"
+	sp := spider.NewSpider(NewJDListProcesser(), "spiderJDList")
+	baseURL := "https://search.jd.com/Search?keyword=ISBN&enc=utf-8&wq=ISBN&pvid=3d3aefa8a0904ef1b08547fb69f57ae7"
+	url := strings.Replace(baseURL, "ISBN", isbn, -1)
+	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+	pageItems := sp.GetByRequest(req)
+	//pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
+
+	//没爬到数据
+	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
+		log.Debug("no matches found!")
+		return
+	}
+	for name, value := range pageItems.GetAll() {
+		log.Debug(name + "\t:\t" + value)
+	}
+}
 func TestSpiderDangdangDetail(t *testing.T) {
 	sp := spider.NewSpider(NewDangDangDetailProcesser(), "spiderDangDangDetail")
 	req := request.NewRequest("http://product.dangdang.com/24170700.html", "html", "", "GET", "", nil, nil, nil, nil)
@@ -72,10 +90,15 @@ func TestSpiderBookUUList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
-	book, _ := GetBookInfoBySpider("9780596001193")
-
+	book, _ := GetBookInfoBySpider("9787301091319")
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	log.Debug("-----------------------------------OOOOOOM---------------------------------")
+
+}
+func TestRegular(t *testing.T) {
+	detailStr := "https://item.jd.com/11020022.html"
+	reg := regexp.MustCompile("/\\d*\\.")
+	log.Debug(reg.FindString(detailStr))
 
 }

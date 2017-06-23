@@ -1,10 +1,12 @@
 package bookspider
 
 import (
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 
-	log "github.com/wothing/log"
+	"github.com/wothing/log"
 
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/hu17889/go_spider/core/common/page_items"
@@ -17,10 +19,38 @@ import (
 //通过爬虫获取图书信息
 func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	book = &pb.Book{InfoSrc: "dangdang"}
+	isbn = strings.Replace(isbn, "-", "", -1)
+	isbn = strings.Replace(isbn, " ", "", -1)
+	num := rand.Int31n(5)
+	log.Debugf("==========开始停%d秒=======", num)
+	time.Sleep(time.Duration(num) * time.Second)
 
 	//首先从当当上获取图书信息
-	sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
-	baseURL := "http://search.dangdang.com/?key=ISBN&ddsale=1"
+	// sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
+	// baseURL := "http://search.dangdang.com/?key=ISBN&ddsale=1"
+	// url := strings.Replace(baseURL, "ISBN", isbn, -1)
+	// req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+	// log.Debug(url)
+	//
+	//
+	// log.Debugf("==========开始执行=======", num)
+	// pageItems := sp.GetByRequest(req)
+	// //没爬到数据
+	// if pageItems == nil || len(pageItems.GetAll()) <= 0 {
+	// 	log.Debug("no matches found!")
+	// } else {
+	// 	structData(pageItems, book)
+	// 	if book.Isbn != "" && isbn == book.Isbn {
+	// 		//如果获取到数据，返回
+	// 		log.Debugf("%+v", book)
+	// 		return
+	// 	}
+	//
+	// }
+	//如果当当图书信息为空 从bookUU上获取数据
+	book.InfoSrc = "bookUU"
+	sp := spider.NewSpider(NewBookUUListProcesser(), "BookUUlist")
+	baseURL := "http://search.bookuu.com/AdvanceSearch.php?isbn=ISBN&sm=&zz=&cbs=&dj_s=&dj_e=&bkj_s=&bkj_e=&layer2=&zk=0&cbrq_n=2017&cbrq_y=&cbrq_n1=2017&cbrq_y1=&sjsj=0&orderby=&layer1=1"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 
@@ -37,10 +67,11 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 		}
 
 	}
+
 	//如果当当图书信息为空 从bookUU上获取数据
-	book.InfoSrc = "bookUU"
-	sp = spider.NewSpider(NewBookUUListProcesser(), "BookUUlist")
-	baseURL = "http://search.bookuu.com/AdvanceSearch.php?isbn=ISBN&sm=&zz=&cbs=&dj_s=&dj_e=&bkj_s=&bkj_e=&layer2=&zk=0&cbrq_n=2017&cbrq_y=&cbrq_n1=2017&cbrq_y1=&sjsj=0&orderby=&layer1=1"
+	book.InfoSrc = "jd"
+	sp = spider.NewSpider(NewJDListProcesser(), "spiderJDList")
+	baseURL = "https://search.jd.com/Search?keyword=ISBN&enc=utf-8&wq=ISBN&pvid=3d3aefa8a0904ef1b08547fb69f57ae7"
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)
 	req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 

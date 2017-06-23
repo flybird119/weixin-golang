@@ -1,14 +1,14 @@
 package bookspider
 
 import (
+	"net/http"
 	"regexp"
 	"strings"
-
-	log "github.com/wothing/log"
 
 	"github.com/hu17889/go_spider/core/common/page"
 	"github.com/hu17889/go_spider/core/common/request"
 	"github.com/hu17889/go_spider/core/spider"
+	log "github.com/wothing/log"
 )
 
 type DangDangListProcesser struct {
@@ -24,7 +24,12 @@ func (s *DangDangListProcesser) Process(p *page.Page) {
 		log.Debug(p.Errormsg())
 		return
 	}
-
+	//p.AddTargetRequestsWithProxy(p., respType, proxyHost)
+	header := http.Header{}
+	header.Add("User-Agent", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0)")
+	header.Add("Content-Type", "application/json")
+	header.Add("Authentization", "sdfsdfdsfsdsdfsdfsdfsdfsd")
+	p.SetHeader(header)
 	query := p.GetHtmlParser()
 
 	selection := query.Find(".bigimg li")
