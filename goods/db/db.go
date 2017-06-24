@@ -362,7 +362,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 }
 
 func getGoodsRelationAboutTipic(goodsId string) (topics []*pb.MapGoodsTopic, err error) {
-	queryTopic := fmt.Sprintf("select distinct topic_id from topic_item where goods_id='%s'", goodsId)
+	queryTopic := fmt.Sprintf("select distinct topic_id,id from topic_item where goods_id='%s'", goodsId)
 	log.Debug(queryTopic)
 	rows, err := DB.Query(queryTopic)
 	if err == sql.ErrNoRows {
@@ -377,7 +377,7 @@ func getGoodsRelationAboutTipic(goodsId string) (topics []*pb.MapGoodsTopic, err
 	for rows.Next() {
 		topic := &pb.MapGoodsTopic{}
 		topics = append(topics, topic)
-		err = rows.Scan(&topic.TopicId)
+		err = rows.Scan(&topic.TopicId, &topic.ItemId)
 		if err != nil {
 			log.Error(err)
 			return
