@@ -45,7 +45,7 @@ func bookInfoIsOk(book *pb.Book) bool {
 		return false
 	}
 
-	if book.Publisher != "" && book.Author != "" && book.Isbn != "" && book.Title != "" && book.Image != "" {
+	if book.Price != 0 && book.Isbn != "" && book.Title != "" {
 		return true
 	} else {
 		return false
