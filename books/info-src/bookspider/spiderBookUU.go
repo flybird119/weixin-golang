@@ -33,8 +33,12 @@ func (s *BookUUListProcesser) Process(p *page.Page) {
 	log.Debug(selection.Size())
 	url, _ := selection.Attr("href")
 	url = strings.Trim(url, " \t\n")
-	sp := spider.NewSpider(NewBookUUDetailProcesser(), "spiderAmazonDetail")
+	sp := spider.NewSpider(NewBookUUDetailProcesser(), "BookUU")
+	ip := getProxyIp()
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+	if ip != "" {
+		req.AddProxyHost(ip)
+	}
 	pageItems := sp.GetByRequest(req)
 	//pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
 	if pageItems == nil || pageItems.GetAll() == nil {

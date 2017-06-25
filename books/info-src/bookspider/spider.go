@@ -1,7 +1,11 @@
 package bookspider
 
 import (
+	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -18,13 +22,14 @@ import (
 
 //通过爬虫获取图书信息
 func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
+
 	book = &pb.Book{InfoSrc: "dangdang"}
 	isbn = strings.Replace(isbn, "-", "", -1)
 	isbn = strings.Replace(isbn, " ", "", -1)
 	num := rand.Int31n(5)
 	log.Debugf("==========开始停%d秒=======", num)
 	time.Sleep(time.Duration(num) * time.Second)
-
+	ip := getProxyIp()
 	//首先从当当上获取图书信息
 	// sp := spider.NewSpider(NewDangDangListProcesser(), "spiderDangDangList")
 	// baseURL := "http://search.dangdang.com/?key=ISBN&ddsale=1"
@@ -48,12 +53,20 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	//
 	// }
 	//如果当当图书信息为空 从bookUU上获取数据
+	//http://api.ip.data5u.com/dynamic/get.html?order=d64615fa08c3dfea28fa9c0a1fbc3791&sep=3
+	log.Debug(ip)
+
 	book.InfoSrc = "bookUU"
 	sp := spider.NewSpider(NewBookUUListProcesser(), "BookUUlist")
 	baseURL := "http://search.bookuu.com/AdvanceSearch.php?isbn=ISBN&sm=&zz=&cbs=&dj_s=&dj_e=&bkj_s=&bkj_e=&layer2=&zk=0&cbrq_n=2017&cbrq_y=&cbrq_n1=2017&cbrq_y1=&sjsj=0&orderby=&layer1=1"
 	url := strings.Replace(baseURL, "ISBN", isbn, -1)
+	///req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 
+	if ip != "" {
+		req.AddProxyHost(ip)
+	}
 	pageItems := sp.GetByRequest(req)
 	//没爬到数据
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
@@ -75,6 +88,9 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)
 	req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 
+	if ip != "" {
+		req.AddProxyHost(ip)
+	}
 	pageItems = sp.GetByRequest(req)
 	//没爬到数据
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
@@ -95,6 +111,9 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	baseURL = "https://www.amazon.cn/s/ref=nb_sb_noss?__mk_zh_CN=%E4%BA%9A%E9%A9%AC%E9%80%8A%E7%BD%91%E7%AB%99&url=search-alias%3Dstripbooks&field-keywords=ISBN"
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)
 	req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+	if ip != "" {
+		req.AddProxyHost(ip)
+	}
 	pageItems = sp.GetByRequest(req)
 	if pageItems == nil || len(pageItems.GetAll()) <= 0 {
 		log.Debug("no matches found!")
@@ -134,4 +153,31 @@ func structData(items *page_items.PageItems, book *pb.Book) {
 	book.Summary = remark
 	book.Subtitle = edition
 	return
+}
+
+func getProxyIp() string {
+	url := "http://api.ip.data5u.com/dynamic/get.html?order=d64615fa08c3dfea28fa9c0a1fbc3791&sep=3"
+	resp, err := http.Post(url,
+		"application/text/html",
+		strings.NewReader("name=cjb"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// handle error
+		log.Error(err)
+		return ""
+	}
+	ipStr := string(body)
+	reg := regexp.MustCompile("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)")
+	ip := reg.FindString(string(body))
+
+	if ip == "" {
+		ipStr = ip
+	}
+	ipStr = strings.TrimSpace(ipStr)
+	log.Debug(ipStr)
+	return ""
 }

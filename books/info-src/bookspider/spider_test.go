@@ -3,6 +3,8 @@ package bookspider
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"regexp"
 	"strings"
 	"testing"
@@ -90,7 +92,7 @@ func TestSpiderBookUUList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
-	book, _ := GetBookInfoBySpider("9787301091319")
+	book, _ := GetBookInfoBySpider("9781523797158")
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	log.Debug("-----------------------------------OOOOOOM---------------------------------")
@@ -100,5 +102,27 @@ func TestRegular(t *testing.T) {
 	detailStr := "https://item.jd.com/11020022.html"
 	reg := regexp.MustCompile("/\\d*\\.")
 	log.Debug(reg.FindString(detailStr))
+
+}
+func TestProxyIp(t *testing.T) {
+	url := "http://api.ip.data5u.com/dynamic/get.html?order=d64615fa08c3dfea28fa9c0a1fbc3791&sep=3"
+	resp, err := http.Post(url,
+		"application/text/html",
+		strings.NewReader("name=cjb"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// handle error
+		log.Error(err)
+		return
+	}
+
+	reg := regexp.MustCompile("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)")
+	ip := reg.FindString(string(body))
+	log.Debug(string(body))
+	log.Debug(ip)
 
 }

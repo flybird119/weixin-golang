@@ -101,6 +101,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/order/after_sale_result", m.Wrap(c.AfterSaleOrderHandledResult))
 	v1.RegisterGET("/order/export_delivery_order", m.Wrap(c.ExportDeliveryOrder))
 	v1.RegisterGET("/order/export_distribute_order", m.Wrap(c.ExportDistributeOrder))
+	v1.Register("/order/restatistic_order_num", m.Wrap(c.RestatisticOrderNum))
 
 	//retail
 	v1.Register("/retail/add", m.Wrap(c.RetailSubmit))
