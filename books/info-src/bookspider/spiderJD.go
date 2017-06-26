@@ -107,6 +107,7 @@ func (s *JDDetailProcesser) Process(p *page.Page) {
 	if err != nil {
 		// handle error
 	}
+	log.Debug(string(body))
 	//获取价格
 	var param []map[string]string
 	err = json.Unmarshal(body, &param)

@@ -26,7 +26,6 @@ func (s *BookUUListProcesser) Process(p *page.Page) {
 		log.Debug(p.Errormsg())
 		return
 	}
-
 	query := p.GetHtmlParser()
 
 	selection := query.Find(".s-result-list .result-content .p-name a")
