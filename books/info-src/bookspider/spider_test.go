@@ -2,7 +2,10 @@
 package bookspider
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"regexp"
 	"strings"
 	"testing"
@@ -90,7 +93,7 @@ func TestSpiderBookUUList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
-	book, _ := GetBookInfoBySpider("9787301091319")
+	book, _ := GetBookInfoBySpider("9781523797158")
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	log.Debug("-----------------------------------OOOOOOM---------------------------------")
@@ -101,4 +104,65 @@ func TestRegular(t *testing.T) {
 	reg := regexp.MustCompile("/\\d*\\.")
 	log.Debug(reg.FindString(detailStr))
 
+}
+func TestProxyIp(t *testing.T) {
+	url := "http://api.ip.data5u.com/dynamic/get.html?order=d64615fa08c3dfea28fa9c0a1fbc3791&sep=3"
+	resp, err := http.Post(url,
+		"application/text/html",
+		strings.NewReader("name=cjb"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// handle error
+		log.Error(err)
+		return
+	}
+
+	reg := regexp.MustCompile("((2[0-4]\\d|25[0-5]|[01]?\\d\\d?)\\.){3}(2[0-4]\\d|25[0-5]|[01]?\\d\\d?)")
+	ip := reg.FindString(string(body))
+	log.Debug(string(body))
+	log.Debug(ip)
+
+}
+
+func TestJdAnaly(t *testing.T) {
+	priceUrl := "http://p.3.cn/prices/mgets?skuIds=J_13182670878"
+	// reg := regexp.MustCompile("/\\d*\\.")
+	// productId := reg.FindString(productUrl)
+	// productId = strings.Replace(productId, ".", "", -1)
+	// productId = strings.Replace(productId, "/", "", -1)
+
+	// log.Debug("productId========", productId)
+	// priceUrl = strings.Replace(priceUrl, "PRODUCTID", productId, -1)
+	log.Debug("priceUrl========", priceUrl)
+	resp, err := http.Post(priceUrl,
+		"application/text/html",
+		strings.NewReader("name=cjb"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	var price string
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		// handle error
+	}
+	//获取价格
+	var param []map[string]string
+	log.Debug(string(body))
+	err = json.Unmarshal(body, &param)
+	if err != nil {
+		log.Debug(err)
+		return
+	} else {
+		price = param[0]["m"]
+		if price == "" {
+			return
+		}
+	}
+
+	log.Debug("==============:%s", price)
 }

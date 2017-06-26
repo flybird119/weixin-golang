@@ -467,6 +467,19 @@ func (s *OrderServiceServer) OrderShareOperation(ctx context.Context, in *pb.Ord
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
+// 获导出订单
+func (s *OrderServiceServer) RestatisticOrderNum(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "RestatisticOrderNum", "%#v", in))
+	err := orderDB.RestatisticOrderNum()
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
 //处理售后订单
 func handleAfterSaleOrder(tx *sql.Tx, in *pb.Order) error {
 

@@ -34,7 +34,12 @@ func (s *AmazonListProcesser) Process(p *page.Page) {
 	url, _ := selection.Attr("href")
 	url = strings.Trim(url, " \t\n")
 	sp := spider.NewSpider(NewAmazonDetailProcesser(), "spiderAmazonList")
+
+	ip := getProxyIp()
 	req := request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
+	if ip != "" {
+		req.AddProxyHost(ip)
+	}
 	pageItems := sp.GetByRequest(req)
 	//pageItems := sp.Get("http://baike.baidu.com/view/1628025.htm?fromtitle=http&fromid=243074&type=syn", "html")
 	if pageItems == nil || pageItems.GetAll() == nil {

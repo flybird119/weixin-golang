@@ -44,27 +44,27 @@ func OnlineGoodsSalesStatistic(goodsSalesStatisticModel *pb.GoodsSalesStatisticM
 	//1.0订单量 和 相对应的销售额
 	//查询付过款 ，并且在一定时间阶段的学校订单
 	//1.1 统计渠道销售额
-	query := "select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')=$1 and school_id=$2   group by pay_channel"
-	log.Debugf("select sum(total_fee),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')='%s' and school_id='%s'   group by pay_channel", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
+	query := "select sum(total_fee),count(*),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')=$1 and school_id=$2   group by pay_channel"
+	log.Debugf("select sum(total_fee),count(*),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')='%s' and school_id='%s'   group by pay_channel", goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
 	rows, err := DB.Query(query, goodsSalesStatisticModel.StatisticAt, goodsSalesStatisticModel.SchoolId)
 	if err != nil && err != sql.ErrNoRows {
 		log.Error(err)
 		return err
 	}
 	defer rows.Close()
-	var alipay_order_num, alipay_order_fee, wechat_order_num, wechat_order_fee, fee int64
+	var alipay_order_num, alipay_order_fee, wechat_order_num, wechat_order_fee, fee, count int64
 	var pay_channel string
 	for rows.Next() {
-		err = rows.Scan(&fee, &pay_channel)
+		err = rows.Scan(&fee, &count, &pay_channel)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
 		if strings.Contains(pay_channel, "alipay") {
-			alipay_order_num += 1
+			alipay_order_num += count
 			alipay_order_fee += fee
 		} else {
-			wechat_order_num += 1
+			wechat_order_num += count
 			wechat_order_fee += fee
 		}
 	}

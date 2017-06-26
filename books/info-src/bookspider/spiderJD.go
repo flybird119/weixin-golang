@@ -47,8 +47,12 @@ func (s *JDListProcesser) Process(p *page.Page) {
 	findUrl = "https:" + findUrl
 	findUrl = strings.Trim(findUrl, " \t\n")
 	sp := spider.NewSpider(NewJDDetailProcesser(), "JDDetail")
-	req := request.NewRequest(findUrl, "html", "", "GET", "", nil, nil, nil, nil)
-
+	ip := getProxyIp()
+	var req *request.Request
+	req = request.NewRequest(findUrl, "html", "", "GET", "", nil, nil, nil, nil)
+	if ip != "" {
+		req.AddProxyHost(ip)
+	}
 	pageItems := sp.GetByRequest(req)
 	if pageItems == nil || pageItems.GetAll() == nil {
 		return

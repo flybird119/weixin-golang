@@ -83,7 +83,7 @@ func orderStatisticHandle() {
 
 // 店铺统计
 func StoreOrdersStatistic(store *pb.Store) error {
-	schools, err := schoolDB.GetSchoolsByStore(store.Id, 0)
+	schools, err := schoolDB.GetSchoolsByStore(store.Id, 3)
 	if err != nil {
 		log.Error(err)
 		log.Warnf("订单统计发生错误，错误原因：%+v", err)

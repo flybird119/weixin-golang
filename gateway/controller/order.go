@@ -305,6 +305,22 @@ func AfterSaleOrderHandledResult(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_order", "AfterSaleOrderHandledResult", req)
 }
 
+//重新计算订单数量
+func RestatisticOrderNum(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	// c := token.Get(r)
+	//
+	// if c != nil && c.StoreId != "" {
+	// } else {
+	// 	misc.RespondMessage(w, r, map[string]interface{}{
+	// 		"code":    errs.ErrTokenNotFound,
+	// 		"message": "token not found",
+	// 	})
+	// 	return
+	// }
+	misc.CallWithResp(w, r, "bc_order", "RestatisticOrderNum", req)
+}
+
 //导出订单
 func ExportDeliveryOrder(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Order{}

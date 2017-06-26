@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	bookDB "github.com/goushuyun/weixin-golang/books/db"
@@ -1027,4 +1028,62 @@ func getExportOrderItems(order *pb.Order) (orderitems []*pb.OrderItem, err error
 		orderItem.Locations = locations
 	}
 	return
+}
+
+func RestatisticOrderNum() error {
+	query := "select id,school_id,to_char(to_timestamp(extract(epoch from statistic_at)::bigint), 'YYYY-MM-DD') from statistic_goods_sales"
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	defer rows.Next()
+	for rows.Next() {
+		statisticModel := &pb.GoodsSalesStatisticModel{}
+		var dateStr string
+		err := rows.Scan(&statisticModel.Id, &statisticModel.SchoolId, &dateStr)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		updateStatisticOrderNum(statisticModel, dateStr)
+	}
+	return nil
+}
+
+func updateStatisticOrderNum(model *pb.GoodsSalesStatisticModel, dateStr string) error {
+	query := "select count(*),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')=$1 and school_id=$2   group by pay_channel"
+	log.Debugf("select count(*),pay_channel from orders where to_char(to_timestamp(extract(epoch from pay_at )::bigint), 'YYYY-MM-DD')='%s' and school_id='%s'   group by pay_channel", dateStr, model.SchoolId)
+	rows, err := DB.Query(query, dateStr, model.SchoolId)
+	if err != nil && err != sql.ErrNoRows {
+		log.Error(err)
+		return err
+	}
+	defer rows.Close()
+	var alipay_order_num, wechat_order_num, count int64
+	var pay_channel string
+	for rows.Next() {
+		err = rows.Scan(&count, &pay_channel)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		if strings.Contains(pay_channel, "alipay") {
+			alipay_order_num += count
+
+		} else {
+			wechat_order_num += count
+		}
+	}
+
+	query = "update statistic_goods_sales set alipay_order_num=%d ,wechat_order_num=%d where id='%s'"
+	query = fmt.Sprintf(query, alipay_order_num, wechat_order_num, model.Id)
+	log.Debug(query)
+	_, err = DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
 }

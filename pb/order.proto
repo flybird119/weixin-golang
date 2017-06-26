@@ -37,9 +37,10 @@ service OrderService {
     rpc ExportDeliveryOrderData (Order) returns (OrderListResp);
     //导出配货单
     rpc ExportDistributeOrderData (Order) returns (DistributeOrdersResp);
-
     //订单分享功能
     rpc OrderShareOperation (Order) returns (NormalResp);
+    //更改订单统计订单数量
+    rpc RestatisticOrderNum (Order) returns (NormalResp);
 }
 
 //订单model
