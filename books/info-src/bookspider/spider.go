@@ -26,7 +26,7 @@ func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
 	book = &pb.Book{}
 	isbn = strings.Replace(isbn, "-", "", -1)
 	isbn = strings.Replace(isbn, " ", "", -1)
-	num := rand.Int31n(5)
+	num := rand.Int31n(3)
 	log.Debugf("==========开始停%d秒=======", num)
 	time.Sleep(time.Duration(num) * time.Second)
 	ip := getProxyIp()

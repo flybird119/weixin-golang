@@ -91,8 +91,9 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 		db.UpdateBatchUpload(updateUploadModel)
 		return
 	}
+	size := len(goodsList) / 10
 	//4 设置 batch_size 获取批量上传数据列表
-	spiltList, _ := splitGoodsList(50, goodsList)
+	spiltList, _ := splitGoodsList(size, goodsList)
 
 	//定义传输通道 -- 模拟协程信号通道（数据返回）
 	goodsChan := make(chan pb.Goods)
