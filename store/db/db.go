@@ -227,7 +227,6 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 		log.Debug(query)
 		rows1, err := DB.Query(query)
 		if err == sql.ErrNoRows {
-			err = nil
 			continue
 		}
 		if err != nil {
@@ -252,9 +251,10 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 //UpdateStore 增加商家和店铺的映射
 func UpdateStore(store *pb.Store) error {
 	query := "update store set name=$1,profile=$2 where id=$3"
-	_, err := DB.Query(query, store.Name, store.Profile, store.Id)
 	log.Debugf("update store set name=%s,profile=%s where id=%s", store.Name, store.Profile, store.Id)
+	_, err := DB.Exec(query, store.Name, store.Profile, store.Id)
 	if err != nil {
+		log.Error(err)
 		return err
 	}
 	return nil
@@ -263,7 +263,7 @@ func UpdateStore(store *pb.Store) error {
 //AddStoreSellerMap 增加商家和店铺的映射
 func AddStoreSellerMap(store *pb.Store, role int64) error {
 	query := "insert into map_store_seller (seller_id,store_id,role) values($1,$2,$3)"
-	_, err := DB.Query(query, store.Seller.Id, store.Id, role)
+	_, err := DB.Exec(query, store.Seller.Id, store.Id, role)
 	if err != nil {
 		return err
 	}

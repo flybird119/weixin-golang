@@ -107,7 +107,7 @@ func TestSpiderBookUUList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
-	book, _ := GetBookInfoBySpider("9781523797158")
+	book, _ := GetBookInfoBySpider("9787301265017")
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	log.Debug("-----------------------------------OOOOOOM---------------------------------")

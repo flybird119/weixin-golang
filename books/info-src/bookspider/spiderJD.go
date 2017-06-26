@@ -2,9 +2,9 @@ package bookspider
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -95,18 +95,23 @@ func (s *JDDetailProcesser) Process(p *page.Page) {
 	log.Debug("productId========", productId)
 	priceUrl = strings.Replace(priceUrl, "PRODUCTID", productId, -1)
 	log.Debug("priceUrl========", priceUrl)
-	resp, err := http.Post(priceUrl,
-		"application/text/html",
-		strings.NewReader("name=cjb"))
+	ipStr := getProxyIp()
+	proxy := func(_ *http.Request) (*url.URL, error) {
+		return url.Parse(ipStr) //根据定义Proxy func(*Request) (*url.URL, error)这里要返回url.URL
+	}
+	transport := &http.Transport{Proxy: proxy}
+	client := &http.Client{Transport: transport}
+	resp, err := client.Get(priceUrl) //请求并获取到对象,使用代理
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body) //取出主体的内容
+	if err != nil {
+		log.Error(err)
+		return
 	}
 
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		// handle error
-	}
 	log.Debug(string(body))
 	//获取价格
 	var param []map[string]string
