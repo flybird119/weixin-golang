@@ -21,7 +21,7 @@ import (
 // "github.com/goushuyun/weixin-golang/misc/bookspider"
 
 //通过爬虫获取图书信息
-func GetBookInfoBySpider(isbn string) (book *pb.Book, err error) {
+func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 
 	book = &pb.Book{}
 	isbn = strings.Replace(isbn, "-", "", -1)

@@ -31,4 +31,5 @@ message Book {
     int64 level = 14;
 
     string info_src = 15;
+    string upload_way = 16;
 }

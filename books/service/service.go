@@ -109,7 +109,7 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 	)
 
 	// get from spider
-	spider_book, err := bookspider.GetBookInfoBySpider(req.Isbn)
+	spider_book, err := bookspider.GetBookInfoBySpider(req.Isbn, req.UploadWay)
 	if err != nil {
 		log.Error(err)
 	}
