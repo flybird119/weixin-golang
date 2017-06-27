@@ -7,9 +7,11 @@ import (
 	"net/http"
 	"os"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc/metadata"
 
@@ -91,7 +93,10 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 		db.UpdateBatchUpload(updateUploadModel)
 		return
 	}
-	size := len(goodsList) / 5
+	//获取cpu数量
+	cpuNum := runtime.NumCPU()
+
+	size := len(goodsList) / cpuNum
 	//4 设置 batch_size 获取批量上传数据列表
 	spiltList, _ := splitGoodsList(size, goodsList)
 
@@ -116,7 +121,24 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 					continue
 				}
 				penddingGoods.StoreId = in.StoreId
-				err := handlePenddingGoods(ctx, penddingGoods, in.Discount, in.Type, in.StorehouseId, in.ShelfId, in.FloorId)
+				//定时器
+				timeout := make(chan bool)
+				go func() {
+					time.Sleep(15 * time.Second) // 设置查询超时时间
+					timeout <- true
+				}()
+				errChan := make(chan error)
+				go handlePenddingGoods(ctx, penddingGoods, in.Discount, in.Type, in.StorehouseId, in.ShelfId, in.FloorId, errChan)
+				select {
+				case err, _ = <-errChan:
+					log.Debug("完成")
+					break
+				case <-timeout:
+					log.Debug("timeout")
+					err = errors.New("查询失败")
+					break
+				}
+
 				if err != nil {
 					goodsChan <- pb.Goods{Isbn: penddingGoods.Isbn, StrNum: penddingGoods.StrNum, ErrMsg: err.Error()}
 				}
@@ -276,9 +298,10 @@ func splitGoodsList(batchSize int, goodsList []*pb.Goods) (splitList [][]*pb.Goo
 }
 
 //handlePenddingGoods 处理每条数据
-func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsType int64, storeId, shelfId, floorId string) error {
+func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsType int64, storeId, shelfId, floorId string, errChan chan error) error {
 	//转化 数量
 	if goods == nil {
+		errChan <- errors.New("数据错误")
 		return errors.New("数据错误")
 	}
 	fmt.Printf("num ===== '%s'\n", goods.StrNum)
@@ -286,6 +309,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	log.Debug("===========num:%d", num)
 	if err != nil {
 		log.Debug("图书数量不合法")
+		errChan <- errors.New("图书数量不合法")
 		return errors.New("图书数量不合法")
 	}
 	//校验isbn是否正确
@@ -295,6 +319,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	isbn = strings.Replace(isbn, " ", "", -1)
 	if isbn == "" {
 		log.Debug("isbn不正确")
+		errChan <- errors.New("isbn不正确")
 		return errors.New("isbn不正确")
 	}
 	//查找图书信息
@@ -306,6 +331,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	}
 	if book == nil {
 		log.Debug("没找到图书")
+		errChan <- errors.New("未找到该图书，请手动上传")
 		return errors.New("未找到该图书，请手动上传")
 	}
 	goods.BookId = book.Id
@@ -315,6 +341,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	price, err := strconv.ParseInt(withdrawalFeeStr, 10, 64)
 	if err != nil {
 		log.Debug(err)
+		errChan <- err
 		return err
 	}
 	//构造位置信息
@@ -328,7 +355,9 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	err = db.AddGoods(goods)
 	if err != nil {
 		log.Error(err)
+		errChan <- err
 		return err
 	}
+	errChan <- nil
 	return nil
 }

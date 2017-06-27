@@ -87,6 +87,7 @@ func GetBookInfoByISBNWithNoContext(req *pb.Book) (*pb.Book, error) {
 	// get from spider
 	spider_book, err := bookspider.GetBookInfoBySpider(req.Isbn, req.UploadWay)
 	if err != nil {
+		spider_book = nil
 		log.Error(err)
 	}
 
