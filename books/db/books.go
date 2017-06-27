@@ -21,6 +21,12 @@ func GetBookInfo(book *pb.Book) error {
 }
 
 func GetBookInfoByISBN(book *pb.Book) error {
+	/*
+		according isbn to get book info
+		firstly: according isbn & store_id, check if there is a book upload by him
+		secondly: not pass store_id, scan all DB
+	*/
+
 	query := "select id, title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where isbn = $1 %s order by level DESC limit 1"
 
 	// first, get his book
@@ -32,8 +38,16 @@ func GetBookInfoByISBN(book *pb.Book) error {
 	}
 	log.Debugf("select id, title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where isbn = '%s' %s order by level DESC limit 1", book.Isbn, condition)
 
+	// check if seller has this book
+	if book.Title != "" && book.Price != 0 {
+		// if has has this book return it
+		return nil
+	}
+
 	// get book info by isbn, return level is most high
 	err = DB.QueryRow(fmt.Sprintf(query, ""), book.Isbn).Scan(&book.Id, &book.Title, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &book.AuthorIntro)
+
+	log.Debugf("select id, title, price, author, publisher, pubdate, subtitle, image, summary, author_intro from books where isbn = '%s' %s order by level DESC limit 1", book.Isbn, "")
 
 	if err != nil {
 		log.Error(err)
