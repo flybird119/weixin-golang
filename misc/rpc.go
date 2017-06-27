@@ -60,7 +60,6 @@ func CloseServiceConns() {
 // defer worc.CloseServiceConns()
 func CallRPC(ctx context.Context, serviceName string, method string, req interface{}) (interface{}, error) {
 	log.CtxDebugf(ctx, "%s.%s %#v", serviceName, method, req)
-
 	rp, err := worc.CallRPC(ctx, serviceList[serviceName], serviceName, method, req)
 	if err != nil {
 		log.CtxErrorf(ctx, "CallRPC '%s' '%s' error: %s", serviceName, method, err.Error())
