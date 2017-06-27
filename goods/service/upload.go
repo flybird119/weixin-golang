@@ -298,7 +298,7 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 		return errors.New("isbn不正确")
 	}
 	//查找图书信息
-	data, err := misc.CallRPC(ctx, "bc_books", "GetBookInfoByISBN", &pb.Book{Isbn: goods.Isbn})
+	data, err := misc.CallRPC(ctx, "bc_books", "GetBookInfoByISBN", &pb.Book{Isbn: goods.Isbn, UploadWay: "batch"})
 	if err != nil {
 		log.Debug(err)
 		return err

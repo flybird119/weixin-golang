@@ -26,8 +26,13 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 	book = &pb.Book{}
 	isbn = strings.Replace(isbn, "-", "", -1)
 	isbn = strings.Replace(isbn, " ", "", -1)
-	num := rand.Int31n(3)
-	log.Debugf("==========开始停%d秒=======", num)
+	var num int32
+	if upload_way == "batch" {
+		num = rand.Int31n(5)
+	} else {
+		num = rand.Int31n(2)
+	}
+	log.Debugf("===上传类型：%s========停留秒数：%d", upload_way, num)
 	time.Sleep(time.Duration(num) * time.Second)
 	ip := getProxyIp()
 

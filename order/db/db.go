@@ -75,9 +75,9 @@ func AddOrderItem(tx *sql.Tx, order *pb.Order, cart *pb.Cart, nowTime time.Time)
 	)
 	noStock := "noStock"
 	if cart.Type == 0 {
-		query = "update goods set new_book_amount=new_book_amount-$1 where id=$2 returning new_book_amount,new_book_price,has_new_book"
-		log.Debugf("update goods set new_book_amount=new_book_amount-%d where id='%s'returning new_book_amount,new_book_price,has_new_book", cart.Amount, cart.GoodsId)
-		err = tx.QueryRow(query, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
+		query = "update goods set new_book_amount=new_book_amount-$1,new_book_sale_amount=new_book_sale_amount+$2 where id=$3 returning new_book_amount,new_book_price,has_new_book"
+		log.Debugf("update goods set new_book_amount=new_book_amount-%d,new_book_sale_amount=new_book_sale_amount+%d where id='%s'returning new_book_amount,new_book_price,has_new_book", cart.Amount, cart.Amount, cart.GoodsId)
+		err = tx.QueryRow(query, cart.Amount, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
 		if err != nil {
 			misc.LogErr(err)
 			return "", err
@@ -87,9 +87,9 @@ func AddOrderItem(tx *sql.Tx, order *pb.Order, cart *pb.Cart, nowTime time.Time)
 			return noStock, nil
 		}
 	} else {
-		query = "update goods set old_book_amount=old_book_amount-$1 where id=$2 returning old_book_amount,old_book_price,has_old_book"
-		log.Debugf("update goods set old_book_amount=old_book_amount-%d where id='%s'returning old_book_amount,old_book_price,has_old_book", cart.Amount, cart.GoodsId)
-		err = tx.QueryRow(query, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
+		query = "update goods set old_book_amount=old_book_amount-$1,old_book_sale_amount=old_book_sale_amount+$2 where id=$3 returning old_book_amount,old_book_price,has_old_book"
+		log.Debugf("update goods set old_book_amount=old_book_amount-%d ,old_book_sale_amount=old_book_sale_amount+%s where id='%s'returning old_book_amount,old_book_price,has_old_book", cart.Amount, cart.GoodsId)
+		err = tx.QueryRow(query, cart.Amount, cart.Amount, cart.GoodsId).Scan(&amount, &price, &is_selling)
 		if err != nil {
 			misc.LogErr(err)
 			return "", err
