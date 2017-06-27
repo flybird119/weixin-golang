@@ -107,7 +107,7 @@ func TestSpiderBookUUList(t *testing.T) {
 }
 
 func TestGetBookInfo(t *testing.T) {
-	book, _ := GetBookInfoBySpider("9787301265017")
+	book, _ := GetBookInfoBySpider("9787301265017", "")
 	println("-----------------------------------OOOOOOM---------------------------------")
 	fmt.Printf("%#v", book)
 	log.Debug("-----------------------------------OOOOOOM---------------------------------")
@@ -120,7 +120,8 @@ func TestRegular(t *testing.T) {
 
 }
 func TestProxyIp(t *testing.T) {
-	url := "http://api.ip.data5u.com/dynamic/get.html?order=d64615fa08c3dfea28fa9c0a1fbc3791&sep=3"
+	orderNo := getOrderNo()
+	url := "http://api.ip.data5u.com/dynamic/get.html?order=" + orderNo
 	resp, err := http.Post(url,
 		"application/text/html",
 		strings.NewReader("name=cjb"))

@@ -181,7 +181,7 @@ func UpdateGoods(goods *pb.Goods) error {
 func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCount int64) {
 	log.Debug("===================1")
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true "
-	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book"
+	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book,g.new_book_sale_amount,g.old_book_sale_amount"
 	query = fmt.Sprintf(query, param)
 	queryCount := "select count(*) from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true"
 	//动态拼接参数
@@ -278,7 +278,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		}
 
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  Lower(title) <-> Lower($%d) ,g.update_at desc", len(args))
+		condition += fmt.Sprintf(" order by  Lower(title) <-> Lower($%d),(g.new_book_sale_amount+g.old_book_sale_amount) desc,g.update_at desc", len(args))
 	} else {
 
 		queryCount += condition
@@ -293,7 +293,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 
 			return
 		}
-		condition += " order by g.update_at desc"
+		condition += " order by (new_book_sale_amount+old_book_sale_amount) desc,g.update_at desc"
 	}
 
 	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
@@ -316,7 +316,7 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 		/**	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling"
 		 */
 		//遍历数据
-		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &searchGoods.HasNewBook, &searchGoods.HasOldBook)
+		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &searchGoods.HasNewBook, &searchGoods.HasOldBook, &searchGoods.NewBookSaleAmount, &searchGoods.OldBookSaleAmount)
 		if err != nil {
 			return nil, err, totalCount
 		}
@@ -326,24 +326,23 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 			oldLocations, _ := SearchGoodsLoaction(searchGoods.Id, 1)
 
 			if searchGoods.HasNewBook {
-				newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
+				newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations, SalesAmount: searchGoods.NewBookSaleAmount}
 			}
 			if searchGoods.HasOldBook {
-				oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
+				oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations, SalesAmount: searchGoods.OldBookSaleAmount}
 			}
 
 		} else {
 			if goods.SearchType == 0 {
 				newLocations, _ := SearchGoodsLoaction(searchGoods.Id, 0)
 				if searchGoods.HasNewBook {
-					newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations}
+					newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, Location: newLocations, SalesAmount: searchGoods.NewBookSaleAmount}
 
 				}
 			} else {
 				oldLocations, _ := SearchGoodsLoaction(searchGoods.Id, 1)
 				if searchGoods.HasOldBook {
-					oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations}
-
+					oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, Location: oldLocations, SalesAmount: searchGoods.OldBookSaleAmount}
 				}
 			}
 		}
@@ -388,10 +387,12 @@ func getGoodsRelationAboutTipic(goodsId string) (topics []*pb.MapGoodsTopic, err
 }
 
 //SearchGoods 搜索图书 isbn 用于用户端搜索
-func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error) {
+func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCount int64) {
 	query := "select %s from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true and (g.has_new_book=true or g.has_old_book=true)"
-	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book"
+	param := "b.id,b.store_id,b.title,b.isbn,b.price,b.author,b.publisher,b.pubdate,b.subtitle,b.image,b.summary,g.id, g.store_id,g.new_book_amount,g.new_book_price,g.old_book_amount,g.old_book_price,extract(epoch from g.create_at)::bigint,extract(epoch from g.update_at)::bigint,g.is_selling,g.has_new_book,g.has_old_book,g.new_book_sale_amount,g.old_book_sale_amount"
 	query = fmt.Sprintf(query, param)
+	queryCount := "select count(*) from books b join goods g on b.id = g.book_id where 1=1 and is_selling=true"
+
 	//动态拼接参数
 	var args []interface{}
 	var condition string
@@ -424,10 +425,35 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 		args = append(args, misc.FazzyQuery(goods.Title))
 		args = append(args, misc.FazzyQuery(goods.Title))
 
+		queryCount += condition
+		log.Debug(queryCount+" args :%+v", args)
+
+		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
+		if err != nil {
+			log.Error(err)
+			return nil, err, totalCount
+		}
+		if totalCount == 0 {
+
+			return
+		}
+
 		args = append(args, goods.Title)
-		condition += fmt.Sprintf(" order by  Lower(b.title) <-> Lower($%d) ,g.update_at desc", len(args))
+		condition += fmt.Sprintf(" order by  Lower(b.title) <-> Lower($%d) ,(g.new_book_sale_amount+g.old_book_sale_amount) desc ,g.update_at desc", len(args))
 	} else {
-		condition += " order by g.update_at desc"
+		queryCount += condition
+		log.Debug(queryCount+" args :%+v", args)
+
+		err = DB.QueryRow(queryCount, args...).Scan(&totalCount)
+		if err != nil {
+			log.Error(err)
+			return nil, err, totalCount
+		}
+		if totalCount == 0 {
+
+			return
+		}
+		condition += " order by (g.new_book_sale_amount+g.old_book_sale_amount) desc, g.update_at desc"
 	}
 	condition += fmt.Sprintf(" OFFSET %d LIMIT %d ", (goods.Page-1)*goods.Size, goods.Size)
 	query += condition
@@ -436,7 +462,7 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 
 	if err != nil {
 		log.Error(err)
-		return nil, err
+		return nil, err, totalCount
 	}
 	defer rows.Close()
 
@@ -449,21 +475,21 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 		var hasNewBook bool
 		var hasOldBook bool
 		//遍历数据
-		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &hasNewBook, &hasOldBook)
+		err = rows.Scan(&book.Id, &book.StoreId, &book.Title, &book.Isbn, &book.Price, &book.Author, &book.Publisher, &book.Pubdate, &book.Subtitle, &book.Image, &book.Summary, &searchGoods.Id, &searchGoods.StoreId, &searchGoods.NewBookAmount, &searchGoods.NewBookPrice, &searchGoods.OldBookAmount, &searchGoods.OldBookPrice, &searchGoods.CreateAt, &searchGoods.UpdateAt, &searchGoods.IsSelling, &hasNewBook, &hasOldBook, &searchGoods.NewBookSaleAmount, &searchGoods.OldBookSaleAmount)
 		if err != nil {
-			return nil, err
+			return nil, err, totalCount
 		}
 		if hasNewBook {
-			newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount}
+			newbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 0, Price: searchGoods.NewBookPrice, Amount: searchGoods.NewBookAmount, SalesAmount: searchGoods.NewBookSaleAmount}
 		}
 		if hasOldBook {
-			oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount}
+			oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, SalesAmount: searchGoods.OldBookSaleAmount}
 		}
 
 		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.GetId(), StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
 
 	}
-	return r, nil
+	return r, nil, totalCount
 }
 
 //SearchGoodsLoaction 搜索图书的货架位
@@ -638,10 +664,10 @@ func RecoverGoodsAmountFromClosedOrder(tx *sql.Tx, orderitem *pb.OrderItem) erro
 	var condition string
 	//新书
 	if orderitem.Type == 0 {
-		condition = fmt.Sprintf("new_book_amount=new_book_amount+%d", orderitem.Amount)
+		condition = fmt.Sprintf("new_book_amount=new_book_amount+%d,new_book_sale_amount=new_book_sale_amount-%d", orderitem.Amount, orderitem.Amount)
 	} else {
 		//二手书
-		condition = fmt.Sprintf("old_book_amount=old_book_amount+%d", orderitem.Amount)
+		condition = fmt.Sprintf("old_book_amount=old_book_amount+%d,old_book_sale_amount=old_book_sale_amount-%d", orderitem.Amount, orderitem.Amount)
 	}
 
 	query = fmt.Sprintf(query, condition, orderitem.GoodsId)
@@ -651,7 +677,6 @@ func RecoverGoodsAmountFromClosedOrder(tx *sql.Tx, orderitem *pb.OrderItem) erro
 		misc.LogErr(err)
 		return err
 	}
-
 	return nil
 }
 

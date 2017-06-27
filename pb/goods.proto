@@ -44,20 +44,22 @@ message Goods{
     int64 create_at = 10;
     int64 update_at = 11;
     int64 sales_status = 12;        //关联数据库字段 is_selling 状态值由GoodsStatus管理
-    repeated GoodsLocation location = 13;
-    string seller_id = 14;
-    int64 search_picture = 15;//-100 所有的 0有图片 1无图片
-    int64 search_type = 16; //-100 所有的  0新书 1旧书
-    int64 search_amount = 17;//-100 所有
-    int64 page = 18;
-    int64 size = 19;
-    bool is_selling = 20;
-    string author = 21;
-    string publisher = 22;
-    bool has_new_book = 23;
-    bool has_old_book = 24;
-    string str_num = 25;
-    string err_msg = 26;
+    int64 new_book_sale_amount = 13;
+    int64 old_book_sale_amount = 14;
+    repeated GoodsLocation location = 15;
+    string seller_id = 16;
+    int64 search_picture = 17;//-100 所有的 0有图片 1无图片
+    int64 search_type = 18; //-100 所有的  0新书 1旧书
+    int64 search_amount = 19;//-100 所有
+    int64 page = 20;
+    int64 size = 21;
+    bool is_selling = 22;
+    string author = 23;
+    string publisher = 24;
+    bool has_new_book = 25;
+    bool has_old_book = 26;
+    string str_num = 27;
+    string err_msg = 28;
 }
 
 //商品批量处理模型
@@ -138,6 +140,7 @@ message GoodsSalesModel{            //当前云店商品数量统计
     int64 type = 2;
     int64 price = 3;
     int64 amount = 4;
+    int64 sales_amount = 5;
     repeated GoodsLocation location = 13;
 }
 

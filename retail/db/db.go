@@ -53,14 +53,14 @@ func AddRetailItem(tx *sql.Tx, item *pb.RetailItem) (err error) {
 	var query string
 	//修改商品数量
 	if item.Type == 0 {
-		query = "update goods set new_book_amount=new_book_amount-$1 where id=$2 returning new_book_amount,new_book_price"
+		query = "update goods set new_book_amount=new_book_amount-$1,new_book_sale_amount=new_book_sale_amount+$2 where id=$3 returning new_book_amount,new_book_price"
 	} else {
-		query = "update goods set old_book_amount=old_book_amount-$1 where id=$2 returning old_book_amount,old_book_price"
+		query = "update goods set old_book_amount=old_book_amount-$1,old_book_sale_amount=old_book_sale_amount+$2 where id=$3 returning old_book_amount,old_book_price"
 	}
 	log.Debugf(query+" amount:%d,goodsId=%s", item.Amount, item.GoodsId)
 
 	var amount, price int64
-	err = tx.QueryRow(query, item.Amount, item.GoodsId).Scan(&amount, &price)
+	err = tx.QueryRow(query, item.Amount, item.Amount, item.GoodsId).Scan(&amount, &price)
 	if err != nil {
 		log.Error(err)
 		return

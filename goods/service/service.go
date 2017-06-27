@@ -186,11 +186,11 @@ func (s *GoodsServiceServer) AppSearchGoods(ctx context.Context, in *pb.Goods) (
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GoodsLocationOperate", "%#v", in))
 
-	res, err := db.SearchGoodsNoLocation(in)
+	res, err, totalCount := db.SearchGoodsNoLocation(in)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
-	return &pb.GoodsDetailResp{Code: "00000", Message: "ok", Data: res}, nil
+	return &pb.GoodsDetailResp{Code: "00000", Message: "ok", Data: res, TotalCount: totalCount}, nil
 }

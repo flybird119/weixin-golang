@@ -44,8 +44,12 @@ func (s *JDListProcesser) Process(p *page.Page) {
 	log.Debug("-----------------------------------spider.Url---------------------------------")
 	log.Debug(findUrl)
 	log.Debug("-----------------------------------spider.Url---------------------------------")
-	findUrl = "https:" + findUrl
 	findUrl = strings.Trim(findUrl, " \t\n")
+	if findUrl == "" {
+		log.Error("京东无数据")
+		return
+	}
+	findUrl = "https:" + findUrl
 	sp := spider.NewSpider(NewJDDetailProcesser(), "JDDetail")
 	ip := getProxyIp()
 	var req *request.Request
@@ -93,6 +97,10 @@ func (s *JDDetailProcesser) Process(p *page.Page) {
 	productId = strings.Replace(productId, "/", "", -1)
 
 	log.Debug("productId========", productId)
+	if productId == "" {
+		log.Debug("京东无数据")
+		return
+	}
 	priceUrl = strings.Replace(priceUrl, "PRODUCTID", productId, -1)
 	log.Debug("priceUrl========", priceUrl)
 	ipStr := getProxyIp()
@@ -103,7 +111,8 @@ func (s *JDDetailProcesser) Process(p *page.Page) {
 	client := &http.Client{Transport: transport}
 	resp, err := client.Get(priceUrl) //请求并获取到对象,使用代理
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body) //取出主体的内容

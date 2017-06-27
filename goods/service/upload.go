@@ -13,13 +13,13 @@ import (
 
 	"google.golang.org/grpc/metadata"
 
+	bookService "github.com/goushuyun/weixin-golang/books/service"
 	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/goods/db"
 	"github.com/goushuyun/weixin-golang/mediastore/service"
-	"github.com/pborman/uuid"
-
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
+	"github.com/pborman/uuid"
 	"github.com/tealeg/xlsx"
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
@@ -91,8 +91,9 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 		db.UpdateBatchUpload(updateUploadModel)
 		return
 	}
+	size := len(goodsList) / 5
 	//4 设置 batch_size 获取批量上传数据列表
-	spiltList, _ := splitGoodsList(50, goodsList)
+	spiltList, _ := splitGoodsList(size, goodsList)
 
 	//定义传输通道 -- 模拟协程信号通道（数据返回）
 	goodsChan := make(chan pb.Goods)
@@ -297,24 +298,17 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 		return errors.New("isbn不正确")
 	}
 	//查找图书信息
-	data, err := misc.CallRPC(ctx, "bc_books", "GetBookInfoByISBN", &pb.Book{Isbn: goods.Isbn})
+
+	book, err := bookService.GetBookInfoByISBNWithNoContext(&pb.Book{Isbn: goods.Isbn, UploadWay: "batch"})
 	if err != nil {
-		log.Debug(err)
+		log.Error(err)
 		return err
 	}
-	bookResp, ok := data.(*pb.GetBookInfoResp)
-	if !ok {
-		log.Debug(err)
-		return err
-	}
-	if bookResp == nil || bookResp.Code != errs.Ok || bookResp.Message == "book_not_found" {
+	if book == nil {
 		log.Debug("没找到图书")
 		return errors.New("未找到该图书，请手动上传")
 	}
-	book := bookResp.Data
-	log.Debug(book)
 	goods.BookId = book.Id
-
 	//计算图书价格
 	var serviceDiscount = float64(discount) / 100
 	withdrawalFeeStr := fmt.Sprintf("%0.0f", float64(book.Price)*(serviceDiscount))

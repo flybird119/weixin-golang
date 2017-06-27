@@ -26,8 +26,13 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 	book = &pb.Book{}
 	isbn = strings.Replace(isbn, "-", "", -1)
 	isbn = strings.Replace(isbn, " ", "", -1)
-	num := rand.Int31n(5)
-	log.Debugf("==========开始停%d秒=======", num)
+	var num int32
+	if upload_way == "batch" {
+		num = rand.Int31n(5)
+	} else {
+		num = rand.Int31n(2)
+	}
+	log.Debugf("===上传类型：%s========停留秒数：%d", upload_way, num)
 	time.Sleep(time.Duration(num) * time.Second)
 	ip := getProxyIp()
 
@@ -159,7 +164,8 @@ func structData(items *page_items.PageItems, book *pb.Book) {
 }
 
 func getProxyIp() string {
-	url := "http://api.ip.data5u.com/dynamic/get.html?order=d64615fa08c3dfea28fa9c0a1fbc3791&random=true&sep=3"
+	orderNo := getOrderNo()
+	url := "http://api.ip.data5u.com/dynamic/get.html?order=" + orderNo
 	resp, err := http.Post(url,
 		"application/text/html",
 		strings.NewReader("name=cjb"))
