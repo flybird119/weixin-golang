@@ -27,6 +27,11 @@ import (
 	"golang.org/x/net/context"
 )
 
+type GoodsHandleModel struct {
+	err   error
+	goods pb.Goods
+}
+
 //AddGoods 增加商品
 func (s *GoodsServiceServer) GoodsBactchUploadOperate(ctx context.Context, in *pb.GoodsBatchUploadModel) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
@@ -127,10 +132,11 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 					time.Sleep(30 * time.Second) // 设置查询超时时间
 					timeout <- true
 				}()
-				errChan := make(chan error)
+				errChan := make(chan GoodsHandleModel)
+				var handleResult GoodsHandleModel
 				go handlePenddingGoods(ctx, penddingGoods, in.Discount, in.Type, in.StorehouseId, in.ShelfId, in.FloorId, errChan)
 				select {
-				case err, _ = <-errChan:
+				case handleResult, _ = <-errChan:
 					log.Debug("完成")
 					close(errChan)
 					break
@@ -140,8 +146,10 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 					err = errors.New("上传超时，请注意事后核对该图书")
 					break
 				}
-				if err != nil {
-					goodsChan <- pb.Goods{Isbn: penddingGoods.Isbn, StrNum: penddingGoods.StrNum, ErrMsg: err.Error()}
+				if handleResult.err != nil {
+					resultGoods := handleResult.goods
+					resultGoods.ErrMsg = handleResult.err.Error()
+					goodsChan <- resultGoods
 				}
 				statisticChan <- 1
 			}
@@ -299,10 +307,13 @@ func splitGoodsList(batchSize int, goodsList []*pb.Goods) (splitList [][]*pb.Goo
 }
 
 //handlePenddingGoods 处理每条数据
-func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsType int64, storeId, shelfId, floorId string, errChan chan error) error {
+func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsType int64, storeId, shelfId, floorId string, errChan chan GoodsHandleModel) error {
+	handleModel := GoodsHandleModel{}
+	handleModel.goods = pb.Goods{Isbn: goods.Isbn, StrNum: goods.StrNum}
 	//转化 数量
 	if goods == nil {
-		errChan <- errors.New("数据错误")
+		handleModel.err = errors.New("数据错误")
+		errChan <- handleModel
 		return errors.New("数据错误")
 	}
 	fmt.Printf("num ===== '%s'\n", goods.StrNum)
@@ -310,7 +321,8 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	log.Debug("===========num:%d", num)
 	if err != nil {
 		log.Debug("图书数量不合法")
-		errChan <- errors.New("图书数量不合法")
+		handleModel.err = errors.New("图书数量不合法")
+		errChan <- handleModel
 		return errors.New("图书数量不合法")
 	}
 	//校验isbn是否正确
@@ -320,7 +332,8 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	isbn = strings.Replace(isbn, " ", "", -1)
 	if isbn == "" {
 		log.Debug("isbn不正确")
-		errChan <- errors.New("isbn不正确")
+		handleModel.err = errors.New("isbn不正确")
+		errChan <- handleModel
 		return errors.New("isbn不正确")
 	}
 	//查找图书信息
@@ -332,7 +345,8 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	}
 	if book == nil {
 		log.Debug("没找到图书")
-		errChan <- errors.New("未找到该图书，请手动上传")
+		handleModel.err = errors.New("没找到图书")
+		errChan <- handleModel
 		return errors.New("未找到该图书，请手动上传")
 	}
 	goods.BookId = book.Id
@@ -342,7 +356,8 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	price, err := strconv.ParseInt(withdrawalFeeStr, 10, 64)
 	if err != nil {
 		log.Debug(err)
-		errChan <- err
+		handleModel.err = err
+		errChan <- handleModel
 		return err
 	}
 	//构造位置信息
@@ -355,10 +370,11 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	//增加商品
 	err = db.AddGoods(goods)
 	if err != nil {
-		log.Error(err)
-		errChan <- err
+		handleModel.err = err
+		errChan <- handleModel
 		return err
 	}
-	errChan <- nil
+	handleModel.err = nil
+	errChan <- handleModel
 	return nil
 }
