@@ -94,7 +94,7 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 		return
 	}
 	//获取cpu数量
-	cpuNum := runtime.NumCPU()
+	cpuNum := runtime.NumCPU() * 4
 
 	size := len(goodsList) / cpuNum
 	//4 设置 batch_size 获取批量上传数据列表
@@ -124,7 +124,7 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 				//定时器
 				timeout := make(chan bool)
 				go func() {
-					time.Sleep(15 * time.Second) // 设置查询超时时间
+					time.Sleep(30 * time.Second) // 设置查询超时时间
 					timeout <- true
 				}()
 				errChan := make(chan error)
@@ -132,13 +132,14 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 				select {
 				case err, _ = <-errChan:
 					log.Debug("完成")
+					close(errChan)
 					break
 				case <-timeout:
 					log.Debug("timeout")
-					err = errors.New("查询失败")
+					close(timeout)
+					err = errors.New("上传超时，请注意事后核对该图书")
 					break
 				}
-
 				if err != nil {
 					goodsChan <- pb.Goods{Isbn: penddingGoods.Isbn, StrNum: penddingGoods.StrNum, ErrMsg: err.Error()}
 				}
