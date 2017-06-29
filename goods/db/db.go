@@ -15,7 +15,7 @@ func AddGoods(goods *pb.Goods) error {
 	var bookId, isbn string
 	//首先根据isbn获取当前用户有没有保存goods
 	query := "select id ,book_id,isbn from goods where isbn=$1 and store_id=$2"
-	log.Debugf("select id ,book_id,isbn from goods where isbn=%s and store_id=$2", goods.Isbn, goods.StoreId)
+	log.Debugf("select id ,book_id,isbn from goods where isbn=%s and store_id='%s'", goods.Isbn, goods.StoreId)
 	err := DB.QueryRow(query, goods.Isbn, goods.StoreId).Scan(&goods.Id, &bookId, &isbn)
 	//如果检查失败
 	if err == sql.ErrNoRows {
@@ -29,7 +29,7 @@ func AddGoods(goods *pb.Goods) error {
 		}
 
 	} else if err != nil {
-		log.Errorf("%+v", err)
+		log.Error(err)
 		return err
 	} else {
 		//更改图书id
@@ -78,7 +78,7 @@ func AddGoodsLocation(loc *pb.GoodsLocation) error {
 	}
 	//增加书本数量
 	query = "update goods "
-	debugQuery := "update goods"
+	debugQuery := "update goods "
 
 	if loc.Type == 0 {
 		query = query + " set new_book_amount=new_book_amount+$1,new_book_price=$2, has_new_book=true"

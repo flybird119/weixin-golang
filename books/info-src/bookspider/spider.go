@@ -28,9 +28,9 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 	isbn = strings.Replace(isbn, " ", "", -1)
 	var num int32
 	if upload_way == "batch" {
-		num = rand.Int31n(5)
+		num = rand.Int31n(3)
 	} else {
-		num = rand.Int31n(2)
+		num = rand.Int31n(1)
 	}
 	log.Debugf("===上传类型：%s========停留秒数：%d", upload_way, num)
 	time.Sleep(time.Duration(num) * time.Second)

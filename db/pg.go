@@ -38,11 +38,11 @@ func setupPG(dbs string, conn ...int) {
 	case 2:
 		db.SetMaxOpenConns(conn[0])
 		db.SetMaxIdleConns(conn[1])
-		db.SetConnMaxLifetime(30 * time.Second)
+		db.SetConnMaxLifetime(15 * time.Second)
 	default:
-		db.SetMaxOpenConns(40)
+		db.SetMaxOpenConns(70)
 		db.SetMaxIdleConns(5)
-		db.SetConnMaxLifetime(30 * time.Second)
+		db.SetConnMaxLifetime(10 * time.Second)
 	}
 
 	err = db.Ping()
