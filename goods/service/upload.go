@@ -129,7 +129,7 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 				//定时器
 				timeout := make(chan bool)
 				go func() {
-					time.Sleep(30 * time.Second) // 设置查询超时时间
+					time.Sleep(35 * time.Second) // 设置查询超时时间
 					timeout <- true
 				}()
 				errChan := make(chan GoodsHandleModel)
@@ -341,13 +341,25 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 	book, err := bookService.GetBookInfoByISBNWithNoContext(&pb.Book{Isbn: goods.Isbn, UploadWay: "batch"})
 	if err != nil {
 		log.Error(err)
+		handleModel.err = err
+		errChan <- handleModel
 		return err
 	}
 	if book == nil {
-		log.Debug("没找到图书")
-		handleModel.err = errors.New("没找到图书")
-		errChan <- handleModel
-		return errors.New("未找到该图书，请手动上传")
+		time.Sleep(2 * time.Second) // 设置查询超时时间
+		book, err = bookService.GetBookInfoByISBNWithNoContext(&pb.Book{Isbn: goods.Isbn, UploadWay: "batch"})
+		if err != nil {
+			log.Error(err)
+			handleModel.err = err
+			errChan <- handleModel
+			return err
+		}
+		if book == nil {
+			log.Debug("没找到图书")
+			handleModel.err = errors.New("没找到图书")
+			errChan <- handleModel
+			return errors.New("未找到该图书，请手动上传")
+		}
 	}
 	goods.BookId = book.Id
 	//计算图书价格
