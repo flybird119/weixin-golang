@@ -31,7 +31,7 @@ func UpdateStore(w http.ResponseWriter, r *http.Request) {
 
 	storeid := c.StoreId
 	req := &pb.Store{Id: storeid, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
-	misc.CallWithResp(w, r, "bc_store", "UpdateStore", req, "name", "profile")
+	misc.CallWithResp(w, r, "bc_store", "UpdateStore", req, "name")
 }
 
 //AddRealStore 增加实体店
