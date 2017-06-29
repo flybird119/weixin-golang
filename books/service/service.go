@@ -142,7 +142,7 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 		fetchImageReq := &pb.FetchImageReq{
 			Zone: pb.MediaZone_Test,
 			Url:  final_book.Image,
-			Key:  final_book.StoreId + "/" + final_book.Isbn + filepath.Ext(final_book.Image),
+			Key:  req.StoreId + "/" + final_book.Isbn + filepath.Ext(final_book.Image),
 		}
 		mediaResp := &pb.FetchImageResp{}
 		err = misc.CallSVC(ctx, "bc_mediastore", "FetchImage", fetchImageReq, mediaResp)
