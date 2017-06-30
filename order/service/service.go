@@ -305,6 +305,20 @@ func (s *OrderServiceServer) CloseOrder(ctx context.Context, in *pb.Order) (*pb.
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
+//关闭订单
+func (s *OrderServiceServer) RemarkOrder(ctx context.Context, in *pb.Order) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "RemarkOrder", "%#v", in))
+	//释放图书资源，更改修改过时间 更改订单状态
+	//首先更改改订单的状态
+	err := orderDB.RemarkOrder(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
 //处理售后订单
 func (s *OrderServiceServer) HandleAfterSaleOrder(ctx context.Context, in *pb.AfterSaleModel) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)

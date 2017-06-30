@@ -73,6 +73,11 @@ service StoreService {
    //更改回收订单
    rpc UpdateRecylingOrder (RecylingOrder) returns (NormalResp);
 
+   //===========订单快捷备注定制接口===============
+   //保存或者新增订单快捷备注
+   rpc SaveOrUpdateOrderShortcutRemark (StoreExtraInfo) returns (NormalResp);
+   //获取订单快捷备注列表
+   rpc GetOrderShortcutRemark (Store) returns (OrderShortcutRemarkListResp);
 }
 
 
@@ -100,6 +105,7 @@ message StoreExtraInfo{
     int64 total_goods = 19;
     int64 sort = 20;
     repeated StoreSchoolOrdersNumModel school_order_nums = 21;
+    repeated OrderShortcutRemarkModel order_shortcut_remarks = 22;
 
 }
 
@@ -281,7 +287,18 @@ message Store{
   string appid = 13;
 }
 
+//订单快捷备注响应model
+message  OrderShortcutRemarkListResp{
+    string code  = 1;
+    string message  =2;
+    repeated OrderShortcutRemarkModel data = 3;
+}
 
+//订单快捷备注
+message OrderShortcutRemarkModel{
+    int64 type = 1;
+    string content = 2;
+}
 //店铺状态的枚举类型
 enum StoreStatus {
     Normal = 0;

@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -671,4 +672,43 @@ func GetWithdrawById(model *pb.StoreWithdrawalsModel) error {
 		return err
 	}
 	return nil
+}
+
+//保存或者新增订单快捷备注
+func SaveOrUpdateOrderShortcutRemark(model *pb.StoreExtraInfo) error {
+
+	query := "update store set order_shortcut_remark='%s' where id='%s'"
+	remarks, err := json.Marshal(model.OrderShortcutRemarks)
+	var remarkStr string
+	if err != nil || model.OrderShortcutRemarks == nil {
+		remarkStr = "[]"
+	} else {
+		remarkStr = string(remarks)
+	}
+
+	query = fmt.Sprintf(query, remarkStr, model.StoreId)
+	log.Debug(query)
+	_, err = DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//获取订单快捷备注列表
+func GetOrderShortcutRemark(model *pb.Store) (remarks []*pb.OrderShortcutRemarkModel, err error) {
+	query := "select order_shortcut_remark from store where id='%s'"
+	query = fmt.Sprintf(query, model.Id)
+	var remarkStr string
+	err = DB.QueryRow(query).Scan(&remarkStr)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if err = json.Unmarshal([]byte(remarkStr), &remarks); err != nil {
+		log.Debug(err)
+		return
+	}
+	return
 }

@@ -17,7 +17,8 @@ create table orders (
     name text not null default '',                 --联系人手机号
     address text not null,              --联系人地址
     remark text default '',             --订单备注
-
+    seller_remark text not null default '',      --商家备注 --新增模块
+    seller_remark_type int not null default 0,  --商家备注类型
     -- 店铺信息
     store_id text not null,             --店铺id
     school_id text not null,            --学校id

@@ -319,3 +319,27 @@ func (s *StoreServiceServer) UpdateStoreExtraInfo(ctx context.Context, in *pb.St
 	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
+
+//保存或者新增订单快捷备注
+func (s *StoreServiceServer) SaveOrUpdateOrderShortcutRemark(ctx context.Context, in *pb.StoreExtraInfo) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SaveOrUpdateOrderShortcutRemark", "%#v", in))
+	err := db.SaveOrUpdateOrderShortcutRemark(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//保存或者新增订单快捷备注
+func (s *StoreServiceServer) GetOrderShortcutRemark(ctx context.Context, in *pb.Store) (*pb.OrderShortcutRemarkListResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetOrderShortcutRemark", "%#v", in))
+	remarks, err := db.GetOrderShortcutRemark(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.OrderShortcutRemarkListResp{Code: "00000", Message: "ok", Data: remarks}, nil
+}

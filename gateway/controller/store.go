@@ -31,7 +31,7 @@ func UpdateStore(w http.ResponseWriter, r *http.Request) {
 
 	storeid := c.StoreId
 	req := &pb.Store{Id: storeid, Seller: &pb.SellerInfo{Id: c.SellerId, Mobile: c.Mobile}}
-	misc.CallWithResp(w, r, "bc_store", "UpdateStore", req, "name", "profile")
+	misc.CallWithResp(w, r, "bc_store", "UpdateStore", req, "name")
 }
 
 //AddRealStore 增加实体店
@@ -347,4 +347,28 @@ func UpdateRecylingOrder(w http.ResponseWriter, r *http.Request) {
 	}
 	req := &pb.RecylingOrder{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_store", "UpdateRecylingOrder", req, "id")
+}
+
+//保存或者新增订单快捷备注
+func SaveOrUpdateOrderShortcutRemark(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.StoreExtraInfo{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "SaveOrUpdateOrderShortcutRemark", req)
+}
+
+//获取订单快捷备注列表
+func GetOrderShortcutRemark(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Store{Id: c.StoreId}
+	misc.CallWithResp(w, r, "bc_store", "GetOrderShortcutRemark", req)
 }
