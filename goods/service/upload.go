@@ -337,7 +337,6 @@ func handlePenddingGoods(ctx context.Context, goods *pb.Goods, discount, goodsTy
 		return errors.New("isbn不正确")
 	}
 	//查找图书信息
-
 	book, err := bookService.GetBookInfoByISBNWithNoContext(&pb.Book{Isbn: goods.Isbn, UploadWay: "batch"})
 	if err != nil {
 		log.Error(err)

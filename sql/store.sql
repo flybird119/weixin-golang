@@ -15,8 +15,11 @@ CREATE TABLE store(
 
 	-- add by Wang Kai 4.18
 	appid text not null default '',
-	authorizer_refresh_token text not null default ''
-)
+	authorizer_refresh_token text not null default '',
+
+	--add for order seller's remark add by orican
+	order_shortcut_remark JSONB NOT NULL DEFAULT '[]' --结构体{'type':1,"content":"备注内容，我不认为这是有必要的，但是做吧"} type:int类型 总共三种类型，
+);
 -- COMMENT ON COLUMN "public"."bc_info_store"."name" IS '店铺名称';
 -- COMMENT ON COLUMN "public"."bc_info_store"."logo" IS '店铺logo';
 -- COMMENT ON COLUMN "public"."bc_info_store"."status" IS '店铺状态';

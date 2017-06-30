@@ -41,6 +41,8 @@ service OrderService {
     rpc OrderShareOperation (Order) returns (NormalResp);
     //更改订单统计订单数量
     rpc RestatisticOrderNum (Order) returns (NormalResp);
+    //给订单打备注
+    rpc RemarkOrder (Order) returns (NormalResp);
 }
 
 //订单model
@@ -88,6 +90,8 @@ message Order{
     string seller_id = 41;
     int64 apply_refund_fee = 42;
     string ids = 43;
+    string seller_remark = 44;
+    int64 seller_remark_type = 45;
 
 }
 

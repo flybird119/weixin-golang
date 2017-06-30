@@ -48,6 +48,9 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/withdraw_apply", m.Wrap(c.WithdrawApply))
 	v1.Register("/store/recharge_apply", m.Wrap(c.RechargeApply))
 	v1.Register("/store/recharge_handler", m.Wrap(c.RechargeHandler)) //上线需要去掉
+	v1.Register("/store/save_or_update_shortcut_remark", m.Wrap(c.SaveOrUpdateOrderShortcutRemark))
+	v1.Register("/store/get_shortcut_remark_list", m.Wrap(c.GetOrderShortcutRemark))
+
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 	v1.Register("/mediastore/refresh_urls", m.Wrap(c.RefreshUrls))
@@ -102,6 +105,7 @@ func SetRouterV1() *m.Router {
 	v1.RegisterGET("/order/export_delivery_order", m.Wrap(c.ExportDeliveryOrder))
 	v1.RegisterGET("/order/export_distribute_order", m.Wrap(c.ExportDistributeOrder))
 	v1.Register("/order/restatistic_order_num", m.Wrap(c.RestatisticOrderNum))
+	v1.Register("/order/order_remark", m.Wrap(c.RemarkOrder))
 
 	//retail
 	v1.Register("/retail/add", m.Wrap(c.RetailSubmit))

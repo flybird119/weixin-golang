@@ -139,6 +139,26 @@ func DistributeOrder(w http.ResponseWriter, r *http.Request) {
 	misc.CallWithResp(w, r, "bc_order", "DistributeOrder", req)
 }
 
+//订单备注
+func RemarkOrder(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Order{}
+	//搜索类型 来自商家
+	c := token.Get(r)
+
+	// get store_id
+	if c != nil && c.StoreId != "" && c.SellerId != "" {
+		req.StoreId = c.StoreId
+		req.SellerId = c.SellerId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+	misc.CallWithResp(w, r, "bc_order", "RemarkOrder", req, "id")
+}
+
 //确认订单
 func ConfirmOrder(w http.ResponseWriter, r *http.Request) {
 	req := &pb.Order{}
