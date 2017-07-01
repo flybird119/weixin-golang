@@ -18,6 +18,8 @@ import (
 	"github.com/wothing/log"
 	"golang.org/x/net/context"
 
+	global_db "github.com/goushuyun/weixin-golang/db"
+
 	"github.com/franela/goreq"
 )
 
@@ -28,14 +30,18 @@ func (s WeixinServer) GetUserBaseInfo(ctx context.Context, req *pb.WeixinReq) (*
 	defer log.TraceOut(log.TraceIn(tid, "GetUserBaseInfo", "%#v", req))
 
 	// 获取store_id 所对应的 appid
-	officialAccount, err := db.GetAccountInfoByStoreId(req.StoreId)
-	if err != nil {
-		log.Error(err)
-		return nil, errs.Wrap(errors.New(err.Error()))
-	}
+	// officialAccount, err := db.GetAccountInfoByStoreId(req.StoreId)
+	// if err != nil {
+	// 	log.Error(err)
+	// 	return nil, errs.Wrap(errors.New(err.Error()))
+	// }
 
 	// 拿到该 appid 的授权 access_token
-	authorizer_token, err := component.ApiAuthorizerToken(officialAccount.Appid, officialAccount.RefreshToken)
+	// authorizer_token, err := component.ApiAuthorizerToken(officialAccount.Appid, officialAccount.RefreshToken)
+
+	// while get user's information, use [qudianchi] for all
+	refresh_token := global_db.GetValue("weixin", "qudianchi_refresh_token", "refreshtoken@@@gpS28RSEBu16UiFm6yMzRt4-mQ9Pz_aBsdY4psYHOh4")
+	authorizer_token, err := component.ApiAuthorizerToken("wx6d36779ce4dd3dfa", refresh_token)
 	if err != nil {
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
@@ -64,7 +70,6 @@ func (s WeixinServer) GetUserBaseInfo(ctx context.Context, req *pb.WeixinReq) (*
 	}
 
 	// 请求 用户数据
-
 	go func() {
 		err = db.CreateUser2StoreMap(req)
 		if err != nil {
