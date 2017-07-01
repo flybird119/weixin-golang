@@ -53,6 +53,9 @@ func (s WeixinServer) GetUserBaseInfo(ctx context.Context, req *pb.WeixinReq) (*
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
+	log.Debugf("【get user info】 , openid : %s\n", req.Openid)
+	log.JSONIndent(weixin_info)
+
 	// 更新weixin_info
 	if weixin_info.Subscribe == 0 {
 		// 未订阅
