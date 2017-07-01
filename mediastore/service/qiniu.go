@@ -43,7 +43,7 @@ var zones = map[string]*qiniuZone{
 	"Test": &qiniuZone{
 		public: true,
 		bucket: "bookcloud-test",
-		domain: "http://onv8eua8j.bkt.clouddn.com/",
+		domain: "http://images.goushuyun.cn/",
 		imgsuf: "",
 		thmsuf: "-th",
 	},
