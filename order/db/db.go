@@ -259,7 +259,6 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error, totalcou
 		if order.SellerRemarkType == 79 {
 			condition += fmt.Sprintf(" and o.seller_remark_type=0")
 		} else if order.SellerRemarkType == 80 {
-			args = append(args, order.SellerRemarkType)
 			condition += fmt.Sprintf(" and o.seller_remark_type<>0")
 		} else {
 			args = append(args, order.SellerRemarkType)
