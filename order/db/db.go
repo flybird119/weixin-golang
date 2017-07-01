@@ -253,6 +253,20 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error, totalcou
 		args = append(args, order.Isbn)
 		condition += fmt.Sprintf(" and (exists (select * from orders_item oi join  goods g on oi.goods_id=g.id where oi.orders_id=o.id and g.isbn=$%d))", len(args))
 	}
+
+	//10.0 商家备注类型
+	if order.SellerRemarkType != 0 {
+		if order.SellerRemarkType == 79 {
+			condition += fmt.Sprintf(" and o.seller_remark_type=0")
+		} else if order.SellerRemarkType == 80 {
+			args = append(args, order.SellerRemarkType)
+			condition += fmt.Sprintf(" and o.seller_remark_type<>0")
+		} else {
+			args = append(args, order.SellerRemarkType)
+			condition += fmt.Sprintf(" and o.seller_remark_type=$%d", len(args))
+		}
+
+	}
 	selectCountQuery += condition
 
 	condition += " order by o.update_at desc"
