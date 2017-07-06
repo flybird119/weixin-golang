@@ -52,7 +52,7 @@ func TestPay(t *testing.T) {
 	// LogLevel 是 Go SDK 提供的 debug 开关
 	pingpp.LogLevel = 2
 	//设置 API Key
-	pingpp.Key = "sk_test_v94yzLeL8S8COiTGC40yLiDK"
+	pingpp.Key = "sk_live_mHebTSOm1S0G8y5SW5zTSaDO"
 	//获取 SDK 版本
 	fmt.Println("Go SDK Version:", pingpp.Version())
 	//设置错误信息语言，默认是中文
@@ -76,7 +76,7 @@ PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 -----END RSA PRIVATE KEY-----`
 	metadata := make(map[string]interface{})
 	extra := make(map[string]interface{})
-	extra["open_id"] = "oWg4qwSn0d3UM0kjZULRdb4SC2hw"
+	extra["product_id"] = "oWg4qwSn0d3UM0kjZULRdb4SC2hw"
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	orderno := r.Intn(999999999999999)
@@ -85,7 +85,7 @@ PP56jDrpttNbxDOpYO7ufMLQYNNQhbAo1b+txVFsKQ==
 		Order_no:  strconv.Itoa(orderno),
 		App:       pingpp.App{Id: "app_4qnjLOWXbDKSPmbb"},
 		Amount:    1000,
-		Channel:   "wx_pub",
+		Channel:   "wx_pub_qr",
 		Currency:  "cny",
 		Client_ip: "127.0.0.1",
 		Subject:   "Your Subject",

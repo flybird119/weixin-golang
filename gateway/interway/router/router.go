@@ -19,6 +19,7 @@ func SetRouterV1() *m.Router {
 	// books
 	v1.Register("/books/get_book_info_by_isbn", m.Wrap(c.GetBookInfoByISBN))
 	v1.Register("/books/modify_book_info", m.Wrap(c.ModifyBookInfo))
+	v1.Register("/books/insert_book", m.Wrap(c.InsertBook))
 
 	//seller 开始
 	v1.Register("/seller/login", m.Wrap(c.SellerLogin))
