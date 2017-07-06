@@ -21,6 +21,19 @@ import (
 type BooksServer struct {
 }
 
+// insert book
+func (s *BooksServer) InsertBook(ctx context.Context, req *pb.Book) (*pb.Book, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "InsertBook", "%#v", req))
+
+	err := db.SaveBook(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (s *BooksServer) GetBookInfo(ctx context.Context, req *pb.Book) (*pb.Book, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "GetBookInfo", "%#v", req))

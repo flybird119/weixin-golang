@@ -6,6 +6,7 @@ service BooksService {
     rpc GetBookInfoByISBN (Book) returns (GetBookInfoResp);
     rpc GetBookInfo (Book) returns (Book);
     rpc ModifyBookInfo (Book) returns (GetBookInfoResp);
+    rpc InsertBook (Book) returns (Book);
 }
 
 message GetBookInfoResp {
