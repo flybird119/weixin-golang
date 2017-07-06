@@ -147,6 +147,7 @@ message GoodsSalesModel{            //当前云店商品数量统计
 message MapGoodsTopic{
     string topic_id = 1;
     string item_id = 2;
+    string topic_title = 3;
 }
 //图书位置
 message GoodsLocation{

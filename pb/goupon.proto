@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+
+service GrouponService {
+    //通用专业批量增加
+    rpc SharedMajorBatchSave (SharedMajor) returns (NormalResp);
+    //获取专业列表（筛选获取）
+    rpc SharedMajorList (SharedMajor) returns (SharedMajorListResp);
+    //创建学校的学院
+    rpc SaveSchoolInstitute (SchoolInstitute) returns (SchoolInstituteResp);
+    //创建学院专业
+    rpc SaveInstituteMajor (InstituteMajor) returns (InstituteMajorResp);
+    //获取学校学院专业列表
+    rpc GetSchoolMajorInfo (SchoolMajorInfoReq) returns (SchoolMajorListResp);
+
+}
+
+
+
+
+
+
+//获取学校学院专业请求model
+message SchoolMajorInfoReq{
+    string school_id = 1;
+    string institute_id = 2;
+    string store_id = 3;
+}
+//获取学校学院专业响应
+message SchoolMajorListResp{
+    string code = 1;
+    string message = 2;
+    repeated GrouponSchool data = 3;
+}
+//通用专业model
+message SharedMajor{
+    string id = 1;
+    string no = 2;
+    string name = 3;
+    int64 create_at = 4;
+    int64 update_at = 5;
+    repeated SharedMajor majors= 6;
+    int64 page = 7;
+    int64 size = 8;
+}
+
+
+//通用专业model 响应
+message SharedMajorListResp{
+    string code = 1;
+    string message = 2;
+    repeated SharedMajor data = 3;
+    int64 total_count = 4;
+}
+
+//团购学校信息
+message GrouponSchool{
+    string id = 1;
+    string name = 2;
+    repeated SchoolInstitute institutes = 3;
+}
+
+//学校学院--响应
+message SchoolInstituteResp{
+    string code = 1;
+    string message = 2;
+    SchoolInstitute data = 3;
+}
+
+
+//学校学院model
+message SchoolInstitute{
+    string id = 1;
+    string school_id = 2;
+    string name = 3;
+    int64 create_at = 4;
+    int64 update_at = 5;
+    repeated InstituteMajor majors = 6;
+}
+//学院专业 major
+message InstituteMajorResp{
+    string code = 1;
+    string message = 2;
+    InstituteMajor data = 3;
+}
+//学院专业model
+message InstituteMajor{
+    string id = 1;
+    string institute_id = 2;
+    string name = 3;
+    int64 create_at = 4;
+    int64 update_at = 5;
+}

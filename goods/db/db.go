@@ -361,7 +361,8 @@ func SearchGoods(goods *pb.Goods) (r []*pb.GoodsSearchResult, err error, totalCo
 }
 
 func getGoodsRelationAboutTipic(goodsId string) (topics []*pb.MapGoodsTopic, err error) {
-	queryTopic := fmt.Sprintf("select distinct topic_id,id from topic_item where goods_id='%s'", goodsId)
+	queryTopic := fmt.Sprintf("select t.title, t.id,ti.id from topic t left join topic_item ti on ti.topic_id=t.id where goods_id='%s'", goodsId)
+
 	log.Debug(queryTopic)
 	rows, err := DB.Query(queryTopic)
 	if err == sql.ErrNoRows {
@@ -376,7 +377,7 @@ func getGoodsRelationAboutTipic(goodsId string) (topics []*pb.MapGoodsTopic, err
 	for rows.Next() {
 		topic := &pb.MapGoodsTopic{}
 		topics = append(topics, topic)
-		err = rows.Scan(&topic.TopicId, &topic.ItemId)
+		err = rows.Scan(&topic.TopicTitle, &topic.TopicId, &topic.ItemId)
 		if err != nil {
 			log.Error(err)
 			return
@@ -486,9 +487,17 @@ func SearchGoodsNoLocation(goods *pb.Goods) (r []*pb.GoodsSearchResult, err erro
 			oldbookModel = &pb.GoodsSalesModel{GoodsId: searchGoods.GetId(), Type: 1, Price: searchGoods.OldBookPrice, Amount: searchGoods.OldBookAmount, SalesAmount: searchGoods.OldBookSaleAmount}
 		}
 
-		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.GetId(), StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel})
+		//获取关联topic
+		topics, topicErr := getGoodsRelationAboutTipic(searchGoods.Id)
+		if err != nil {
+			log.Error(topicErr)
+			err = topicErr
+			return
+		}
+		r = append(r, &pb.GoodsSearchResult{Book: book, GoodsId: searchGoods.GetId(), StoreId: searchGoods.StoreId, UpdateAt: searchGoods.UpdateAt, NewBook: newbookModel, OldBook: oldbookModel, AssociatedTopics: topics})
 
 	}
+
 	return r, nil, totalCount
 }
 

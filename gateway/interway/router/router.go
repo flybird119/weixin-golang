@@ -128,5 +128,12 @@ func SetRouterV1() *m.Router {
 	v1.Register("/recyling/update_recyling_order", m.Wrap(c.UpdateRecylingOrder))
 	v1.Register("/recyling/update_school_recyling_state", m.Wrap(c.UpdateSchoolRecylingState))
 
+	//Groupon
+	v1.Register("/groupon/shared_major_batch_save", m.Wrap(c.SharedMajorBatchSave))
+	v1.Register("/groupon/search_shared_major", m.Wrap(c.SharedMajorList))
+	v1.Register("/groupon/save_institute", m.Wrap(c.SaveSchoolInstitute))
+	v1.Register("/groupon/save_institute_major", m.Wrap(c.SaveInstituteMajor))
+	v1.Register("/groupon/get_school_majors", m.Wrap(c.GetSchoolMajorInfo))
+
 	return v1
 }

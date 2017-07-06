@@ -245,6 +245,8 @@ func FindStoreExtraInfo(info *pb.StoreExtraInfo) (models []*pb.StoreExtraInfo, t
 				return models, totalCount, err
 			}
 		}
+
+		//获取云店铺的二维码
 	}
 	return
 }
