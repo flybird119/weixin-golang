@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
 
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
@@ -105,7 +107,7 @@ func SaveInstituteMajor(model *pb.InstituteMajor) error {
 //获取学校学院专业列表
 func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponSchool, err error) {
 	query := "select s.id,s.name,si.id,si.name,extract(epoch from si.create_at)::bigint,im.id,im.name,extract(epoch from im.create_at)::bigint from school s left join map_school_institute si on s.id=si.school_id::uuid left join map_institute_major im on si.id=im.institute_id where 1=1"
-	condition := fmt.Sprintf(" and s.status=0 and s.del_at is null and store_id='%s'", model.StoreId)
+	condition := fmt.Sprintf(" and s.status=0 and si.status=1 and im.status=1 and s.del_at is null and store_id='%s'", model.StoreId)
 
 	if model.SchoolId != "" {
 		condition += fmt.Sprintf(" and s.id='%s'", model.StoreId)
@@ -152,7 +154,6 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 					schools[i].Institutes = append(schools[i].Institutes, institute)
 					break
 				}
-
 			}
 		}
 		if !find {
@@ -160,7 +161,311 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 			school.Institutes = append(school.Institutes, institute)
 			schools = append(schools, school)
 		}
-
 	}
 	return
+}
+
+//创建班级购
+func SaveGroupon(model *pb.Groupon) error {
+	tx, err := DB.Begin()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	defer tx.Rollback()
+
+	query := "insert into groupon(store_id,school_id,institute_id,institute_major_id,founder_id,term,class,founder_type,founder_name,founder_mobile,profile,expire_at) values(%s) returning id"
+	param := fmt.Sprintf("'%s','%s','%s','%s','%s','%s','%s',%d,'%s','%s','%s',to_timestamp(%d)", model.StoreId, model.SchoolId, model.InstituteId, model.InstituteMajorId, model.FounderId, model.Term, model.Class, model.FounderType, model.FounderName, model.FounderMobile, model.Profile, model.ExpireAt)
+	query = fmt.Sprintf(query, param)
+	log.Debug(query)
+	err = tx.QueryRow(query).Scan(&model.Id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	for i := 0; i < len(model.Items); i++ {
+		item := model.Items[i]
+		query = fmt.Sprintf("insert into groupon_item (groupon_id,goods_id) select '%s','%s' where not exists (select * from groupon_item where groupon_id='%s' and goods_id='%s')", model.Id, item.GoodsId, model.Id, item.GoodsId)
+		_, err = tx.Exec(query)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+	tx.Commit()
+	oplog := &pb.GrouponOperateLog{GrouponId: model.Id, FounderId: model.FounderId, FounderName: model.FounderName, FounderType: model.FounderType, OperateType: "create", OperateDetail: " "}
+	err = SaveGrouponOperateLog(oplog)
+	if err != nil {
+		log.Error(err)
+	}
+	return nil
+}
+
+//班级购列表
+func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount int64) {
+	query := "select %s from groupon g join school s on s.id=g.school_id::uuid left join map_school_institute si on s.id=si.school_id::uuid left join map_institute_major im on si.id=im.institute_id where 1=1"
+	param := " distinct g.id,g.status,g.store_id,g.school_id,g.institute_id,g.institute_major_id,g.founder_id,g.term,g.class,g.founder_type,g.founder_name,g.founder_mobile,g.profile,g.participate_num,g.star_num,g.total_sales,g.order_num,extract(epoch from g.create_at)::bigint,extract(epoch from g.expire_at)::bigint,s.name,s.status,si.name,si.status,im.name,im.status"
+	queryCount := fmt.Sprintf(query, "count(*)")
+	query = fmt.Sprintf(query, param)
+	var condition string
+	condition += " and g.institute_id=si.id and g.institute_major_id=im.id"
+	// 根据编号
+	if model.Id != "" {
+		condition += fmt.Sprintf(" and g.id='%s'", model.Id)
+	}
+	// 根据学校
+	if model.SchoolId != "" {
+		condition += fmt.Sprintf(" and g.school_id='%s'", model.SchoolId)
+	}
+	// 根据学院
+	if model.InstituteId != "" {
+		condition += fmt.Sprintf(" and g.institute_id='%s'", model.InstituteId)
+	}
+	// 根据专业
+	if model.InstituteMajorId != "" {
+		condition += fmt.Sprintf(" and g.institute_major_id='%s'", model.InstituteMajorId)
+	}
+	// 根据班级
+	if model.Class != "" {
+		condition += fmt.Sprintf(" and g.class like '%s'", misc.FazzyQuery(model.Class))
+	}
+	// 根据学期
+	if model.Term != "" {
+		condition += fmt.Sprintf(" and g.term='%s'", model.Term)
+	}
+	// 根据是否可用
+	if model.SearchType != 0 {
+		if model.SearchType == 1 {
+			//正常 使用中的
+			condition += fmt.Sprintf(" and g.status=1 and g.expire_at>=to_timestamp(%d)", time.Now().Unix())
+
+		} else if model.SearchType == 2 {
+			//过期
+			condition += fmt.Sprintf(" and g.expire_at<to_timestamp(%d)", time.Now().Unix())
+
+		} else if model.SearchType == 3 {
+			//异常
+			condition += " and g.status=2"
+		}
+	}
+	// 根据参与者
+	if model.ParticipateUser != "" {
+		condition += fmt.Sprintf(" and exists (select * from groupon_operate_log where founder_id='%s' and ((operate_type='purchase') or (operate_type='share')))", model.ParticipateUser)
+	}
+	// 根据创建人 创建人类型
+	if model.FounderId != "" && model.FounderType != 0 {
+		condition += fmt.Sprintf(" and g.founder_id='%s' and g.founder_type=%d", model.FounderId, model.FounderType)
+	}
+
+	queryCount += condition
+	log.Debug(queryCount)
+	err = DB.QueryRow(queryCount).Scan(&totalCount)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	if totalCount == 0 {
+		return
+	}
+	if model.Page <= 0 {
+		model.Page = 1
+	}
+	if model.Size <= 0 {
+		model.Size = 15
+	}
+	condition += fmt.Sprintf(" order by id desc limit %d offset %d", model.Size, model.Size*(model.Page-1))
+	query += condition
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		major := &pb.InstituteMajor{}
+		institute := &pb.SchoolInstitute{}
+		school := &pb.GrouponSchool{}
+		m := &pb.Groupon{Major: major, Institute: institute, School: school}
+		models = append(models, m)
+		//param := "g.id,g.status,g.store_id,g.school_id,g.institute_id,g.institute_major_id,g.founder_id,g.term,g.class,g.founder_type,g.founder_name,g.founder_mobile,g.profile,g.participate_num,g.star_num,g.total_sales,g.order_num,extract(epoch from g.create_at)::bigint,extract(epoch from g.expire_at)::bigint,s.name,s.status,si.name,si.status,im.name,im.status"
+		err = rows.Scan(&m.Id, &m.Status, &m.StoreId, &m.SchoolId, &m.InstituteId, &m.InstituteMajorId, &m.FounderId, &m.Term, &m.Class, &m.FounderType, &m.FounderName, &m.FounderMobile, &m.Profile, &m.ParticipateNum, &m.StarNum, &m.TotalSales, &m.OrderNum, &m.CreateAt, &m.ExpireAt, &school.Name, &school.Status, &institute.Name, &institute.Status, &major.Name, &major.Status)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}
+
+//新增班级购项
+func GetGrouponItems(model *pb.Groupon) (models []*pb.GrouponItem, err error) {
+	//获取图书信息
+	query := "select gi.id,gi.goods_id,b.isbn,b.title,b.author,b.image from groupon_item gi join goods g on gi.goods_id=g.id join books b on g.book_id=b.id where gi.groupon_id='%s'"
+	query = fmt.Sprintf(query, model.Id)
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		m := &pb.GrouponItem{}
+		models = append(models, m)
+		err = rows.Scan(&m.Id, &m.GoodsId, &m.BookIsbn, &m.BookTitle, &m.BookAuthor, &m.BookImage)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}
+
+//获取班级购参与人信息
+func GetGrouponPurchaseUsers(model *pb.Groupon) (models []*pb.GrouponUserInfo, err error) {
+	query := "select id,nickname,avatar from users where id in (select founder_id from groupon_operate_log where groupon_id='%s' and operate_type='purchase')"
+	query = fmt.Sprintf(query, model.Id)
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		m := &pb.GrouponUserInfo{}
+		models = append(models, m)
+		err = rows.Scan(&m.Id, &m.Name, &m.Avatar)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}
+
+//获取班级购操作日志
+func GetGrouponOperateLog(model *pb.Groupon) (models []*pb.GrouponOperateLog, err error) {
+	query := "select id,founder_id,founder_type,founder_name,operate_type,operate_detail,extract(epoch from create_at)::bigint from groupon_operate_log where groupon_id='%s' order by id desc"
+	query = fmt.Sprintf(query, model.Id)
+	log.Debug(query)
+	rows, err := DB.Query(query)
+	if err == sql.ErrNoRows {
+		return
+	}
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		m := &pb.GrouponOperateLog{}
+		models = append(models, m)
+		err = rows.Scan(&m.Id, &m.FounderId, &m.FounderType, &m.FounderName, &m.OperateType, &m.OperateDetail, &m.CreateAt)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+	return
+}
+
+//修改班级购
+func UpdateGruopon(model *pb.Groupon) error {
+	query := "update groupon set update_at=now()"
+	var condition string
+	if model.Status != 0 {
+		condition += fmt.Sprintf(",status=%d", model.Status)
+	}
+	if model.InstituteId != "" {
+		condition += fmt.Sprintf(",institute_id='%s'", model.InstituteId)
+	}
+	if model.InstituteId != "" {
+		condition += fmt.Sprintf(",institute_major_id='%s'", model.InstituteId)
+	}
+	if model.Term != "" {
+		condition += fmt.Sprintf(",term='%s'", model.Term)
+	}
+	if model.Class != "" {
+		condition += fmt.Sprintf(",class='%s'", model.Class)
+	}
+	if model.FounderName != "" {
+		condition += fmt.Sprintf(",founder_name='%s'", model.FounderName)
+	}
+	if model.FounderMobile != "" {
+		condition += fmt.Sprintf(",founder_mobile='%s'", model.FounderMobile)
+	}
+	if model.Profile != "" {
+		condition += fmt.Sprintf(",profile='%s'", model.Profile)
+	}
+	if model.ParticipateNum != 0 {
+		condition += fmt.Sprintf(",participate_num=participate_num+%d", model.ParticipateNum)
+	}
+	if model.StarNum != 0 {
+		condition += fmt.Sprintf(",star_num=star_num+%d", model.StarNum)
+	}
+	if model.TotalSales != 0 {
+		condition += fmt.Sprintf(",total_sales=total_sales+%d", model.TotalSales)
+	}
+	if model.OrderNum != 0 {
+		condition += fmt.Sprintf(",order_num=order_num+%d", model.OrderNum)
+	}
+	if model.ExpireAt != 0 {
+		condition += fmt.Sprintf(",expire_at=to_timestamp(%d)", model.OrderNum)
+	}
+	query += condition
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if len(model.DelIds) != 0 {
+		query = "delete from groupon_item where id in(%s) and groupon_id='%s'"
+		stmt := strings.Repeat(",%s", len(model.DelIds))
+		var ids []interface{}
+		for _, value := range model.DelIds {
+			ids = append(ids, value.Id)
+		}
+		condition = fmt.Sprintf(stmt, ids...)
+		query = fmt.Sprintf(query, condition, model.Id)
+		log.Debug(query)
+		_, err = DB.Exec(query)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+	}
+	if len(model.AddIds) != 0 {
+		for i := 0; i < len(model.AddIds); i++ {
+			item := model.AddIds[i]
+			query = fmt.Sprintf("insert into groupon_item (groupon_id,goods_id) select '%s','%s' where not exists (select * from groupon_item where groupon_id='%s' and goods_id='%s')", model.Id, item.GoodsId, model.Id, item.GoodsId)
+			_, err = DB.Exec(query)
+			if err != nil {
+				log.Error(err)
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+//保存班级购操作日志
+func SaveGrouponOperateLog(model *pb.GrouponOperateLog) error {
+	query := "insert into groupon_operate_log (groupon_id,founder_id,founder_type,founder_name,operate_type,operate_detail) values('%s','%s',%d,'%s','%s','%s')"
+	query = fmt.Sprintf(query, model.GrouponId, model.FounderId, model.FounderType, model.FounderName, model.OperateType, model.OperateDetail)
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
 }

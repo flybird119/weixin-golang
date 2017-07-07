@@ -135,6 +135,8 @@ func SetRouterV1() *m.Router {
 	v1.Register("/groupon/save_institute", m.Wrap(c.SaveSchoolInstitute))
 	v1.Register("/groupon/save_institute_major", m.Wrap(c.SaveInstituteMajor))
 	v1.Register("/groupon/get_school_majors", m.Wrap(c.GetSchoolMajorInfo))
+	v1.Register("/groupon/save_groupon", m.Wrap(c.SaveGroupon))
+	v1.Register("/groupon/find_groupon", m.Wrap(c.GrouponList))
 
 	return v1
 }

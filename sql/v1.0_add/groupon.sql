@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS groupon (
   founder_name          TEXT                        NOT NULL                 DEFAULT '',--创建人姓名
   founder_mobile        TEXT                        NOT NULL                 DEFAULT '',--创建人手机号
   profile               TEXT                        NOT NULL                 DEFAULT '',-- 简介
-  status                INT                         NOT NULL                 DEFAULT 1, --1 正常使用 2 异常
   participate_num       INT                         NOT NULL                 DEFAULT 0, --参与人数
   star_num              INT                         NOT NULL                 DEFAULT 0, --点赞的人数
   total_sales           BIGINT                      NOT NULL                 DEFAULT 0,   --总销售额

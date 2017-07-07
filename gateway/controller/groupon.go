@@ -59,3 +59,27 @@ func GetSchoolMajorInfo(w http.ResponseWriter, r *http.Request) {
 	req := &pb.SchoolMajorInfoReq{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "GetSchoolMajorInfo", req)
 }
+
+//创建班级购
+func SaveGroupon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req)
+}
+
+//班级购列表
+func GrouponList(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_groupon", "GrouponList", req)
+}

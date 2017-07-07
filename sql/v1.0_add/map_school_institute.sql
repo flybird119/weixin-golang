@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS map_school_institute (
   id                    TEXT      PRIMARY KEY    NOT NULL                 DEFAULT trim(to_char(nextval('map_school_institute_id_seq'),'000000000')),--id
   school_id             TEXT                     NOT NULL                 DEFAULT '',
   name                  TEXT                     NOT NULL                 DEFAULT '',
+  status                SMALLINT                 NOT NULL                 DEFAULT 1,  --1正常使用 2异常
   create_at             TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now(),
   update_at             TIMESTAMP WITH TIME ZONE NOT NULL                 DEFAULT now()
 );
