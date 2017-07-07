@@ -10,6 +10,7 @@ import (
 	. "github.com/goushuyun/weixin-golang/db"
 	"github.com/goushuyun/weixin-golang/misc"
 	"github.com/goushuyun/weixin-golang/pb"
+	schoolDB "github.com/goushuyun/weixin-golang/school/db"
 
 	"github.com/wothing/log"
 )
@@ -418,8 +419,9 @@ func UpdateGruopon(model *pb.Groupon) error {
 		condition += fmt.Sprintf(",order_num=order_num+%d", model.OrderNum)
 	}
 	if model.ExpireAt != 0 {
-		condition += fmt.Sprintf(",expire_at=to_timestamp(%d)", model.OrderNum)
+		condition += fmt.Sprintf(",expire_at=to_timestamp(%d)", model.ExpireAt)
 	}
+	condition += fmt.Sprintf(" where id='%s'", model.Id)
 	query += condition
 	log.Debug(query)
 	_, err := DB.Exec(query)
@@ -427,14 +429,15 @@ func UpdateGruopon(model *pb.Groupon) error {
 		log.Error(err)
 		return err
 	}
-	if len(model.DelIds) != 0 {
+	if len(model.DelItemIds) != 0 {
 		query = "delete from groupon_item where id in(%s) and groupon_id='%s'"
-		stmt := strings.Repeat(",%s", len(model.DelIds))
+		stmt := strings.Repeat(",'%s'", len(model.DelItemIds))
 		var ids []interface{}
-		for _, value := range model.DelIds {
+		for _, value := range model.DelItemIds {
 			ids = append(ids, value.Id)
 		}
 		condition = fmt.Sprintf(stmt, ids...)
+		condition = string([]byte(condition)[1:])
 		query = fmt.Sprintf(query, condition, model.Id)
 		log.Debug(query)
 		_, err = DB.Exec(query)
@@ -443,9 +446,9 @@ func UpdateGruopon(model *pb.Groupon) error {
 			return err
 		}
 	}
-	if len(model.AddIds) != 0 {
-		for i := 0; i < len(model.AddIds); i++ {
-			item := model.AddIds[i]
+	if len(model.AddItems) != 0 {
+		for i := 0; i < len(model.AddItems); i++ {
+			item := model.AddItems[i]
 			query = fmt.Sprintf("insert into groupon_item (groupon_id,goods_id) select '%s','%s' where not exists (select * from groupon_item where groupon_id='%s' and goods_id='%s')", model.Id, item.GoodsId, model.Id, item.GoodsId)
 			_, err = DB.Exec(query)
 			if err != nil {
@@ -468,4 +471,124 @@ func SaveGrouponOperateLog(model *pb.GrouponOperateLog) error {
 		return err
 	}
 	return nil
+}
+
+func GrouponSubmit(orderModel *pb.GrouponSubmitModel) (order *pb.Order, noStock string, err error) {
+	groupon, err := GetGrouponInfo(orderModel.GrouponId)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	tx, err := DB.Begin()
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	defer tx.Rollback()
+	//获取学校的运费
+	school, err := schoolDB.GetSchoolById(groupon.SchoolId)
+	if err != nil {
+		misc.LogErr(err)
+		return nil, "", err
+	}
+	nowTime := time.Now()
+	order = &pb.Order{}
+	//首选创建goods，然后创建订单项
+	query := "insert into orders (total_fee,freight,user_id,mobile,name,address,remark,store_id,school_id,order_at,goods_fee,withdrawal_fee,groupon_id ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,0,0,$11) returning id"
+	log.Debugf(query+"args : %#v", school.ExpressFee, school.ExpressFee, orderModel.UserId, orderModel.Mobile, orderModel.Name, orderModel.Address, orderModel.Remark, orderModel.StoreId, orderModel.SchoolId, nowTime, orderModel.GrouponId)
+	err = tx.QueryRow(query, school.ExpressFee, school.ExpressFee, orderModel.UserId, orderModel.Mobile, orderModel.Name, orderModel.Address, orderModel.Remark, orderModel.StoreId, orderModel.SchoolId, nowTime, orderModel.GrouponId).Scan(&order.Id)
+	if err != nil {
+		misc.LogErr(err)
+		return nil, "", err
+	}
+	//遍历carts
+	for i := 0; i < len(orderModel.Items); i++ {
+		noStock, err = AddOrderItem(tx, order, orderModel.Items[i], nowTime)
+		if err != nil {
+			misc.LogErr(err)
+			return nil, "", err
+		}
+		if noStock != "" {
+			return nil, "noStock", nil
+		}
+	}
+
+	query = "select order_status,total_fee,freight,goods_fee,user_id,mobile,name,address,remark,store_id,school_id,groupon_id from orders where id=$1"
+	log.Debugf("select order_status,total_fee,freight,goods_fee,user_id,mobile,name,address,remark,store_id,school_id,groupon_id from orders where id='%s'", order.Id)
+	err = tx.QueryRow(query, order.Id).Scan(&order.OrderStatus, &order.TotalFee, &order.Freight, &order.GoodsFee, &order.UserId, &order.Mobile, &order.Name, &order.Address, &order.Remark, &order.StoreId, &order.SchoolId, &order.GrouponId)
+	if err != nil {
+		misc.LogErr(err)
+		return nil, "", err
+	}
+	tx.Commit()
+	return
+}
+
+func AddOrderItem(tx *sql.Tx, order *pb.Order, item *pb.GrouponItem, nowTime time.Time) (noStack string, err error) {
+	//减少库存量
+
+	var (
+		query      string
+		price      int
+		amount     int
+		is_selling bool
+	)
+	noStock := "noStock"
+	if item.Type == 0 {
+		query = "update goods set new_book_amount=new_book_amount-$1,new_book_sale_amount=new_book_sale_amount+$2 where id=$3 returning new_book_amount,new_book_price,has_new_book"
+		log.Debugf("update goods set new_book_amount=new_book_amount-%d,new_book_sale_amount=new_book_sale_amount+%d where id='%s'returning new_book_amount,new_book_price,has_new_book", item.Amount, item.Amount, item.GoodsId)
+		err = tx.QueryRow(query, item.Amount, item.Amount, item.GoodsId).Scan(&amount, &price, &is_selling)
+		if err != nil {
+			misc.LogErr(err)
+			return "", err
+		}
+		if !is_selling || amount < 0 {
+
+			return noStock, nil
+		}
+	} else {
+		query = "update goods set old_book_amount=old_book_amount-$1,old_book_sale_amount=old_book_sale_amount+$2 where id=$3 returning old_book_amount,old_book_price,has_old_book"
+		log.Debugf("update goods set old_book_amount=old_book_amount-%d ,old_book_sale_amount=old_book_sale_amount+%s where id='%s'returning old_book_amount,old_book_price,has_old_book", item.Amount, item.GoodsId)
+		err = tx.QueryRow(query, item.Amount, item.Amount, item.GoodsId).Scan(&amount, &price, &is_selling)
+		if err != nil {
+			misc.LogErr(err)
+			return "", err
+		}
+		if !is_selling || amount < 0 {
+
+			return noStock, nil
+		}
+	}
+	//然后创建订单项
+	query = "insert into orders_item (goods_id,orders_id,type,amount,price,create_at) values($1,$2,$3,$4,$5,$6)"
+	log.Debugf("insert into orders_item (goods_id,orders_id,type,amount,price,create_at) values('%s','%s',%d,%d,%d,%v)", item.GoodsId, order.Id, item.Type, item.Amount, price, nowTime)
+	_, err = tx.Exec(query, item.GoodsId, order.Id, item.Type, item.Amount, price, nowTime)
+	if err != nil {
+		misc.LogErr(err)
+		return "", err
+	}
+	//更改订单
+	totalFee := int(item.Amount) * price
+	query = "update orders set total_fee=total_fee+$1,goods_fee=goods_fee+$2 where id=$3"
+	log.Debugf("update orders set total_fee=total_fee+%d,goods_fee=goods_fee+%d where id='%s'", totalFee, totalFee, order.Id)
+	_, err = tx.Exec(query, totalFee, totalFee, order.Id)
+	if err != nil {
+		misc.LogErr(err)
+		return "", err
+	}
+	return "", nil
+}
+
+//获取团购信息
+func GetGrouponInfo(id string) (groupon *pb.Groupon, err error) {
+	query := "select id,status,store_id,school_id,institute_id,institute_major_id from groupon where id='%s'"
+	query = fmt.Sprintf(query, id)
+	log.Debug(query)
+	groupon = &pb.Groupon{}
+	err = DB.QueryRow(query).Scan(&groupon.Id, &groupon.Status, &groupon.StoreId, &groupon.SchoolId, &groupon.InstituteId, &groupon.InstituteMajorId)
+	if err != nil {
+		misc.LogErr(err)
+		return
+	}
+	return
 }

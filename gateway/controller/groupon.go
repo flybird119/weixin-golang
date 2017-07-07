@@ -64,12 +64,24 @@ func GetSchoolMajorInfo(w http.ResponseWriter, r *http.Request) {
 func SaveGroupon(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
-	if c == nil || c.StoreId == "" {
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Groupon{StoreId: c.StoreId}
-	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req)
+	req := &pb.Groupon{StoreId: c.StoreId, FounderId: c.SellerId, FounderType: 2}
+	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
+}
+
+//创建班级购
+func SaveGrouponApp(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1}
+	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "store_id", "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
 }
 
 //班级购列表
@@ -82,4 +94,121 @@ func GrouponList(w http.ResponseWriter, r *http.Request) {
 	}
 	req := &pb.Groupon{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "GrouponList", req)
+}
+
+//我的班级购
+func MyGroupon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{FounderId: c.SellerId, FounderType: 2}
+	misc.CallWithResp(w, r, "bc_groupon", "MyGroupon", req)
+}
+
+//我的班级购
+func MyGrouponApp(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1}
+	misc.CallWithResp(w, r, "bc_groupon", "MyGroupon", req)
+}
+
+//新增班级购项
+func GetGrouponItems(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{}
+	misc.CallWithResp(w, r, "bc_groupon", "GetGrouponItems", req, "id")
+}
+
+//获取班级购参与人信息
+func GetGrouponPurchaseUsers(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{}
+	misc.CallWithResp(w, r, "bc_groupon", "GetGrouponPurchaseUsers", req, "id")
+}
+
+//获取班级购操作日志
+func GetGrouponOperateLog(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{}
+	misc.CallWithResp(w, r, "bc_groupon", "GetGrouponOperateLog", req, "id")
+}
+
+//修改班级购
+func UpdateGruopon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{}
+	misc.CallWithResp(w, r, "bc_groupon", "UpdateGruopon", req, "id")
+}
+
+//批量班级购日期
+func BatchUpdateGrouponExpireAt(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	if c == nil {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.Groupon{}
+	misc.CallWithResp(w, r, "bc_groupon", "BatchUpdateGrouponExpireAt", req)
+}
+
+func StarGroupon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	if c == nil || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.GrouponOperateLog{FounderId: c.UserId, FounderType: 1, OperateType: "star"}
+	misc.CallWithResp(w, r, "bc_groupon", "StarGroupon", req, "groupon_id", "founder_name")
+}
+
+func ShareGroupon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	if c == nil || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.GrouponOperateLog{FounderId: c.UserId, FounderType: 1, OperateType: "share"}
+	misc.CallWithResp(w, r, "bc_groupon", "ShareGroupon", req, "groupon_id", "founder_name")
+}
+
+//下单
+func GrouponSubmit(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.GrouponSubmitModel{UserId: c.UserId, StoreId: c.StoreId}
+
+	misc.CallWithResp(w, r, "bc_groupon", "GrouponSubmit", req, "mobile", "name", "address", "groupon_id")
 }

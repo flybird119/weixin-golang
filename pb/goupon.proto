@@ -3,7 +3,7 @@ syntax = "proto3";
 package pb;
 
 import "pb/common.proto";
-
+import "pb/order.proto";
 service GrouponService {
     //通用专业批量增加
     rpc SharedMajorBatchSave (SharedMajor) returns (NormalResp);
@@ -29,12 +29,14 @@ service GrouponService {
     rpc GetGrouponOperateLog (Groupon) returns (GrouponOperateLogListResp);
     //修改班级购
     rpc UpdateGruopon (Groupon) returns (NormalResp);
-    //保存班级购操作日志
-    rpc SaveGrouponOperateLog (GrouponOperateLog) returns (NormalResp);
     //批量班级购日期
     rpc BatchUpdateGrouponExpireAt (Groupon) returns (NormalResp);
     //点赞
+    rpc StarGroupon (GrouponOperateLog) returns (NormalResp);
     //转发
+    rpc ShareGroupon (GrouponOperateLog) returns (NormalResp);
+    //下单
+    rpc GrouponSubmit (GrouponSubmitModel) returns (OrderSubmitResp);
 }
 
 //班级购响应
@@ -64,6 +66,18 @@ message GrouponUserInfo{
     string name = 3;
 }
 
+message GrouponSubmitModel{
+    string user_id = 1;
+    string store_id = 2;
+    string mobile = 3;
+    string name = 4;
+    string address = 5;
+    string remark = 6;
+    string school_id = 7;
+    string groupon_id = 8;
+    repeated GrouponItem items = 30;
+
+}
 //团购
 message Groupon{
     string id = 1;
@@ -96,8 +110,8 @@ message Groupon{
     InstituteMajor major = 26;
     repeated GrouponItem items = 27;
     int64 search_operate_type = 28;
-    repeated GrouponItem del_ids = 29;
-    repeated GrouponItem add_ids = 30;
+    repeated GrouponItem del_item_ids = 29;
+    repeated GrouponItem add_items = 30;
     repeated Groupon updae_ids = 31;
 }
 //获取团购项列表响应
@@ -116,6 +130,8 @@ message GrouponItem{
     string book_isbn = 6;
     string book_author = 7;
     string book_image = 8;
+    int64  type = 9;
+    int64 amount = 10;
 
 }
 //团购操作日志

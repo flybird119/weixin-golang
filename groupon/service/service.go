@@ -102,14 +102,56 @@ func (s *GrouponServiceServer) GetGrouponOperateLog(ctx context.Context, in *pb.
 func (s *GrouponServiceServer) UpdateGruopon(ctx context.Context, in *pb.Groupon) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "UpdateGruopon", "%#v", in))
+	err := db.UpdateGruopon(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
 
+//批量班级购日期 ---------------------------------------------------------------------
+func (s *GrouponServiceServer) BatchUpdateGrouponExpireAt(ctx context.Context, in *pb.Groupon) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "BatchUpdateGrouponExpireAt", "%#v", in))
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
 //批量班级购日期
-func (s *GrouponServiceServer) BatchUpdateGrouponExpireAt(ctx context.Context, in *pb.Groupon) (*pb.NormalResp, error) {
+func (s *GrouponServiceServer) StarGroupon(ctx context.Context, in *pb.GrouponOperateLog) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
-	defer log.TraceOut(log.TraceIn(tid, "BatchUpdateGrouponExpireAt", "%#v", in))
-
+	defer log.TraceOut(log.TraceIn(tid, "StarGroupon", "%#v", in))
+	err := db.SaveGrouponOperateLog(in)
+	if err != nil {
+		log.Error(err)
+	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//点赞
+func (s *GrouponServiceServer) ShareGroupon(ctx context.Context, in *pb.GrouponOperateLog) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "ShareGroupon", "%#v", in))
+	err := db.SaveGrouponOperateLog(in)
+	if err != nil {
+		log.Error(err)
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//下单
+func (s *GrouponServiceServer) GrouponSubmit(ctx context.Context, in *pb.GrouponSubmitModel) (*pb.OrderSubmitResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GrouponSubmit", "%#v", in))
+
+	order, noStack, err := db.GrouponSubmit(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	//库存不足
+	if noStack != "" {
+		return &pb.OrderSubmitResp{Code: "00000", Message: "noStack", Data: order}, nil
+	}
+	return &pb.OrderSubmitResp{Code: "00000", Message: "ok"}, nil
 }
