@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"goushuyun/errs"
 	"net/http"
 
 	"github.com/goushuyun/weixin-golang/misc/token"
@@ -9,6 +10,23 @@ import (
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
 )
+
+func GetRecyclingQrcode(w http.ResponseWriter, r *http.Request) {
+	req := &pb.Store{}
+
+	// get store_id
+	if c := token.Get(r); c != nil {
+		req.Id = c.StoreId
+	} else {
+		misc.RespondMessage(w, r, map[string]interface{}{
+			"code":    errs.ErrTokenNotFound,
+			"message": "token not found",
+		})
+		return
+	}
+
+	misc.CallWithResp(w, r, "bc_store", "GetStoreRecyclingQrcode", req)
+}
 
 //AddStore 增加店铺接口
 func AddStore(w http.ResponseWriter, r *http.Request) {

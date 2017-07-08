@@ -17,6 +17,7 @@ var svcNames = []string{
 	"bc_sms",
 	"bc_circular",
 	"bc_account",
+	"bc_mediastore",
 }
 
 func main() {

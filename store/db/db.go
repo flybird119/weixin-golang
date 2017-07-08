@@ -19,6 +19,30 @@ const (
 	BasePoundage = 20
 )
 
+func UpdateRecyclingQrcode(store *pb.Store) error {
+	query := "update store set recycling_qrcode = $1 where id = $2"
+	log.Debugf("update store set recycling_qrcode = '%s' where id = '%s'", store.RecyclingQrcode, store.Id)
+
+	_, err := DB.Exec(query, store.RecyclingQrcode, store.Id)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+func GetRecyclingQrcode(store *pb.Store) error {
+	query := "select recycling_qrcode from store where id = $1"
+	log.Debugf("select recycling_qrcode from store where id = '%s'", store.Id)
+
+	err := DB.QueryRow(query, store.Id).Scan(&store.RecyclingQrcode)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
 //AddStore 通过手机号和登录密码检查商家是否存在
 func AddStore(store *pb.Store) error {
 	query := "insert into store (name,status,expire_at) values($1,$2,$3) returning id,extract(epoch from create_at)::bigint "
