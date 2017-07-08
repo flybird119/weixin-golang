@@ -107,11 +107,11 @@ func SaveInstituteMajor(model *pb.InstituteMajor) error {
 
 //获取学校学院专业列表
 func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponSchool, err error) {
-	query := "select s.id,s.name,si.id,si.name,extract(epoch from si.create_at)::bigint,im.id,im.name,extract(epoch from im.create_at)::bigint from school s left join map_school_institute si on s.id=si.school_id::uuid left join map_institute_major im on si.id=im.institute_id where 1=1"
-	condition := fmt.Sprintf(" and s.status=0 and si.status=1 and im.status=1 and s.del_at is null and store_id='%s'", model.StoreId)
+	query := "select s.id,s.name,si.id,si.name,extract(epoch from si.create_at)::bigint,si.status,im.id,im.name,extract(epoch from im.create_at)::bigint,im.status from school s left join map_school_institute si on s.id=si.school_id::uuid left join map_institute_major im on si.id=im.institute_id where 1=1"
+	condition := fmt.Sprintf(" and s.status=0 and s.del_at is null and s.store_id='%s'", model.StoreId)
 
 	if model.SchoolId != "" {
-		condition += fmt.Sprintf(" and s.id='%s'", model.StoreId)
+		condition += fmt.Sprintf(" and s.id='%s'::uuid", model.SchoolId)
 	}
 	if model.InstituteId != "" {
 		condition += fmt.Sprintf(" and si.id='%s'", model.InstituteId)
@@ -132,10 +132,38 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 		school := &pb.GrouponSchool{}
 		institute := &pb.SchoolInstitute{}
 		major := &pb.InstituteMajor{}
-
-		err = rows.Scan(&school.Id, &school.Name, &institute.Id, &institute.Name, &institute.CreateAt, &major.Id, &major.Name, &major.CreateAt)
+		var iId, iName, mId, mName sql.NullString
+		var iCreateAt, iStatus, mCreateAt, mStatus sql.NullInt64
+		err = rows.Scan(&school.Id, &school.Name, &iId, &iName, &iCreateAt, &iStatus, &mId, &mName, &mCreateAt, &mStatus)
 		if err != nil {
 			return
+		}
+		if iId.Valid {
+			institute.Id = iId.String
+		}
+		if iName.Valid {
+			institute.Name = iName.String
+		}
+		if mId.Valid {
+			major.Id = mId.String
+		}
+		if mName.Valid {
+			major.Name = mName.String
+		}
+		if iCreateAt.Valid {
+			institute.CreateAt = iCreateAt.Int64
+		}
+		if iStatus.Valid {
+			institute.Status = iStatus.Int64
+		}
+		if mCreateAt.Valid {
+			major.CreateAt = mCreateAt.Int64
+		}
+		if mStatus.Valid {
+			major.Status = mStatus.Int64
+		}
+		if institute.Status == 2 || major.Status == 2 {
+			continue
 		}
 		var find bool
 		//构建结构
@@ -144,22 +172,33 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 				institutes := schools[i].Institutes
 				for j := 0; j < len(institutes); j++ {
 					if institutes[j].Id == institute.Id {
-						institutes[j].Majors = append(institutes[j].Majors, major)
+						if major.Id != "" {
+							institutes[j].Majors = append(institutes[j].Majors, major)
+						}
 						find = true
 						break
+
 					}
 				}
 				if !find {
+					if major.Id != "" {
+						institute.Majors = append(institute.Majors, major)
+					}
+					if institute.Id != "" {
+						schools[i].Institutes = append(schools[i].Institutes, institute)
+					}
 					find = true
-					institute.Majors = append(institute.Majors, major)
-					schools[i].Institutes = append(schools[i].Institutes, institute)
 					break
 				}
 			}
 		}
 		if !find {
-			institute.Majors = append(institute.Majors, major)
-			school.Institutes = append(school.Institutes, institute)
+			if major.Id != "" {
+				institute.Majors = append(institute.Majors, major)
+			}
+			if institute.Id != "" {
+				school.Institutes = append(school.Institutes, institute)
+			}
 			schools = append(schools, school)
 		}
 	}
@@ -258,6 +297,7 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 		condition += fmt.Sprintf(" and g.founder_id='%s' and g.founder_type=%d", model.FounderId, model.FounderType)
 	}
 
+	condition += fmt.Sprintf(" and g.store_id='%s'", model.StoreId)
 	queryCount += condition
 	log.Debug(queryCount)
 	err = DB.QueryRow(queryCount).Scan(&totalCount)
@@ -274,7 +314,7 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	if model.Size <= 0 {
 		model.Size = 15
 	}
-	condition += fmt.Sprintf(" order by id desc limit %d offset %d", model.Size, model.Size*(model.Page-1))
+	condition += fmt.Sprintf(" order by order_num desc, id desc limit %d offset %d", model.Size, model.Size*(model.Page-1))
 	query += condition
 	log.Debug(query)
 	rows, err := DB.Query(query)
@@ -421,10 +461,10 @@ func UpdateGruopon(model *pb.Groupon) error {
 	if model.ExpireAt != 0 {
 		condition += fmt.Sprintf(",expire_at=to_timestamp(%d)", model.ExpireAt)
 	}
-	condition += fmt.Sprintf(" where id='%s'", model.Id)
+	condition += fmt.Sprintf(" where id='%s' returning founder_id, founder_name,founder_type ", model.Id)
 	query += condition
 	log.Debug(query)
-	_, err := DB.Exec(query)
+	err := DB.QueryRow(query).Scan(&model.FounderId, &model.FounderName, &model.FounderType)
 	if err != nil {
 		log.Error(err)
 		return err
@@ -521,6 +561,25 @@ func GrouponSubmit(orderModel *pb.GrouponSubmitModel) (order *pb.Order, noStock 
 		return nil, "", err
 	}
 	tx.Commit()
+	//增加团购操作日志
+	oplog := &pb.GrouponOperateLog{GrouponId: orderModel.GrouponId, FounderId: orderModel.UserId, FounderName: orderModel.Name, FounderType: 1, OperateType: "purchase", OperateDetail: " "}
+	err = SaveGrouponOperateLog(oplog)
+	if err != nil {
+		log.Error(err)
+	}
+
+	num := 1
+	totalCount, _ := HasGrouponLogWithOpreation(orderModel.GrouponId, orderModel.UserId, "purchase")
+	if totalCount > 1 {
+		num = 0
+	}
+	//更新团购数据
+	updateG := &pb.Groupon{Id: orderModel.GrouponId, TotalSales: order.TotalFee, ParticipateNum: int64(num), OrderNum: 1}
+	err = UpdateGruopon(updateG)
+	if err != nil {
+		log.Error(err)
+		err = nil
+	}
 	return
 }
 
@@ -588,6 +647,19 @@ func GetGrouponInfo(id string) (groupon *pb.Groupon, err error) {
 	err = DB.QueryRow(query).Scan(&groupon.Id, &groupon.Status, &groupon.StoreId, &groupon.SchoolId, &groupon.InstituteId, &groupon.InstituteMajorId)
 	if err != nil {
 		misc.LogErr(err)
+		return
+	}
+	return
+}
+
+func HasGrouponLogWithOpreation(grouponId, userId, oprea string) (totalCount int64, err error) {
+	query := "select count(*) from groupon_operate_log where groupon_id='%s' and founder_id='%s' and operate_type='%s'"
+	query = fmt.Sprintf(query, grouponId, userId, oprea)
+	log.Debug(query)
+
+	err = DB.QueryRow(query).Scan(&totalCount)
+	if err != nil {
+		log.Error(err)
 		return
 	}
 	return

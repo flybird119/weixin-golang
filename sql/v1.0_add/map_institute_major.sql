@@ -9,4 +9,4 @@ CREATE TABLE IF NOT EXISTS map_institute_major (
   update_at             TIMESTAMP WITH TIME ZONE    NOT NULL                 DEFAULT now()
 );
 CREATE  INDEX IF NOT EXISTS map_institute_major_name ON map_institute_major (name);
-CREATE  INDEX IF NOT EXISTS map_institute_major_id ON map_institute_major (institute_id);
+CREATE  INDEX IF NOT EXISTS map_institute_major_id_index ON map_institute_major (institute_id);

@@ -107,6 +107,11 @@ func (s *GrouponServiceServer) UpdateGruopon(ctx context.Context, in *pb.Groupon
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	oplog := &pb.GrouponOperateLog{GrouponId: in.Id, FounderId: in.FounderId, FounderName: in.FounderName, FounderType: in.FounderType, OperateType: "update", OperateDetail: " "}
+	err = db.SaveGrouponOperateLog(oplog)
+	if err != nil {
+		log.Error(err)
+	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
@@ -121,10 +126,15 @@ func (s *GrouponServiceServer) BatchUpdateGrouponExpireAt(ctx context.Context, i
 func (s *GrouponServiceServer) StarGroupon(ctx context.Context, in *pb.GrouponOperateLog) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "StarGroupon", "%#v", in))
-	err := db.SaveGrouponOperateLog(in)
-	if err != nil {
-		log.Error(err)
+	totalCount, _ := db.HasGrouponLogWithOpreation(in.GrouponId, in.FounderId, "star")
+	if totalCount <= 0 {
+		err := db.SaveGrouponOperateLog(in)
+		if err != nil {
+			log.Error(err)
+			return nil, errs.Wrap(errors.New(err.Error()))
+		}
 	}
+
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
@@ -135,6 +145,7 @@ func (s *GrouponServiceServer) ShareGroupon(ctx context.Context, in *pb.GrouponO
 	err := db.SaveGrouponOperateLog(in)
 	if err != nil {
 		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
@@ -153,5 +164,5 @@ func (s *GrouponServiceServer) GrouponSubmit(ctx context.Context, in *pb.Groupon
 	if noStack != "" {
 		return &pb.OrderSubmitResp{Code: "00000", Message: "noStack", Data: order}, nil
 	}
-	return &pb.OrderSubmitResp{Code: "00000", Message: "ok"}, nil
+	return &pb.OrderSubmitResp{Code: "00000", Message: "ok", Data: order}, nil
 }
