@@ -257,6 +257,10 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	if model.SchoolId != "" {
 		condition += fmt.Sprintf(" and g.school_id='%s'", model.SchoolId)
 	}
+	// 根据创建类型
+	if model.FounderType != 0 {
+		condition += fmt.Sprintf(" and g.founder_type=%d", model.FounderType)
+	}
 	// 根据学院
 	if model.InstituteId != "" {
 		condition += fmt.Sprintf(" and g.institute_id='%s'", model.InstituteId)
