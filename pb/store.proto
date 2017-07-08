@@ -78,8 +78,15 @@ service StoreService {
    rpc SaveOrUpdateOrderShortcutRemark (StoreExtraInfo) returns (NormalResp);
    //获取订单快捷备注列表
    rpc GetOrderShortcutRemark (Store) returns (OrderShortcutRemarkListResp);
+
+   rpc GetStoreRecyclingQrcode (Store) returns (GetStoreRecyclingQrcodeResp);
 }
 
+message GetStoreRecyclingQrcodeResp {
+    string code = 1;
+    string message = 2;
+    Store data = 3;
+}
 
 
 //云店额外信息
@@ -267,7 +274,6 @@ message RealStore{
     int64 create_at = 9;
     int64 update_at = 10;
     SellerInfo seller = 11;
-
 }
 
 //云店铺model
@@ -285,6 +291,7 @@ message Store{
   int64 role = 11;
   string admin_mobile = 12;
   string appid = 13;
+  string recycling_qrcode = 14;
 }
 
 //订单快捷备注响应model

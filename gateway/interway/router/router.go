@@ -51,7 +51,7 @@ func SetRouterV1() *m.Router {
 	v1.Register("/store/recharge_handler", m.Wrap(c.RechargeHandler)) //上线需要去掉
 	v1.Register("/store/save_or_update_shortcut_remark", m.Wrap(c.SaveOrUpdateOrderShortcutRemark))
 	v1.Register("/store/get_shortcut_remark_list", m.Wrap(c.GetOrderShortcutRemark))
-
+	v1.Register("/store/get_cecycling_qrcode", m.Wrap(c.GetRecyclingQrcode))
 	// mediastore
 	v1.Register("/mediastore/get_upload_token", m.Wrap(c.GetUplaodToken))
 	v1.Register("/mediastore/refresh_urls", m.Wrap(c.RefreshUrls))

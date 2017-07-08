@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/garyburd/redigo/redis"
 	baseDb "github.com/goushuyun/weixin-golang/db"
@@ -22,6 +23,39 @@ import (
 
 //StoreServiceServer 店铺server
 type StoreServiceServer struct{}
+
+func (s *StoreServiceServer) GetStoreRecyclingQrcode(ctx context.Context, store *pb.Store) (*pb.GetStoreRecyclingQrcodeResp, error) {
+	// get store's qrcode
+	err := db.GetRecyclingQrcode(store)
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+
+	if store.RecyclingQrcode == "" {
+		// has no recycling_qrcode
+		url := fmt.Sprintf("https://app.goushuyun.com/one/two/vendor/qrcode.html?storeid=%s", store.Id)
+		qiniu_url, err := GenQrcode(url, 150, 150)
+		if err != nil {
+			log.Error(err)
+			return nil, err
+		}
+
+		log.Debugf("The Qiniu URL is %s\n", qiniu_url)
+
+		store.RecyclingQrcode = qiniu_url
+
+		defer func() {
+			// update recycling_qrcode
+			err = db.UpdateRecyclingQrcode(store)
+			if err != nil {
+				log.Error(err)
+			}
+		}()
+	}
+
+	return &pb.GetStoreRecyclingQrcodeResp{Code: errs.Ok, Message: "ok", Data: store}, nil
+}
 
 //AddStore 增加店铺
 func (s *StoreServiceServer) AddStore(ctx context.Context, in *pb.Store) (*pb.AddStoreResp, error) {
