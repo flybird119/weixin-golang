@@ -1,0 +1,230 @@
+syntax = "proto3";
+
+package pb;
+
+import "pb/common.proto";
+import "pb/order.proto";
+service GrouponService {
+    //通用专业批量增加
+    rpc SharedMajorBatchSave (SharedMajor) returns (NormalResp);
+    //获取专业列表（筛选获取）
+    rpc SharedMajorList (SharedMajor) returns (SharedMajorListResp);
+    //创建学校的学院
+    rpc SaveSchoolInstitute (SchoolInstitute) returns (SchoolInstituteResp);
+    //创建学院专业
+    rpc SaveInstituteMajor (InstituteMajor) returns (InstituteMajorResp);
+    //获取学校学院专业列表
+    rpc GetSchoolMajorInfo (SchoolMajorInfoReq) returns (SchoolMajorListResp);
+    //创建班级购
+    rpc SaveGroupon (Groupon) returns (GrouponResp);
+    //班级购列表
+    rpc GrouponList (Groupon) returns (GrouponListResp);
+    //我的班级购
+    rpc MyGroupon (Groupon) returns (GrouponListResp);
+    //新增班级购项
+    rpc GetGrouponItems (Groupon) returns (GrouponItemListResp);
+    //获取班级购参与人信息
+    rpc GetGrouponPurchaseUsers (Groupon) returns (GrouponUserListResp);
+    //获取班级购操作日志
+    rpc GetGrouponOperateLog (Groupon) returns (GrouponOperateLogListResp);
+    //修改班级购
+    rpc UpdateGruopon (Groupon) returns (NormalResp);
+    //批量班级购日期
+    rpc BatchUpdateGrouponExpireAt (Groupon) returns (NormalResp);
+    //点赞
+    rpc StarGroupon (GrouponOperateLog) returns (NormalResp);
+    //转发
+    rpc ShareGroupon (GrouponOperateLog) returns (NormalResp);
+    //下单
+    rpc GrouponSubmit (GrouponSubmitModel) returns (OrderSubmitResp);
+}
+
+//班级购响应
+message GrouponResp{
+    string code = 1;
+    string message = 2;
+    Groupon data = 3;
+}
+//班级购列表响应
+message GrouponListResp{
+    string code = 1;
+    string message = 2;
+    repeated Groupon data = 3;
+    int64 total_count = 4;
+}
+
+//团购参与人用户信息响应
+message GrouponUserListResp{
+    string code = 1;
+    string message = 2;
+    repeated GrouponUserInfo data = 3;
+}
+//团购参与人信息
+message GrouponUserInfo{
+    string id = 1;
+    string avatar = 2;
+    string name = 3;
+}
+
+message GrouponSubmitModel{
+    string user_id = 1;
+    string store_id = 2;
+    string mobile = 3;
+    string name = 4;
+    string address = 5;
+    string remark = 6;
+    string school_id = 7;
+    string groupon_id = 8;
+    repeated GrouponItem items = 30;
+
+}
+//团购
+message Groupon{
+    string id = 1;
+    int64 status = 2;
+    string store_id = 3;
+    string school_id = 4;
+    string institute_id = 5;
+    string institute_major_id = 6;
+    string founder_id = 7;
+    string term = 8;
+    string class = 9;
+    int64 founder_type = 10;
+    string founder_name = 11;
+    string founder_mobile = 12;
+    string profile = 13;
+    int64 participate_num = 14;
+    int64 star_num = 15;
+    int64 total_sales = 16;
+    int64 order_num = 17;
+    int64 create_at = 18;
+    int64 expire_at = 19;
+
+    //检索条件
+    int64 page = 20;
+    int64 size = 21;
+    string participate_user = 22;
+    int64 searchType = 23;
+    GrouponSchool school = 24;
+    SchoolInstitute institute = 25;
+    InstituteMajor major = 26;
+    repeated GrouponItem items = 27;
+    int64 search_operate_type = 28;
+    repeated GrouponItem del_item_ids = 29;
+    repeated GrouponItem add_items = 30;
+    repeated Groupon updae_ids = 31;
+}
+//获取团购项列表响应
+message GrouponItemListResp{
+    string code = 1;
+    string message = 2;
+    repeated GrouponItem data = 3;
+}
+//团购项
+message GrouponItem{
+    string id = 1;
+    string groupon_id = 2;
+    string goods_id = 3;
+    int64 create_at = 4;
+    string book_title = 5;
+    string book_isbn = 6;
+    string book_author = 7;
+    string book_image = 8;
+    int64  type = 9;
+    int64 amount = 10;
+
+}
+//团购操作日志
+message GrouponOperateLog{
+    string id = 1;
+    string groupon_id = 2;
+    string founder_id = 3;
+    int64 founder_type = 4;
+    string founder_name = 5;
+    string operate_type = 6;
+    string operate_detail = 7;
+    int64 create_at = 8;
+}
+//团购操作列表
+message GrouponOperateLogListResp{
+    string code = 1;
+    string message = 2;
+    repeated GrouponOperateLog data = 3;
+}
+
+//获取学校学院专业请求model
+message SchoolMajorInfoReq{
+    string school_id = 1;
+    string institute_id = 2;
+    string store_id = 3;
+}
+//获取学校学院专业响应
+message SchoolMajorListResp{
+    string code = 1;
+    string message = 2;
+    repeated GrouponSchool data = 3;
+}
+//通用专业model
+message SharedMajor{
+    string id = 1;
+    string no = 2;
+    string name = 3;
+    int64 create_at = 4;
+    int64 update_at = 5;
+    repeated SharedMajor majors= 6;
+    int64 page = 7;
+    int64 size = 8;
+
+}
+
+
+//通用专业model 响应
+message SharedMajorListResp{
+    string code = 1;
+    string message = 2;
+    repeated SharedMajor data = 3;
+    int64 total_count = 4;
+}
+
+//团购学校信息
+message GrouponSchool{
+    string id = 1;
+    string name = 2;
+    repeated SchoolInstitute institutes = 3;
+    int64 status = 4;
+}
+
+//学校学院--响应
+message SchoolInstituteResp{
+    string code = 1;
+    string message = 2;
+    SchoolInstitute data = 3;
+    int64 status = 4;
+}
+
+
+//学校学院model
+message SchoolInstitute{
+    string id = 1;
+    string school_id = 2;
+    string name = 3;
+    int64 create_at = 4;
+    int64 update_at = 5;
+    repeated InstituteMajor majors = 6;
+    int64 status = 7;
+}
+//学院专业 major
+message InstituteMajorResp{
+    string code = 1;
+    string message = 2;
+    InstituteMajor data = 3;
+}
+//学院专业model
+message InstituteMajor{
+    string id = 1;
+    string institute_id = 2;
+    string name = 3;
+    int64 create_at = 4;
+    int64 update_at = 5;
+    int64 status = 6;
+}

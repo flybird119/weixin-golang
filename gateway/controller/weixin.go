@@ -79,12 +79,12 @@ func MsgPush(w http.ResponseWriter, r *http.Request) {
 		misc.RespondMessage(w, r, "fail")
 	}
 
-	c, err := getCrypter()
+	c1, err := getCrypter()
 	if err != nil {
 		log.Error(err)
 		misc.RespondMessage(w, r, "fail")
 	}
-	crypter := *c
+	crypter := *c1
 
 	crypterText, _, err := crypter.Decrypt(cb.Encrypt)
 	if err != nil {
