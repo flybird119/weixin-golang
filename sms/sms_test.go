@@ -32,8 +32,8 @@ func init() {
 }
 
 func TestSms(t *testing.T) {
-	message := []string{"老北京炸酱面", "10月4日", "1238467", "1817953402"}
-	a := &pb.SMSReq{Type: pb.SMSType_AutoConfirmReceipt, Mobile: "18817953402", Message: message}
+	message := []string{"老北京炸酱面", "10月4日", "1238467", "13122210065"}
+	a := &pb.SMSReq{Type: pb.SMSType_AutoConfirmReceipt, Mobile: "13122210065", Message: message}
 	smsClient.SendSMS(ctx, a)
 }
 

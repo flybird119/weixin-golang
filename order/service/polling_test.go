@@ -21,3 +21,10 @@ func TestCronPolling(t *testing.T) {
 	time.Sleep(time.Minute) //一分钟后主线程退出
 	fmt.Println("aaa")
 }
+
+func TestDate(t *testing.T) {
+	tm := time.Now()
+	tm = tm.AddDate(0, 0, 14)
+	expireDate := tm.Format("2006-01-02日")
+	fmt.Println(expireDate)
+}

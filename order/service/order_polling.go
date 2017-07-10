@@ -273,8 +273,8 @@ func OrderAutoConfirmNotify(in *pb.Order) {
 		//构建发送模版
 		tm := time.Unix(searchOrder.PayAt, 0)
 		tm = tm.AddDate(0, 0, 14)
-		expireDate := tm.Format("2006-01-02 03:04:05 PM")
-		message := []string{store.Name, expireDate, searchOrder.Id}
+		expireDate := tm.Format("2006-01-02日")
+		message := []string{store.Name, expireDate, searchOrder.Id, store.AdminMobile}
 		ctx := metadata.NewContext(context.Background(), metadata.Pairs("tid", uuid.New()))
 		_, err = misc.CallRPC(ctx, "bc_sms", "SendSMS", &pb.SMSReq{Type: pb.SMSType_AutoConfirmReceipt, Mobile: searchOrder.Mobile, Message: message})
 		if err != nil {

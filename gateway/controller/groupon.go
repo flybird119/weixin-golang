@@ -93,7 +93,7 @@ func SaveGrouponApp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1, StoreId: c.StoreId}
-	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "store_id", "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
+	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
 }
 
 //班级购列表
