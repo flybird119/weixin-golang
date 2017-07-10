@@ -37,6 +37,32 @@ service GrouponService {
     rpc ShareGroupon (GrouponOperateLog) returns (NormalResp);
     //下单
     rpc GrouponSubmit (GrouponSubmitModel) returns (OrderSubmitResp);
+    //保存学生学籍信息
+    rpc SaveUserSchoolStatus (UserSchoolStatus) returns (UserSchoolStatusResp);
+    //更新学生学籍信息
+    rpc UpdateUserSchoolStatus (UserSchoolStatus) returns (NormalResp);
+    //获取学生学籍
+    rpc GetUserSchoolStatus (UserSchoolStatus) returns (UserSchoolStatusResp);
+}
+
+//用户学籍信息响应
+message UserSchoolStatusResp{
+    string code = 1;
+    string message = 2;
+    UserSchoolStatus data = 3;
+}
+
+//用户学籍信息
+message UserSchoolStatus{
+    string id = 1;
+    string school_id = 2;
+    string user_id = 3;
+    string institute_id = 4;
+    string institute_major_id = 5;
+    int64 create_at = 6;
+    string school_name = 7;
+    string institute_name = 8;
+    string major_name = 9;
 }
 
 //班级购响应
@@ -65,6 +91,7 @@ message GrouponUserInfo{
     string avatar = 2;
     string name = 3;
 }
+
 
 message GrouponSubmitModel{
     string user_id = 1;

@@ -166,3 +166,42 @@ func (s *GrouponServiceServer) GrouponSubmit(ctx context.Context, in *pb.Groupon
 	}
 	return &pb.OrderSubmitResp{Code: "00000", Message: "ok", Data: order}, nil
 }
+
+//保存学生学籍信息
+func (s *GrouponServiceServer) SaveUserSchoolStatus(ctx context.Context, in *pb.UserSchoolStatus) (*pb.UserSchoolStatusResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "SaveUserSchoolStatus", "%#v", in))
+	err := db.SaveUserSchoolStatus(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	if in.Id == "" {
+		return &pb.UserSchoolStatusResp{Code: "00000", Message: "exists", Data: in}, nil
+	}
+	return &pb.UserSchoolStatusResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//更新学生学籍信息
+func (s *GrouponServiceServer) UpdateUserSchoolStatus(ctx context.Context, in *pb.UserSchoolStatus) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateUserSchoolStatus", "%#v", in))
+	err := db.UpdateUserSchoolStatus(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//获取学生学籍
+func (s *GrouponServiceServer) GetUserSchoolStatus(ctx context.Context, in *pb.UserSchoolStatus) (*pb.UserSchoolStatusResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "GetUserSchoolStatus", "%#v", in))
+	err := db.GetUserSchoolStatus(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.UserSchoolStatusResp{Code: "00000", Message: "ok"}, nil
+}

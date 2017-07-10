@@ -81,7 +81,7 @@ func SaveGroupon(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.Groupon{StoreId: c.StoreId, FounderId: c.SellerId, FounderType: 2}
-	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
+	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "expire_at", "items")
 }
 
 //创建班级购
@@ -93,7 +93,7 @@ func SaveGrouponApp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1, StoreId: c.StoreId}
-	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
+	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "expire_at", "items")
 }
 
 //班级购列表
@@ -235,4 +235,44 @@ func GrouponSubmit(w http.ResponseWriter, r *http.Request) {
 	req := &pb.GrouponSubmitModel{UserId: c.UserId, StoreId: c.StoreId}
 
 	misc.CallWithResp(w, r, "bc_groupon", "GrouponSubmit", req, "mobile", "name", "address", "groupon_id")
+}
+
+//保存学生学籍信息
+func SaveUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.UserSchoolStatus{UserId: c.UserId}
+
+	misc.CallWithResp(w, r, "bc_groupon", "SaveUserSchoolStatus", req, "school_id", "institute_id", "institute_major_id")
+}
+
+//更新学生学籍信息
+func UpdateUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+
+	req := &pb.UserSchoolStatus{UserId: c.UserId}
+
+	misc.CallWithResp(w, r, "bc_groupon", "UpdateUserSchoolStatus", req, "id")
+}
+
+//获取学生学籍
+func GetUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.UserSchoolStatus{UserId: c.UserId}
+	misc.CallWithResp(w, r, "bc_groupon", "GetUserSchoolStatus", req)
 }
