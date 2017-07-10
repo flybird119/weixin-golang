@@ -203,5 +203,8 @@ func (s *GrouponServiceServer) GetUserSchoolStatus(ctx context.Context, in *pb.U
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
-	return &pb.UserSchoolStatusResp{Code: "00000", Message: "ok"}, nil
+	if in.Id == "" {
+		return &pb.UserSchoolStatusResp{Code: "00000", Message: "notExists", Data: in}, nil
+	}
+	return &pb.UserSchoolStatusResp{Code: "00000", Message: "ok", Data: in}, nil
 }

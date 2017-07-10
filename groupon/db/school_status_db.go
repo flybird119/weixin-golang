@@ -59,9 +59,9 @@ func UpdateUserSchoolStatus(model *pb.UserSchoolStatus) error {
 
 //获取学生学籍
 func GetUserSchoolStatus(model *pb.UserSchoolStatus) error {
-	query := "select us.id,us.school_id,us.user_id,us.institute_id,us.institute_major_id extract(epoch from us.create_at)::bigint,s.name,si.name,im.name from user_school_status us join school s on us.school_id=s.id join map_school_institute si on s.id=si.school_id join map_institute_major im on si.id=im.institute_id"
+	query := "select us.id,us.school_id,us.user_id,us.institute_id,us.institute_major_id ,extract(epoch from us.create_at)::bigint,s.name,si.name,im.name from user_school_status us join school s on us.school_id::uuid=s.id join map_school_institute si on s.id=si.school_id::uuid join map_institute_major im on si.id=im.institute_id"
 	var condition string
-	condition += " where s.status=0 and s.del_at is null and si.status=1 and im.status=1 and user_id='%s' limit 1 order by us.create_at desc"
+	condition += " where s.status=0 and s.del_at is null and si.status=1 and im.status=1 and user_id='%s'order by us.create_at desc  limit 1 "
 	condition = fmt.Sprintf(condition, model.UserId)
 	query += condition
 	log.Debug(query)
