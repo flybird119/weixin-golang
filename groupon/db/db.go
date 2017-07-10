@@ -116,6 +116,12 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 	if model.InstituteId != "" {
 		condition += fmt.Sprintf(" and si.id='%s'", model.InstituteId)
 	}
+	if model.UserType == 1 {
+		condition += fmt.Sprintf(" and (si.status=1 or si.iStatus is null) and (im.status=1 or im.iStatus is null)")
+	} else {
+		condition += fmt.Sprintf(" and (si.status=1) and (im.status=1)")
+	}
+
 	condition += " order by im.id desc"
 	query += condition
 	log.Debug(query)

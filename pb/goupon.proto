@@ -157,6 +157,7 @@ message SchoolMajorInfoReq{
     string school_id = 1;
     string institute_id = 2;
     string store_id = 3;
+    int64 user_type = 4;
 }
 //获取学校学院专业响应
 message SchoolMajorListResp{

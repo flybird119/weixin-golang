@@ -56,7 +56,19 @@ func GetSchoolMajorInfo(w http.ResponseWriter, r *http.Request) {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.SchoolMajorInfoReq{StoreId: c.StoreId}
+	req := &pb.SchoolMajorInfoReq{StoreId: c.StoreId, UserType: 1}
+	misc.CallWithResp(w, r, "bc_groupon", "GetSchoolMajorInfo", req)
+}
+
+//获取学校学院专业列表
+func GetSchoolMajorInfoApp(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+	//检测token
+	if c == nil || c.StoreId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.SchoolMajorInfoReq{StoreId: c.StoreId, UserType: 0}
 	misc.CallWithResp(w, r, "bc_groupon", "GetSchoolMajorInfo", req)
 }
 
@@ -76,11 +88,11 @@ func SaveGroupon(w http.ResponseWriter, r *http.Request) {
 func SaveGrouponApp(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
-	if c == nil || c.UserId == "" {
+	if c == nil || c.UserId == "" || c.StoreId == "" {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1}
+	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1, StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "SaveGroupon", req, "store_id", "term", "school_id", "institute_id", "institute_major_id", "founder_id", "class", "founder_name", "founder_mobile", "profile", "expire_at", "items")
 }
 
