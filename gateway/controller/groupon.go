@@ -104,7 +104,7 @@ func GrouponList(w http.ResponseWriter, r *http.Request) {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Groupon{StoreId: c.StoreId, FounderType: 2}
+	req := &pb.Groupon{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "GrouponList", req)
 }
 
@@ -116,7 +116,7 @@ func GrouponListApp(w http.ResponseWriter, r *http.Request) {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Groupon{StoreId: c.StoreId, FounderType: 1}
+	req := &pb.Groupon{StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "GrouponList", req)
 }
 
@@ -136,11 +136,11 @@ func MyGroupon(w http.ResponseWriter, r *http.Request) {
 func MyGrouponApp(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
 	//检测token
-	if c == nil || c.UserId == "" {
+	if c == nil || c.UserId == "" || c.StoreId == "" {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1}
+	req := &pb.Groupon{FounderId: c.UserId, FounderType: 1, StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "MyGroupon", req)
 }
 

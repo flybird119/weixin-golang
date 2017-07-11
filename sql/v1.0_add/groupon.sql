@@ -7,8 +7,9 @@ CREATE TABLE IF NOT EXISTS groupon (
   store_id              TEXT                        NOT NULL                 ,          --店铺id
   school_id             TEXT                        NOT NULL                 ,          --学校id
   institute_id          TEXT                        NOT NULL                 ,          --学院id
-  institute_major_id   TEXT                        NOT NULL                 ,          --专业id
+  institute_major_id   TEXT                         NOT NULL                 ,          --专业id
   founder_id            TEXT                        NOT NULL                 ,          --专业id
+  founder_avatar        TEXT                        NOT NULL                 DEFAULT ''
 
   -- 团购的固有字段
   term                  TEXT                        NOT NULL                 DEFAULT '',--学期

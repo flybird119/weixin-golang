@@ -72,7 +72,7 @@ func SetRouterV1() *m.Router {
 	//groupon
 	v1.Register("/groupon/get_school_majors", m.Wrap(c.GetSchoolMajorInfoApp))
 	v1.Register("/groupon/save_groupon", m.Wrap(c.SaveGrouponApp))
-	v1.Register("/groupon/find_groupon", m.Wrap(c.GrouponList))
+	v1.Register("/groupon/find_groupon", m.Wrap(c.GrouponListApp))
 	v1.Register("/groupon/my_groupon", m.Wrap(c.MyGrouponApp))
 	v1.Register("/groupon/groupon_items", m.Wrap(c.GetGrouponItems))
 	v1.Register("/groupon/groupon_related_user", m.Wrap(c.GetGrouponPurchaseUsers))

@@ -166,9 +166,6 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 		if mStatus.Valid {
 			major.Status = mStatus.Int64
 		}
-		if institute.Status == 2 || major.Status == 2 {
-			continue
-		}
 		var find bool
 
 		//构建结构
@@ -207,12 +204,30 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 			}
 			schools = append(schools, school)
 		}
+
 	}
 	return
 }
 
 //创建班级购
 func SaveGroupon(model *pb.Groupon) error {
+	var avatar sql.NullString
+	var avatarString string
+	var query string
+	if model.FounderType == 1 {
+		query = fmt.Sprintf("select avatar from users where id='%s'", model.FounderId)
+	} else {
+		query = fmt.Sprintf("select logo from store where id='%s'", model.StoreId)
+	}
+	log.Debug(query)
+	err := DB.QueryRow(query).Scan(&avatar)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if avatar.Valid {
+		avatarString = avatar.String
+	}
 	tx, err := DB.Begin()
 	if err != nil {
 		log.Error(err)
@@ -220,8 +235,8 @@ func SaveGroupon(model *pb.Groupon) error {
 	}
 	defer tx.Rollback()
 
-	query := "insert into groupon(store_id,school_id,institute_id,institute_major_id,founder_id,term,class,founder_type,founder_name,founder_mobile,profile,expire_at) values(%s) returning id"
-	param := fmt.Sprintf("'%s','%s','%s','%s','%s','%s','%s',%d,'%s','%s','%s',to_timestamp(%d)", model.StoreId, model.SchoolId, model.InstituteId, model.InstituteMajorId, model.FounderId, model.Term, model.Class, model.FounderType, model.FounderName, model.FounderMobile, model.Profile, model.ExpireAt)
+	query = "insert into groupon(store_id,school_id,institute_id,institute_major_id,founder_id,term,class,founder_type,founder_name,founder_mobile,profile,expire_at,founder_avatar) values(%s) returning id"
+	param := fmt.Sprintf("'%s','%s','%s','%s','%s','%s','%s',%d,'%s','%s','%s',to_timestamp(%d),'%s'", model.StoreId, model.SchoolId, model.InstituteId, model.InstituteMajorId, model.FounderId, model.Term, model.Class, model.FounderType, model.FounderName, model.FounderMobile, model.Profile, model.ExpireAt, avatarString)
 	query = fmt.Sprintf(query, param)
 	log.Debug(query)
 	err = tx.QueryRow(query).Scan(&model.Id)
@@ -250,7 +265,7 @@ func SaveGroupon(model *pb.Groupon) error {
 //班级购列表
 func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount int64) {
 	query := "select %s from groupon g join school s on s.id=g.school_id::uuid left join map_school_institute si on s.id=si.school_id::uuid left join map_institute_major im on si.id=im.institute_id where 1=1"
-	param := " distinct g.id,g.status,g.store_id,g.school_id,g.institute_id,g.institute_major_id,g.founder_id,g.term,g.class,g.founder_type,g.founder_name,g.founder_mobile,g.profile,g.participate_num,g.star_num,g.total_sales,g.order_num,extract(epoch from g.create_at)::bigint,extract(epoch from g.expire_at)::bigint,s.name,s.status,si.name,si.status,im.name,im.status"
+	param := " distinct g.id,g.status,g.store_id,g.school_id,g.institute_id,g.institute_major_id,g.founder_id,g.term,g.class,g.founder_type,g.founder_name,g.founder_mobile,g.profile,g.participate_num,g.star_num,g.total_sales,g.order_num,extract(epoch from g.create_at)::bigint,extract(epoch from g.expire_at)::bigint,s.name,s.status,si.name,si.status,im.name,im.status,g.founder_avatar"
 	queryCount := fmt.Sprintf(query, "count(*)")
 	query = fmt.Sprintf(query, param)
 	var condition string
@@ -303,8 +318,8 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 		condition += fmt.Sprintf(" and exists (select * from groupon_operate_log where founder_id='%s' and ((operate_type='purchase') or (operate_type='share')))", model.ParticipateUser)
 	}
 	// 根据创建人 创建人类型
-	if model.FounderId != "" && model.FounderType != 0 {
-		condition += fmt.Sprintf(" and g.founder_id='%s' and g.founder_type=%d", model.FounderId, model.FounderType)
+	if model.FounderId != "" {
+		condition += fmt.Sprintf(" and g.founder_id='%s'", model.FounderId)
 	}
 
 	condition += fmt.Sprintf(" and g.store_id='%s'", model.StoreId)
@@ -340,7 +355,7 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 		m := &pb.Groupon{Major: major, Institute: institute, School: school}
 		models = append(models, m)
 		//param := "g.id,g.status,g.store_id,g.school_id,g.institute_id,g.institute_major_id,g.founder_id,g.term,g.class,g.founder_type,g.founder_name,g.founder_mobile,g.profile,g.participate_num,g.star_num,g.total_sales,g.order_num,extract(epoch from g.create_at)::bigint,extract(epoch from g.expire_at)::bigint,s.name,s.status,si.name,si.status,im.name,im.status"
-		err = rows.Scan(&m.Id, &m.Status, &m.StoreId, &m.SchoolId, &m.InstituteId, &m.InstituteMajorId, &m.FounderId, &m.Term, &m.Class, &m.FounderType, &m.FounderName, &m.FounderMobile, &m.Profile, &m.ParticipateNum, &m.StarNum, &m.TotalSales, &m.OrderNum, &m.CreateAt, &m.ExpireAt, &school.Name, &school.Status, &institute.Name, &institute.Status, &major.Name, &major.Status)
+		err = rows.Scan(&m.Id, &m.Status, &m.StoreId, &m.SchoolId, &m.InstituteId, &m.InstituteMajorId, &m.FounderId, &m.Term, &m.Class, &m.FounderType, &m.FounderName, &m.FounderMobile, &m.Profile, &m.ParticipateNum, &m.StarNum, &m.TotalSales, &m.OrderNum, &m.CreateAt, &m.ExpireAt, &school.Name, &school.Status, &institute.Name, &institute.Status, &major.Name, &major.Status, &m.FounderAvatar)
 		if err != nil {
 			log.Error(err)
 			return
@@ -405,7 +420,7 @@ func GetGrouponPurchaseUsers(model *pb.Groupon) (models []*pb.GrouponUserInfo, e
 
 //获取班级购操作日志
 func GetGrouponOperateLog(model *pb.Groupon) (models []*pb.GrouponOperateLog, err error) {
-	query := "select id,founder_id,founder_type,founder_name,operate_type,operate_detail,extract(epoch from create_at)::bigint from groupon_operate_log where groupon_id='%s' and operate_type <> 'star' order by id desc"
+	query := "select id,founder_id,founder_type,founder_name,operate_type,operate_detail,extract(epoch from create_at)::bigint,founder_avatar from groupon_operate_log where groupon_id='%s' and operate_type <> 'star' order by id desc"
 	query = fmt.Sprintf(query, model.Id)
 	log.Debug(query)
 	rows, err := DB.Query(query)
@@ -420,7 +435,7 @@ func GetGrouponOperateLog(model *pb.Groupon) (models []*pb.GrouponOperateLog, er
 	for rows.Next() {
 		m := &pb.GrouponOperateLog{}
 		models = append(models, m)
-		err = rows.Scan(&m.Id, &m.FounderId, &m.FounderType, &m.FounderName, &m.OperateType, &m.OperateDetail, &m.CreateAt)
+		err = rows.Scan(&m.Id, &m.FounderId, &m.FounderType, &m.FounderName, &m.OperateType, &m.OperateDetail, &m.CreateAt, &m.FounderAvatar)
 		if err != nil {
 			log.Error(err)
 			return
@@ -513,10 +528,27 @@ func UpdateGruopon(model *pb.Groupon) error {
 
 //保存班级购操作日志
 func SaveGrouponOperateLog(model *pb.GrouponOperateLog) error {
-	query := "insert into groupon_operate_log (groupon_id,founder_id,founder_type,founder_name,operate_type,operate_detail) values('%s','%s',%d,'%s','%s','%s')"
-	query = fmt.Sprintf(query, model.GrouponId, model.FounderId, model.FounderType, model.FounderName, model.OperateType, model.OperateDetail)
+	var avatar sql.NullString
+	var avatarString string
+	var query string
+	if model.FounderType == 1 {
+		query = fmt.Sprintf("select avatar from users where id='%s'", model.FounderId)
+	} else {
+		query = fmt.Sprintf("select logo from store s join groupon g on g.store_id=s.id where g.id='%s'", model.GrouponId)
+	}
 	log.Debug(query)
-	_, err := DB.Exec(query)
+	err := DB.QueryRow(query).Scan(&avatar)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	if avatar.Valid {
+		avatarString = avatar.String
+	}
+	query = "insert into groupon_operate_log (groupon_id,founder_id,founder_type,founder_name,operate_type,operate_detail,founder_avatar) values('%s','%s',%d,'%s','%s','%s','%s')"
+	query = fmt.Sprintf(query, model.GrouponId, model.FounderId, model.FounderType, model.FounderName, model.OperateType, model.OperateDetail, avatarString)
+	log.Debug(query)
+	_, err = DB.Exec(query)
 	if err != nil {
 		log.Error(err)
 		return err

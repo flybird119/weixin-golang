@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS groupon_operate_log (
   founder_id            TEXT                        NOT NULL                 ,          --创建人id
   founder_type          SMALLINT                    NOT NULL ,                          -- 1 学生 2 商家
   founder_name          TEXT                        NOT NULL                 DEFAULT '',--创建人姓名
+  founder_avatar        TEXT                        NOT NULL                 DEFAULT '',--创建人头像  
   operate_type          TEXT                        NOT NULL                 DEFAULT '',--操作类型  create  update   share  purchase star
   operate_detail        TEXT                        NOT NULL                 DEFAULT '',--操作具体详情
   create_at             TIMESTAMP WITH TIME ZONE    NOT NULL                 DEFAULT now(),
