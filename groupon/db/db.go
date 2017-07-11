@@ -116,9 +116,7 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 	if model.InstituteId != "" {
 		condition += fmt.Sprintf(" and si.id='%s'", model.InstituteId)
 	}
-	if model.UserType == 1 {
-		condition += fmt.Sprintf(" and (si.status=1 or si.status is null) and (im.status=1 or im.status is null)")
-	} else {
+	if model.UserType != 1 {
 		condition += fmt.Sprintf(" and (si.status=1) and (im.status=1)")
 	}
 
@@ -172,13 +170,15 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 			continue
 		}
 		var find bool
+
 		//构建结构
 		for i := 0; i < len(schools); i++ {
+
 			if schools[i].Id == school.Id {
 				institutes := schools[i].Institutes
 				for j := 0; j < len(institutes); j++ {
 					if institutes[j].Id == institute.Id {
-						if major.Id != "" {
+						if major.Id != "" && major.Status != 2 {
 							institutes[j].Majors = append(institutes[j].Majors, major)
 						}
 						find = true
@@ -187,10 +187,10 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 					}
 				}
 				if !find {
-					if major.Id != "" {
+					if major.Id != "" && major.Status != 2 {
 						institute.Majors = append(institute.Majors, major)
 					}
-					if institute.Id != "" {
+					if institute.Id != "" && institute.Status != 2 {
 						schools[i].Institutes = append(schools[i].Institutes, institute)
 					}
 					find = true
@@ -199,10 +199,10 @@ func GetSchoolMajorInfo(model *pb.SchoolMajorInfoReq) (schools []*pb.GrouponScho
 			}
 		}
 		if !find {
-			if major.Id != "" {
+			if major.Id != "" && major.Status != 2 {
 				institute.Majors = append(institute.Majors, major)
 			}
-			if institute.Id != "" {
+			if institute.Id != "" && institute.Status != 2 {
 				school.Institutes = append(school.Institutes, institute)
 			}
 			schools = append(schools, school)
