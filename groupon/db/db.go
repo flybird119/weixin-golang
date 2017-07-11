@@ -405,7 +405,7 @@ func GetGrouponPurchaseUsers(model *pb.Groupon) (models []*pb.GrouponUserInfo, e
 
 //获取班级购操作日志
 func GetGrouponOperateLog(model *pb.Groupon) (models []*pb.GrouponOperateLog, err error) {
-	query := "select id,founder_id,founder_type,founder_name,operate_type,operate_detail,extract(epoch from create_at)::bigint from groupon_operate_log where groupon_id='%s' order by id desc"
+	query := "select id,founder_id,founder_type,founder_name,operate_type,operate_detail,extract(epoch from create_at)::bigint from groupon_operate_log where groupon_id='%s' and operate_type <> 'star' order by id desc"
 	query = fmt.Sprintf(query, model.Id)
 	log.Debug(query)
 	rows, err := DB.Query(query)
