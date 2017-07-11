@@ -143,6 +143,10 @@ func SetRouterV1() *m.Router {
 	v1.Register("/groupon/groupon_log", m.Wrap(c.GetGrouponOperateLog))
 	v1.Register("/groupon/update_groupon", m.Wrap(c.UpdateGruopon))
 	v1.Register("/groupon/reset_expire_at", m.Wrap(c.BatchUpdateGrouponExpireAt))
+	v1.Register("/groupon/del_institute_major", m.Wrap(c.DelInstituMajor))
+	v1.Register("/groupon/update_institute_major", m.Wrap(c.UpdateInstituteMajor))
+	v1.Register("/groupon/del_school_institute", m.Wrap(c.DelSchoolInstitute))
+	v1.Register("/groupon/update_school_institute", m.Wrap(c.UpdateSchoolInstitute))
 
 	return v1
 }

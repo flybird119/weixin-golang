@@ -83,3 +83,57 @@ func (s *GrouponServiceServer) GetSchoolMajorInfo(ctx context.Context, in *pb.Sc
 	}
 	return &pb.SchoolMajorListResp{Code: "00000", Message: "ok", Data: schools}, nil
 }
+
+//删除专业
+func (s *GrouponServiceServer) DelInstituMajor(ctx context.Context, in *pb.InstituteMajor) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "DelInstituMajor", "%#v", in))
+	err := db.DelInstituMajor(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//修改学校专业名称
+func (s *GrouponServiceServer) UpdateInstituteMajor(ctx context.Context, in *pb.InstituteMajor) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateInstituteMajor", "%#v", in))
+	err := db.UpdateInstituteMajor(in)
+	if err != nil {
+		if err.Error() == "exists" {
+			return &pb.NormalResp{Code: "00000", Message: "exists"}, nil
+		}
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//修改学校专业名称
+func (s *GrouponServiceServer) DelSchoolInstitute(ctx context.Context, in *pb.SchoolInstitute) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "DelSchoolInstitute", "%#v", in))
+	err := db.DelSchoolInstitute(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}
+
+//修改学校专业名称
+func (s *GrouponServiceServer) UpdateSchoolInstitute(ctx context.Context, in *pb.SchoolInstitute) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "UpdateSchoolInstitute", "%#v", in))
+	err := db.UpdateSchoolInstitute(in)
+	if err != nil {
+		if err.Error() == "exists" {
+			return &pb.NormalResp{Code: "00000", Message: "exists"}, nil
+		}
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
+}

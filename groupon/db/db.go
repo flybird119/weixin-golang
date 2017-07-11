@@ -287,11 +287,11 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	if model.SearchType != 0 {
 		if model.SearchType == 1 {
 			//正常 使用中的
-			condition += fmt.Sprintf(" and g.status=1 and g.expire_at>=to_timestamp(%d)", time.Now().Unix())
+			condition += fmt.Sprintf(" and g.status=1 and g.expire_at<=to_timestamp(%d)", time.Now().Unix())
 
 		} else if model.SearchType == 2 {
 			//过期
-			condition += fmt.Sprintf(" and g.expire_at<to_timestamp(%d)", time.Now().Unix())
+			condition += fmt.Sprintf(" and g.expire_at>to_timestamp(%d)", time.Now().Unix())
 
 		} else if model.SearchType == 3 {
 			//异常
@@ -352,7 +352,7 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 //新增班级购项
 func GetGrouponItems(model *pb.Groupon) (models []*pb.GrouponItem, err error) {
 	//获取图书信息
-	query := "select gi.id,gi.goods_id,b.isbn,b.title,b.author,b.image from groupon_item gi join goods g on gi.goods_id=g.id join books b on g.book_id=b.id where gi.groupon_id='%s'"
+	query := "select gi.id,gi.goods_id,b.isbn,b.title,b.author,b.image,g.new_book_amount,g.old_book_amount,g.new_book_price,g.old_book_price,g.has_new_book,g.has_old_book from groupon_item gi join goods g on gi.goods_id=g.id join books b on g.book_id=b.id where gi.groupon_id='%s'"
 	query = fmt.Sprintf(query, model.Id)
 	log.Debug(query)
 	rows, err := DB.Query(query)
@@ -367,11 +367,12 @@ func GetGrouponItems(model *pb.Groupon) (models []*pb.GrouponItem, err error) {
 	for rows.Next() {
 		m := &pb.GrouponItem{}
 		models = append(models, m)
-		err = rows.Scan(&m.Id, &m.GoodsId, &m.BookIsbn, &m.BookTitle, &m.BookAuthor, &m.BookImage)
+		err = rows.Scan(&m.Id, &m.GoodsId, &m.BookIsbn, &m.BookTitle, &m.BookAuthor, &m.BookImage, &m.NewBookAmount, &m.OldBookAmount, &m.NewBookPrice, &m.OldBookPrice, &m.HasNewBook, &m.HasOldBook)
 		if err != nil {
 			log.Error(err)
 			return
 		}
+
 	}
 	return
 }
@@ -673,4 +674,76 @@ func HasGrouponLogWithOpreation(grouponId, userId, oprea string) (totalCount int
 		return
 	}
 	return
+}
+
+//删除专业
+func DelInstituMajor(model *pb.InstituteMajor) error {
+	query := fmt.Sprintf("update map_institute_major set status=2 where id='%s'", model.Id)
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//删除学院
+func UpdateInstituteMajor(model *pb.InstituteMajor) error {
+	query := fmt.Sprintf("update map_institute_major m set name='%s' where id='%s' and not exists (select * from map_institute_major m1 where m.institute_id=m1.institute_id and m1.name='%s' and m1.status=1) returning name", model.Name, model.Id, model.Name)
+	log.Debug(query)
+	var name sql.NullString
+	err := DB.QueryRow(query).Scan(&name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.New("exists")
+		}
+		log.Error(err)
+		return err
+	}
+	var vName string
+	if name.Valid {
+		vName = name.String
+	}
+	if vName == "" {
+		return errors.New("exists")
+	}
+
+	return nil
+}
+
+//删除学院
+func DelSchoolInstitute(model *pb.SchoolInstitute) error {
+	query := fmt.Sprintf("update map_school_institute set status=2 where id='%s'", model.Id)
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+}
+
+//修改学校学院名称
+func UpdateSchoolInstitute(model *pb.SchoolInstitute) error {
+	query := fmt.Sprintf("update map_school_institute m set name='%s' where id='%s' and not exists (select * from map_school_institute m1 where m.school_id=m1.school_id and m1.name='%s' and m1.status=1)  returning name", model.Name, model.Id, model.Name)
+	log.Debug(query)
+	var name sql.NullString
+	err := DB.QueryRow(query).Scan(&name)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return errors.New("exists")
+		}
+		log.Error(err)
+		return err
+	}
+	var vName string
+	if name.Valid {
+		vName = name.String
+	}
+	if vName == "" {
+		return errors.New("exists")
+	}
+
+	return nil
 }

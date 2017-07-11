@@ -43,6 +43,15 @@ service GrouponService {
     rpc UpdateUserSchoolStatus (UserSchoolStatus) returns (NormalResp);
     //获取学生学籍
     rpc GetUserSchoolStatus (UserSchoolStatus) returns (UserSchoolStatusResp);
+    //删除专业
+    rpc DelInstituMajor (InstituteMajor) returns (NormalResp);
+    //修改学校专业名称
+    rpc UpdateInstituteMajor (InstituteMajor) returns (NormalResp);
+    //删除学院
+    rpc DelSchoolInstitute (SchoolInstitute) returns (NormalResp);
+    //修改学校学院名称
+    rpc UpdateSchoolInstitute (SchoolInstitute) returns (NormalResp);
+
 }
 
 //用户学籍信息响应
@@ -91,7 +100,6 @@ message GrouponUserInfo{
     string avatar = 2;
     string name = 3;
 }
-
 
 message GrouponSubmitModel{
     string user_id = 1;
@@ -157,8 +165,16 @@ message GrouponItem{
     string book_isbn = 6;
     string book_author = 7;
     string book_image = 8;
-    int64  type = 9;
+    int64 type = 9;
     int64 amount = 10;
+    int64 new_book_amount = 11;
+    int64 old_book_amount = 12;
+    int64 new_book_price = 13;
+    int64 old_book_price = 14;
+    bool has_new_book = 15;
+    bool has_old_book = 16;
+
+
 
 }
 //团购操作日志

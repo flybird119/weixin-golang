@@ -276,3 +276,51 @@ func GetUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
 	req := &pb.UserSchoolStatus{UserId: c.UserId}
 	misc.CallWithResp(w, r, "bc_groupon", "GetUserSchoolStatus", req)
 }
+
+//删除专业
+func DelInstituMajor(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.InstituteMajor{}
+	misc.CallWithResp(w, r, "bc_groupon", "DelInstituMajor", req, "id")
+}
+
+//修改学校专业名称
+func UpdateInstituteMajor(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.InstituteMajor{}
+	misc.CallWithResp(w, r, "bc_groupon", "UpdateInstituteMajor", req, "id", "name")
+}
+
+//删除学院
+func DelSchoolInstitute(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.SchoolInstitute{}
+	misc.CallWithResp(w, r, "bc_groupon", "DelSchoolInstitute", req, "id")
+}
+
+//修改学校学院名称
+func UpdateSchoolInstitute(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.SellerId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.SchoolInstitute{}
+	misc.CallWithResp(w, r, "bc_groupon", "UpdateSchoolInstitute", req, "id", "name")
+}
