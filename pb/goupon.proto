@@ -147,7 +147,7 @@ message Groupon{
     int64 search_operate_type = 29;
     repeated GrouponItem del_item_ids = 30;
     repeated GrouponItem add_items = 31;
-    repeated Groupon updae_ids = 32;
+    repeated Groupon update_ids = 32;
 }
 //获取团购项列表响应
 message GrouponItemListResp{

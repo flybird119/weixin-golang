@@ -76,7 +76,7 @@ func FindMajorList(major *pb.SharedMajor) (models []*pb.SharedMajor, err error, 
 
 //创建学校的学院
 func SaveSchoolInstitute(model *pb.SchoolInstitute) error {
-	query := "insert into map_school_institute(school_id,name) select '%s','%s' where not exists (select * from map_school_institute where school_id='%s' and name='%s') returning id"
+	query := "insert into map_school_institute(school_id,name) select '%s','%s' where not exists (select * from map_school_institute where school_id='%s' and name='%s' and status=1) returning id"
 	query = fmt.Sprintf(query, model.SchoolId, model.Name, model.SchoolId, model.Name)
 	log.Debug(query)
 	err := DB.QueryRow(query).Scan(&model.Id)
@@ -91,7 +91,7 @@ func SaveSchoolInstitute(model *pb.SchoolInstitute) error {
 
 //创建学院专业
 func SaveInstituteMajor(model *pb.InstituteMajor) error {
-	query := "insert into map_institute_major(institute_id,name) select '%s','%s' where not exists (select * from map_institute_major where institute_id='%s' and name='%s') returning id"
+	query := "insert into map_institute_major(institute_id,name) select '%s','%s' where not exists (select * from map_institute_major where institute_id='%s' and name='%s' and status=1) returning id"
 	query = fmt.Sprintf(query, model.InstituteId, model.Name, model.InstituteId, model.Name)
 	log.Debug(query)
 
@@ -235,8 +235,8 @@ func SaveGroupon(model *pb.Groupon) error {
 	}
 	defer tx.Rollback()
 
-	query = "insert into groupon(store_id,school_id,institute_id,institute_major_id,founder_id,term,class,founder_type,founder_name,founder_mobile,profile,expire_at,founder_avatar) values(%s) returning id"
-	param := fmt.Sprintf("'%s','%s','%s','%s','%s','%s','%s',%d,'%s','%s','%s',to_timestamp(%d),'%s'", model.StoreId, model.SchoolId, model.InstituteId, model.InstituteMajorId, model.FounderId, model.Term, model.Class, model.FounderType, model.FounderName, model.FounderMobile, model.Profile, model.ExpireAt, avatarString)
+	query = "insert into groupon(store_id,school_id,institute_id,institute_major_id,founder_id,term,class,founder_type,founder_name,founder_mobile,profile,expire_at,founder_avatar,participate_num) values(%s) returning id"
+	param := fmt.Sprintf("'%s','%s','%s','%s','%s','%s','%s',%d,'%s','%s','%s',to_timestamp(%d),'%s',1", model.StoreId, model.SchoolId, model.InstituteId, model.InstituteMajorId, model.FounderId, model.Term, model.Class, model.FounderType, model.FounderName, model.FounderMobile, model.Profile, model.ExpireAt, avatarString)
 	query = fmt.Sprintf(query, param)
 	log.Debug(query)
 	err = tx.QueryRow(query).Scan(&model.Id)
@@ -778,4 +778,26 @@ func UpdateSchoolInstitute(model *pb.SchoolInstitute) error {
 	}
 
 	return nil
+}
+
+//批量修改截止日期
+func BatchUpdateGrouponExpireAt(model *pb.Groupon) error {
+	query := "update groupon set expire_at=to_timestamp(%d) where id in(%s) and store_id='%s'"
+	var condition string
+	condition = strings.Repeat(",'%s'", len(model.UpdateIds))
+	condition = condition[1:]
+	var param []interface{}
+	for i := 0; i < len(model.UpdateIds); i++ {
+		param = append(param, model.UpdateIds[i].Id)
+	}
+	condition = fmt.Sprintf(condition, param...)
+	query = fmt.Sprintf(query, model.ExpireAt, condition, model.StoreId)
+	log.Debug(query)
+	_, err := DB.Exec(query)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	return nil
+
 }

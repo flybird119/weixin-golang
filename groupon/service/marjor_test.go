@@ -48,3 +48,10 @@ func TestAnalyMajors(t *testing.T) {
 	//fmt.Printf("%v", rbody)
 
 }
+func TestStringsRepeat(t *testing.T) {
+	var arr []interface{} = []interface{}{"1", "2", "3"}
+	str := strings.Repeat(",%s", len(arr))
+	str = str[1:]
+	str = fmt.Sprintf(str, arr...)
+	fmt.Println(str)
+}

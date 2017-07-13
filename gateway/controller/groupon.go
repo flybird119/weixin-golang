@@ -195,12 +195,12 @@ func UpdateGruopon(w http.ResponseWriter, r *http.Request) {
 //批量班级购日期
 func BatchUpdateGrouponExpireAt(w http.ResponseWriter, r *http.Request) {
 	c := token.Get(r)
-	if c == nil {
+	if c == nil || c.StoreId == "" {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.Groupon{}
-	misc.CallWithResp(w, r, "bc_groupon", "BatchUpdateGrouponExpireAt", req)
+	req := &pb.Groupon{StoreId: c.StoreId}
+	misc.CallWithResp(w, r, "bc_groupon", "BatchUpdateGrouponExpireAt", req, "expire_at", "update_ids")
 }
 
 func StarGroupon(w http.ResponseWriter, r *http.Request) {

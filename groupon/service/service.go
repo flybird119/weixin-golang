@@ -119,6 +119,11 @@ func (s *GrouponServiceServer) UpdateGruopon(ctx context.Context, in *pb.Groupon
 func (s *GrouponServiceServer) BatchUpdateGrouponExpireAt(ctx context.Context, in *pb.Groupon) (*pb.NormalResp, error) {
 	tid := misc.GetTidFromContext(ctx)
 	defer log.TraceOut(log.TraceIn(tid, "BatchUpdateGrouponExpireAt", "%#v", in))
+	err := db.BatchUpdateGrouponExpireAt(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
@@ -133,6 +138,7 @@ func (s *GrouponServiceServer) StarGroupon(ctx context.Context, in *pb.GrouponOp
 			log.Error(err)
 			return nil, errs.Wrap(errors.New(err.Error()))
 		}
+		db.UpdateGruopon(&pb.Groupon{Id: in.Id, StarNum: 1})
 	}
 
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
@@ -147,6 +153,11 @@ func (s *GrouponServiceServer) ShareGroupon(ctx context.Context, in *pb.GrouponO
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+	totalCount, _ := db.HasGrouponLogWithOpreation(in.GrouponId, in.FounderId, "share")
+	if totalCount <= 0 {
+		db.UpdateGruopon(&pb.Groupon{Id: in.Id, ParticipateNum: 1})
+	}
+
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
@@ -191,6 +202,7 @@ func (s *GrouponServiceServer) UpdateUserSchoolStatus(ctx context.Context, in *p
 		log.Error(err)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
+
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
 }
 
