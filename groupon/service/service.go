@@ -138,7 +138,7 @@ func (s *GrouponServiceServer) StarGroupon(ctx context.Context, in *pb.GrouponOp
 			log.Error(err)
 			return nil, errs.Wrap(errors.New(err.Error()))
 		}
-		db.UpdateGruopon(&pb.Groupon{Id: in.Id, StarNum: 1})
+		db.UpdateGruopon(&pb.Groupon{Id: in.GrouponId, StarNum: 1})
 	}
 
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
@@ -155,7 +155,7 @@ func (s *GrouponServiceServer) ShareGroupon(ctx context.Context, in *pb.GrouponO
 	}
 	totalCount, _ := db.HasGrouponLogWithOpreation(in.GrouponId, in.FounderId, "share")
 	if totalCount <= 0 {
-		db.UpdateGruopon(&pb.Groupon{Id: in.Id, ParticipateNum: 1})
+		db.UpdateGruopon(&pb.Groupon{Id: in.GrouponId, ParticipateNum: 1})
 	}
 
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil

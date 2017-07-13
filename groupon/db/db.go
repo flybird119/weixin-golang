@@ -454,8 +454,8 @@ func UpdateGruopon(model *pb.Groupon) error {
 	if model.InstituteId != "" {
 		condition += fmt.Sprintf(",institute_id='%s'", model.InstituteId)
 	}
-	if model.InstituteId != "" {
-		condition += fmt.Sprintf(",institute_major_id='%s'", model.InstituteId)
+	if model.InstituteMajorId != "" {
+		condition += fmt.Sprintf(",institute_major_id='%s'", model.InstituteMajorId)
 	}
 	if model.Term != "" {
 		condition += fmt.Sprintf(",term='%s'", model.Term)
