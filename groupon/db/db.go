@@ -302,11 +302,11 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	if model.SearchType != 0 {
 		if model.SearchType == 1 {
 			//正常 使用中的
-			condition += fmt.Sprintf(" and g.status=1 and g.expire_at<=to_timestamp(%d)", time.Now().Unix())
+			condition += fmt.Sprintf(" and g.status=1 and g.expire_at>to_timestamp(%d)", time.Now().Unix())
 
 		} else if model.SearchType == 2 {
 			//过期
-			condition += fmt.Sprintf(" and g.expire_at>to_timestamp(%d)", time.Now().Unix())
+			condition += fmt.Sprintf(" and g.expire_a<to_timestamp(%d)", time.Now().Unix())
 
 		} else if model.SearchType == 3 {
 			//异常
