@@ -139,6 +139,8 @@ func (s *GrouponServiceServer) StarGroupon(ctx context.Context, in *pb.GrouponOp
 			return nil, errs.Wrap(errors.New(err.Error()))
 		}
 		db.UpdateGruopon(&pb.Groupon{Id: in.GrouponId, StarNum: 1})
+	} else {
+		return &pb.NormalResp{Code: "00000", Message: "exists"}, nil
 	}
 
 	return &pb.NormalResp{Code: "00000", Message: "ok"}, nil
@@ -219,4 +221,19 @@ func (s *GrouponServiceServer) GetUserSchoolStatus(ctx context.Context, in *pb.U
 		return &pb.UserSchoolStatusResp{Code: "00000", Message: "notExists", Data: in}, nil
 	}
 	return &pb.UserSchoolStatusResp{Code: "00000", Message: "ok", Data: in}, nil
+}
+
+//用户点赞记录
+func (s *GrouponServiceServer) HasStarGroupon(ctx context.Context, in *pb.GrouponOperateLog) (*pb.NormalResp, error) {
+	tid := misc.GetTidFromContext(ctx)
+	defer log.TraceOut(log.TraceIn(tid, "HasStarGroupon", "%#v", in))
+	totalCount, err := db.HasStarGroupon(in)
+	if err != nil {
+		log.Error(err)
+		return nil, errs.Wrap(errors.New(err.Error()))
+	}
+	if totalCount > 0 {
+		return &pb.NormalResp{Code: "00000", Message: "yes"}, nil
+	}
+	return &pb.NormalResp{Code: "00000", Message: "no"}, nil
 }

@@ -324,3 +324,15 @@ func UpdateSchoolInstitute(w http.ResponseWriter, r *http.Request) {
 	req := &pb.SchoolInstitute{}
 	misc.CallWithResp(w, r, "bc_groupon", "UpdateSchoolInstitute", req, "id", "name")
 }
+
+//用户点赞记录
+func HasStarGroupon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.GrouponOperateLog{FounderId: c.UserId}
+	misc.CallWithResp(w, r, "bc_groupon", "HasStarGroupon", req, "groupon_id")
+}
