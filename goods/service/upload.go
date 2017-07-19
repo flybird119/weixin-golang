@@ -102,6 +102,10 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 	cpuNum := runtime.NumCPU() * 4
 
 	size := len(goodsList) / cpuNum
+	//解决上传商品数量小于cpu分组的情况
+	if size == 0 {
+		size = 1
+	}
 	//4 设置 batch_size 获取批量上传数据列表
 	spiltList, _ := splitGoodsList(size, goodsList)
 
@@ -112,7 +116,6 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 	statisticChan := make(chan int)
 	var wg sync.WaitGroup
 	fmt.Println("uploadStart")
-
 	for i := 0; i < len(spiltList); i++ {
 		wg.Add(1)
 		handleList := spiltList[i]

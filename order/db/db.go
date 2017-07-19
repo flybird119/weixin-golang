@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	BasePoundage = 20
+	BasePoundage = 50
 )
 
 //提交数据
