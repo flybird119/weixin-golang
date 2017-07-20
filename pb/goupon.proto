@@ -76,6 +76,7 @@ message UserSchoolStatus{
     string school_name = 7;
     string institute_name = 8;
     string major_name = 9;
+    string store_id = 10;
 }
 
 //班级购响应

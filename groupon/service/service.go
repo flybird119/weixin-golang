@@ -1,13 +1,12 @@
 package service
 
 import (
-	"17mei/errs"
 	"errors"
 
-	"golang.org/x/net/context"
-
+	"github.com/goushuyun/weixin-golang/errs"
 	"github.com/goushuyun/weixin-golang/groupon/db"
 	"github.com/goushuyun/weixin-golang/misc"
+	"golang.org/x/net/context"
 
 	"github.com/goushuyun/weixin-golang/pb"
 	"github.com/wothing/log"
