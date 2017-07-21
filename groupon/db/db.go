@@ -609,6 +609,7 @@ func GrouponSubmit(orderModel *pb.GrouponSubmitModel) (order *pb.Order, noStock 
 		return nil, "", err
 	}
 	tx.Commit()
+
 	//增加团购操作日志
 	oplog := &pb.GrouponOperateLog{GrouponId: orderModel.GrouponId, FounderId: orderModel.UserId, FounderName: orderModel.Name, FounderType: 1, OperateType: "purchase", OperateDetail: " "}
 	err = SaveGrouponOperateLog(oplog)

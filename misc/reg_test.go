@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -45,4 +46,8 @@ func TestSpider(t *testing.T) {
 	re, _ = regexp.Compile("\\s{2,}")
 	src = re.ReplaceAllString(src, "\n")
 	fmt.Println(strings.TrimSpace(src))
+}
+func TestCmd(t *testing.T) {
+	HOME := os.Getenv("POSTGRES_PORT_5432_TCP_ADDR")
+	fmt.Println(HOME)
 }

@@ -774,7 +774,6 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	var condition string
 
 	//区分退款金额
-
 	if order.RefundFee == 0 {
 		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=4,after_sale_end_at=now()", order.RefundFee)
 	} else {
