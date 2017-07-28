@@ -165,6 +165,8 @@ func (s *WeixinServer) WeChatJsApiTicket(ctx context.Context, req *pb.WeixinReq)
 		return nil, errs.Wrap(errors.New(err.Error()))
 	}
 
+	log.Debugf("The offical_account info is : %s", offical_account)
+
 	// 获取js_ticket
 	ticket, err := component.JsTicket(offical_account.Appid, offical_account.RefreshToken)
 	if err != nil {

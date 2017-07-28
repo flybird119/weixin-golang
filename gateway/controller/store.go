@@ -25,6 +25,8 @@ func GetRecyclingQrcode(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Debugf("The store_id is : %s", req.Id)
+
 	misc.CallWithResp(w, r, "bc_store", "GetStoreRecyclingQrcode", req)
 }
 

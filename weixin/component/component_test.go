@@ -1,12 +1,15 @@
 package component
 
-import "testing"
+import (
+	"testing"
+	com "wechat_component/component"
+)
 
 func TestAccessToken(t *testing.T) {
-	access_token, err := ComponentAccessToken()
-	if err != nil {
-		t.Fatal(err)
-	}
+	component := com.New("wxb39264d954771192", "01e4ae1dd265db7cd94611c2b9bb7ff5", "goushuyun", "goushuyungoushuyungoushuyungoushuyungoushuy")
 
-	t.Log(access_token)
+	token, expire := component.GetRegularApi().GetAccessToken("ticket@@@tj2xWy0ZEsS4rY9XKF1TJdo68lJWpfO723JLilh_QkceXd_fA6NxoB5gWAInsXiMw75JoRDoTs8K9sDYRz0Fkg")
+
+	t.Log(token, expire)
+
 }
