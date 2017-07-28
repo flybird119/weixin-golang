@@ -11,7 +11,7 @@ import (
 
 //保存学生学籍信息
 func SaveUserSchoolStatus(model *pb.UserSchoolStatus) error {
-	searchModel := &pb.UserSchoolStatus{UserId: model.UserId}
+	searchModel := &pb.UserSchoolStatus{UserId: model.UserId, StoreId: model.StoreId}
 	err := GetUserSchoolStatus(searchModel)
 	if err != nil {
 		log.Error(err)
@@ -21,8 +21,8 @@ func SaveUserSchoolStatus(model *pb.UserSchoolStatus) error {
 		model.Id = ""
 		return nil
 	}
-	query := "insert into user_school_status(school_id,user_id,institute_id,institute_major_id) select '%s','%s','%s','%s'  returning id"
-	query = fmt.Sprintf(query, model.SchoolId, model.UserId, model.InstituteId, model.InstituteMajorId)
+	query := "insert into user_school_status(school_id,user_id,institute_id,institute_major_id,store_id) select '%s','%s','%s','%s','%s'  returning id"
+	query = fmt.Sprintf(query, model.SchoolId, model.UserId, model.InstituteId, model.InstituteMajorId, model.StoreId)
 	log.Debug(query)
 	err = DB.QueryRow(query).Scan(&model.Id)
 	if err != nil {
@@ -59,13 +59,13 @@ func UpdateUserSchoolStatus(model *pb.UserSchoolStatus) error {
 
 //获取学生学籍
 func GetUserSchoolStatus(model *pb.UserSchoolStatus) error {
-	query := "select us.id,us.school_id,us.user_id,us.institute_id,us.institute_major_id ,extract(epoch from us.create_at)::bigint,s.name,si.name,im.name from user_school_status us join school s on us.school_id::uuid=s.id join map_school_institute si on s.id=si.school_id::uuid join map_institute_major im on si.id=im.institute_id"
+	query := "select us.id,us.school_id,us.user_id,us.institute_id,us.institute_major_id ,extract(epoch from us.create_at)::bigint,s.name,si.name,im.name,us.store_id from user_school_status us join school s on us.school_id::uuid=s.id join map_school_institute si on si.id=us.institute_id join map_institute_major im on im.id=us.institute_major_id"
 	var condition string
-	condition += " where s.status=0 and s.del_at is null and si.status=1 and im.status=1 and user_id='%s'order by us.create_at desc  limit 1 "
-	condition = fmt.Sprintf(condition, model.UserId)
+	condition += " where s.status=0 and s.del_at is null and si.status=1 and im.status=1 and user_id='%s' and us.store_id='%s' order by us.create_at desc  limit 1 "
+	condition = fmt.Sprintf(condition, model.UserId, model.StoreId)
 	query += condition
 	log.Debug(query)
-	err := DB.QueryRow(query).Scan(&model.Id, &model.SchoolId, &model.UserId, &model.InstituteId, &model.InstituteMajorId, &model.CreateAt, &model.SchoolName, &model.InstituteName, &model.MajorName)
+	err := DB.QueryRow(query).Scan(&model.Id, &model.SchoolId, &model.UserId, &model.InstituteId, &model.InstituteMajorId, &model.CreateAt, &model.SchoolName, &model.InstituteName, &model.MajorName, &model.StoreId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil

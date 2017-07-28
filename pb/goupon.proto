@@ -51,6 +51,8 @@ service GrouponService {
     rpc DelSchoolInstitute (SchoolInstitute) returns (NormalResp);
     //修改学校学院名称
     rpc UpdateSchoolInstitute (SchoolInstitute) returns (NormalResp);
+    //用户点赞记录
+    rpc HasStarGroupon (GrouponOperateLog) returns (NormalResp);
 
 }
 
@@ -60,6 +62,8 @@ message UserSchoolStatusResp{
     string message = 2;
     UserSchoolStatus data = 3;
 }
+
+
 
 //用户学籍信息
 message UserSchoolStatus{
@@ -72,6 +76,7 @@ message UserSchoolStatus{
     string school_name = 7;
     string institute_name = 8;
     string major_name = 9;
+    string store_id = 10;
 }
 
 //班级购响应
@@ -139,7 +144,7 @@ message Groupon{
     int64 page = 21;
     int64 size = 22;
     string participate_user = 23;
-    int64 searchType = 24;
+    int64 search_type = 24;
     GrouponSchool school = 25;
     SchoolInstitute institute = 26;
     InstituteMajor major = 27;

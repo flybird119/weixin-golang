@@ -246,7 +246,7 @@ func SaveUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &pb.UserSchoolStatus{UserId: c.UserId}
+	req := &pb.UserSchoolStatus{UserId: c.UserId, StoreId: c.StoreId}
 
 	misc.CallWithResp(w, r, "bc_groupon", "SaveUserSchoolStatus", req, "school_id", "institute_id", "institute_major_id")
 }
@@ -260,7 +260,7 @@ func UpdateUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := &pb.UserSchoolStatus{UserId: c.UserId}
+	req := &pb.UserSchoolStatus{UserId: c.UserId, StoreId: c.StoreId}
 
 	misc.CallWithResp(w, r, "bc_groupon", "UpdateUserSchoolStatus", req, "id")
 }
@@ -273,7 +273,7 @@ func GetUserSchoolStatus(w http.ResponseWriter, r *http.Request) {
 		misc.ReturnNotToken(w, r)
 		return
 	}
-	req := &pb.UserSchoolStatus{UserId: c.UserId}
+	req := &pb.UserSchoolStatus{UserId: c.UserId, StoreId: c.StoreId}
 	misc.CallWithResp(w, r, "bc_groupon", "GetUserSchoolStatus", req)
 }
 
@@ -323,4 +323,16 @@ func UpdateSchoolInstitute(w http.ResponseWriter, r *http.Request) {
 	}
 	req := &pb.SchoolInstitute{}
 	misc.CallWithResp(w, r, "bc_groupon", "UpdateSchoolInstitute", req, "id", "name")
+}
+
+//用户点赞记录
+func HasStarGroupon(w http.ResponseWriter, r *http.Request) {
+	c := token.Get(r)
+
+	if c == nil || c.StoreId == "" || c.UserId == "" {
+		misc.ReturnNotToken(w, r)
+		return
+	}
+	req := &pb.GrouponOperateLog{FounderId: c.UserId}
+	misc.CallWithResp(w, r, "bc_groupon", "HasStarGroupon", req, "groupon_id")
 }

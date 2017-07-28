@@ -10,6 +10,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -19,7 +20,16 @@ import (
 var DB *sql.DB
 
 func InitPG(svcName string) {
-	dbhost := GetValue(svcName, "pgsql/host", "127.0.0.1")
+	//配置docker 数据库连接
+	host := os.Getenv("POSTGRES_PORT_5432_TCP_ADDR")
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	log.Debug("===================")
+	log.Debug(host)
+	log.Debug("===================")
+
+	dbhost := GetValue(svcName, "pgsql/host", host)
 	dbport := GetValue(svcName, "pgsql/port", "5432")
 	dbpwd := GetValue(svcName, "pgsql/password", "")
 	dbname := GetValue(svcName, "pgsql/name", "bookcloud")

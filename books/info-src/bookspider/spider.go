@@ -151,6 +151,15 @@ func structData(items *page_items.PageItems, book *pb.Book) {
 	isbn, _ := items.GetItem("isbn")
 	edition, _ := items.GetItem("edition")
 	image_url, _ := items.GetItem("image_url")
+	log.Debug(title)
+	if title != "" {
+		reg := regexp.MustCompile("(\\d[- ]*){12}[\\d]")
+		isbnStr := reg.FindString(title)
+		isbnStr = strings.Replace(isbnStr, "-", "", -1)
+		isbnStr = strings.Replace(isbnStr, " ", "", -1)
+		index := strings.Index(title, isbnStr)
+		title = title[0:index]
+	}
 	book.Title = title
 	book.Isbn = isbn
 	book.Price = int64(priceFloat)

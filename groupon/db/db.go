@@ -264,7 +264,7 @@ func SaveGroupon(model *pb.Groupon) error {
 
 //班级购列表
 func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount int64) {
-	query := "select %s from groupon g join school s on s.id=g.school_id::uuid left join map_school_institute si on s.id=si.school_id::uuid left join map_institute_major im on si.id=im.institute_id where 1=1"
+	query := "select %s from groupon g join school s on s.id=g.school_id::uuid left join map_school_institute si on si.id=g.institute_id left join map_institute_major im on im.id=g.institute_major_id where 1=1"
 	param := " distinct g.id,g.status,g.store_id,g.school_id,g.institute_id,g.institute_major_id,g.founder_id,g.term,g.class,g.founder_type,g.founder_name,g.founder_mobile,g.profile,g.participate_num,g.star_num,g.total_sales,g.order_num,extract(epoch from g.create_at)::bigint,extract(epoch from g.expire_at)::bigint,s.name,s.status,si.name,si.status,im.name,im.status,g.founder_avatar"
 	queryCount := fmt.Sprintf(query, "count(*)")
 	query = fmt.Sprintf(query, param)
@@ -302,11 +302,11 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	if model.SearchType != 0 {
 		if model.SearchType == 1 {
 			//正常 使用中的
-			condition += fmt.Sprintf(" and g.status=1 and g.expire_at<=to_timestamp(%d)", time.Now().Unix())
+			condition += fmt.Sprintf(" and g.status=1 and g.expire_at>to_timestamp(%d)", time.Now().Unix())
 
 		} else if model.SearchType == 2 {
 			//过期
-			condition += fmt.Sprintf(" and g.expire_at>to_timestamp(%d)", time.Now().Unix())
+			condition += fmt.Sprintf(" and g.expire_at<to_timestamp(%d)", time.Now().Unix())
 
 		} else if model.SearchType == 3 {
 			//异常
@@ -315,7 +315,7 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	}
 	// 根据参与者
 	if model.ParticipateUser != "" {
-		condition += fmt.Sprintf(" and exists (select * from groupon_operate_log where founder_id='%s' and ((operate_type='purchase') or (operate_type='share')))", model.ParticipateUser)
+		condition += fmt.Sprintf(" and exists (select * from groupon_operate_log where founder_id='%s' and ((operate_type='purchase') or (operate_type='share')) and groupon_id=g.id)", model.ParticipateUser)
 	}
 	// 根据创建人 创建人类型
 	if model.FounderId != "" {
@@ -339,7 +339,12 @@ func FindGroupon(model *pb.Groupon) (models []*pb.Groupon, err error, totalCount
 	if model.Size <= 0 {
 		model.Size = 15
 	}
-	condition += fmt.Sprintf(" order by order_num desc, id desc limit %d offset %d", model.Size, model.Size*(model.Page-1))
+	if model.FounderId != "" {
+		condition += fmt.Sprintf(" order by  g.id desc limit %d offset %d", model.Size, model.Size*(model.Page-1))
+	} else {
+		condition += fmt.Sprintf(" order by order_num desc, id desc limit %d offset %d", model.Size, model.Size*(model.Page-1))
+	}
+
 	query += condition
 	log.Debug(query)
 	rows, err := DB.Query(query)
@@ -604,6 +609,7 @@ func GrouponSubmit(orderModel *pb.GrouponSubmitModel) (order *pb.Order, noStock 
 		return nil, "", err
 	}
 	tx.Commit()
+
 	//增加团购操作日志
 	oplog := &pb.GrouponOperateLog{GrouponId: orderModel.GrouponId, FounderId: orderModel.UserId, FounderName: orderModel.Name, FounderType: 1, OperateType: "purchase", OperateDetail: " "}
 	err = SaveGrouponOperateLog(oplog)
@@ -799,5 +805,18 @@ func BatchUpdateGrouponExpireAt(model *pb.Groupon) error {
 		return err
 	}
 	return nil
+}
 
+//用户点赞记录
+func HasStarGroupon(model *pb.GrouponOperateLog) (totalCount int64, err error) {
+	query := "select count(*) from groupon_operate_log where groupon_id='%s' and founder_id='%s' and  operate_type='star'"
+	query = fmt.Sprintf(query, model.GrouponId, model.FounderId)
+	log.Debug(query)
+
+	err = DB.QueryRow(query).Scan(&totalCount)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+	return
 }

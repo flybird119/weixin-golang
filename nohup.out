@@ -1,0 +1,50 @@
+2017-07-17 10:45:49.206883 I | etcdmain: etcd Version: 2.3.7
+2017-07-17 10:45:49.207232 I | etcdmain: Git SHA: fd17c91
+2017-07-17 10:45:49.207414 I | etcdmain: Go Version: go1.6.2
+2017-07-17 10:45:49.207583 I | etcdmain: Go OS/Arch: linux/amd64
+2017-07-17 10:45:49.207742 I | etcdmain: setting maximum number of CPUs to 4, total number of available CPUs is 4
+2017-07-17 10:45:49.207918 W | etcdmain: no data-dir provided, using default data-dir ./default.etcd
+2017-07-17 10:45:49.208915 W | etcdmain: found invalid file/dir .DS_Store under data dir default.etcd (Ignore this if you are upgrading etcd)
+2017-07-17 10:45:49.209109 N | etcdmain: the server is already initialized as member before, starting as etcd member...
+2017-07-17 10:45:49.209536 I | etcdmain: listening for peers on http://localhost:2380
+2017-07-17 10:45:49.209770 I | etcdmain: listening for peers on http://localhost:7001
+2017-07-17 10:45:49.210002 I | etcdmain: listening for client requests on http://localhost:2379
+2017-07-17 10:45:49.210186 I | etcdmain: listening for client requests on http://localhost:4001
+2017-07-17 10:45:49.213221 I | etcdserver: name = default
+2017-07-17 10:45:49.213457 I | etcdserver: data dir = default.etcd
+2017-07-17 10:45:49.213602 I | etcdserver: member dir = default.etcd/member
+2017-07-17 10:45:49.213728 I | etcdserver: heartbeat = 100ms
+2017-07-17 10:45:49.213851 I | etcdserver: election = 1000ms
+2017-07-17 10:45:49.213962 I | etcdserver: snapshot count = 10000
+2017-07-17 10:45:49.214119 I | etcdserver: advertise client URLs = http://localhost:2379,http://localhost:4001
+2017-07-17 10:45:49.214263 I | etcdserver: initial advertise peer URLs = http://localhost:2380,http://localhost:7001
+2017-07-17 10:45:49.214412 I | etcdserver: initial cluster = default=http://localhost:2380,default=http://localhost:7001
+2017-07-17 10:45:49.216502 I | etcdserver: starting member ce2a822cea30bfca in cluster 7e27652122e8b2ae
+2017-07-17 10:45:49.216762 I | raft: ce2a822cea30bfca became follower at term 0
+2017-07-17 10:45:49.216964 I | raft: newRaft ce2a822cea30bfca [peers: [], term: 0, commit: 0, applied: 0, lastindex: 0, lastterm: 0]
+2017-07-17 10:45:49.217145 I | raft: ce2a822cea30bfca became follower at term 1
+2017-07-17 10:45:49.219455 I | etcdserver: starting server... [version: 2.3.7, cluster version: to_be_decided]
+2017-07-17 10:45:49.221304 N | etcdserver: added local member ce2a822cea30bfca [http://localhost:2380 http://localhost:7001] to cluster 7e27652122e8b2ae
+2017-07-17 10:45:49.619852 I | raft: ce2a822cea30bfca is starting a new election at term 1
+2017-07-17 10:45:49.620611 I | raft: ce2a822cea30bfca became candidate at term 2
+2017-07-17 10:45:49.621194 I | raft: ce2a822cea30bfca received vote from ce2a822cea30bfca at term 2
+2017-07-17 10:45:49.621770 I | raft: ce2a822cea30bfca became leader at term 2
+2017-07-17 10:45:49.622278 I | raft: raft.node: ce2a822cea30bfca elected leader ce2a822cea30bfca at term 2
+2017-07-17 10:45:49.623075 I | etcdserver: setting up the initial cluster version to 2.3
+2017-07-17 10:45:49.624212 N | etcdserver: set the initial cluster version to 2.3
+2017-07-17 10:45:49.624795 I | etcdserver: published {Name:default ClientURLs:[http://localhost:2379 http://localhost:4001]} to cluster 7e27652122e8b2ae
+2017-07-17 11:32:42.221133 I | etcdserver: start to snapshot (applied: 10001, lastsnap: 0)
+2017-07-17 11:32:42.237219 I | etcdserver: saved snapshot at index 10001
+2017-07-17 11:32:42.237776 I | etcdserver: compacted raft log at 5001
+2017-07-17 12:44:26.774237 I | etcdserver: start to snapshot (applied: 20002, lastsnap: 10001)
+2017-07-17 12:44:26.788496 I | etcdserver: saved snapshot at index 20002
+2017-07-17 12:44:26.789112 I | etcdserver: compacted raft log at 15002
+2017-07-17 13:30:44.574418 I | etcdserver: start to snapshot (applied: 30003, lastsnap: 20002)
+2017-07-17 13:30:44.590483 I | etcdserver: saved snapshot at index 30003
+2017-07-17 13:30:44.591166 I | etcdserver: compacted raft log at 25003
+2017-07-18 00:32:43.078502 I | etcdserver: start to snapshot (applied: 40004, lastsnap: 30003)
+2017-07-18 00:32:43.091723 I | etcdserver: saved snapshot at index 40004
+2017-07-18 00:32:43.092426 I | etcdserver: compacted raft log at 35004
+2017-07-18 01:19:01.214707 I | etcdserver: start to snapshot (applied: 50005, lastsnap: 40004)
+2017-07-18 01:19:01.235077 I | etcdserver: saved snapshot at index 50005
+2017-07-18 01:19:01.235780 I | etcdserver: compacted raft log at 45005

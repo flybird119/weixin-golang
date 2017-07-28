@@ -84,6 +84,6 @@ func SetRouterV1() *m.Router {
 	v1.Register("/groupon/save_user_school_status", m.Wrap(c.SaveUserSchoolStatus))
 	v1.Register("/groupon/update_user_school_status", m.Wrap(c.UpdateUserSchoolStatus))
 	v1.Register("/groupon/get_user_school_status", m.Wrap(c.GetUserSchoolStatus))
-
+	v1.Register("/groupon/user_has_star_groupon", m.Wrap(c.HasStarGroupon))
 	return v1
 }

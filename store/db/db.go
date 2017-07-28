@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	BasePoundage = 20
+	BasePoundage = 50
 )
 
 func UpdateRecyclingQrcode(store *pb.Store) error {

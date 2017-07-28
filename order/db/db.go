@@ -21,7 +21,7 @@ import (
 )
 
 const (
-	BasePoundage = 20
+	BasePoundage = 50
 )
 
 //提交数据
@@ -254,7 +254,11 @@ func FindOrders(order *pb.Order) (details []*pb.OrderDetail, err error, totalcou
 		condition += fmt.Sprintf(" and (exists (select * from orders_item oi join  goods g on oi.goods_id=g.id where oi.orders_id=o.id and g.isbn=$%d))", len(args))
 	}
 
-	//10.0 商家备注类型
+	//10.0 班级购id
+	if order.GrouponId != "" {
+		condition += fmt.Sprintf(" and  o.groupon_id='%s'", order.GrouponId)
+	}
+	//11.0 商家备注类型
 	if order.SellerRemarkType != 0 {
 		if order.SellerRemarkType == 79 {
 			condition += fmt.Sprintf(" and o.seller_remark_type=0")
@@ -770,7 +774,6 @@ func HandleAfterSaleOrder(tx *sql.Tx, order *pb.Order) error {
 	var condition string
 
 	//区分退款金额
-
 	if order.RefundFee == 0 {
 		condition += fmt.Sprintf(",refund_fee=%d,after_sale_status=4,after_sale_end_at=now()", order.RefundFee)
 	} else {
