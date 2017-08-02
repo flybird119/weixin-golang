@@ -53,7 +53,7 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
-		if book.Isbn != "" && isbn == book.Isbn {
+		if book.Isbn != "" && isbn == book.Isbn && book.Price != 0 && book.Title != "" {
 			//如果获取到数据，返回
 			log.Debugf("%+v", book)
 			return
@@ -63,7 +63,7 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 	//从京东上获取图书信息
 	book.InfoSrc = "jd"
 	sp = spider.NewSpider(NewJDListProcesser(), "spiderJDList")
-	baseURL = "https://search.jd.com/Search?keyword=ISBN&enc=utf-8&wq=ISBN&pvid=3d3aefa8a0904ef1b08547fb69f57ae7"
+	baseURL = "https://search.jd.com/Search?keyword=ISBN&enc=utf-8&wq=ISBN&pvid=3d3aefa8a0904ef1b08547fb69f57ae7&wtype=1&click=3"
 	url = strings.Replace(baseURL, "ISBN", isbn, -1)
 	req = request.NewRequest(url, "html", "", "GET", "", nil, nil, nil, nil)
 
@@ -76,7 +76,7 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
-		if book.Isbn != "" && isbn == book.Isbn {
+		if book.Isbn != "" && isbn == book.Isbn && book.Price != 0 && book.Title != "" {
 			//如果获取到数据，返回
 			log.Debugf("%+v", book)
 			return
@@ -105,7 +105,7 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
-		if book.Isbn != "" && isbn == book.Isbn {
+		if book.Isbn != "" && isbn == book.Isbn && book.Price != 0 && book.Title != "" {
 			//如果获取到数据，返回
 			log.Debugf("%+v", book)
 			return
@@ -127,7 +127,7 @@ func GetBookInfoBySpider(isbn, upload_way string) (book *pb.Book, err error) {
 		log.Debug("no matches found!")
 	} else {
 		structData(pageItems, book)
-		if book.Isbn != "" && isbn == book.Isbn {
+		if book.Isbn != "" && isbn == book.Isbn && book.Price != 0 && book.Title != "" {
 			//如果获取到数据，返回
 			log.Debugf("%+v", book)
 			return
@@ -151,15 +151,6 @@ func structData(items *page_items.PageItems, book *pb.Book) {
 	isbn, _ := items.GetItem("isbn")
 	edition, _ := items.GetItem("edition")
 	image_url, _ := items.GetItem("image_url")
-	log.Debug(title)
-	if title != "" {
-		reg := regexp.MustCompile("(\\d[- ]*){12}[\\d]")
-		isbnStr := reg.FindString(title)
-		isbnStr = strings.Replace(isbnStr, "-", "", -1)
-		isbnStr = strings.Replace(isbnStr, " ", "", -1)
-		index := strings.Index(title, isbnStr)
-		title = title[0:index]
-	}
 	book.Title = title
 	book.Isbn = isbn
 	book.Price = int64(priceFloat)
