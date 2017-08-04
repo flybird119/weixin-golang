@@ -28,7 +28,7 @@ func UpdateSchool(school *pb.School) error {
 	updateTime := time.Now()
 	query := "update school set name=$1,tel=$2,express_fee=$3,lat=$4,lng=$5,update_at=$6 where id=$7"
 	log.Debugf("update school set name=$1,tel=$2,express_fee=$3,lat=$4,lng=$5 ,update_at=$6,where id=$6", school.Name, school.Tel, school.ExpressFee, school.Lat, school.Lng, updateTime, school.Id)
-	_, err := DB.Query(query, school.Name, school.Tel, school.ExpressFee, school.Lat, school.Lng, updateTime, school.Id)
+	_, err := DB.Exec(query, school.Name, school.Tel, school.ExpressFee, school.Lat, school.Lng, updateTime, school.Id)
 	if err != nil {
 		log.Errorf("%+v", err)
 		return err

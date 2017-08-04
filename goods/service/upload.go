@@ -233,11 +233,17 @@ func readExcelByXlsx(name string) (books []*pb.Goods, err error) {
 			index++
 			continue
 		}
-		isbn, _ := row.Cells[0].String()
-		numStr, _ := row.Cells[1].String()
-		if isbn == "" || numStr == "" {
-			break
+		var isbn, numStr string
+		if len(row.Cells) >= 2 {
+			isbn, _ = row.Cells[0].String()
+			numStr, _ = row.Cells[1].String()
+		} else if len(row.Cells) == 1 {
+			isbn, _ = row.Cells[0].String()
+			numStr = "上传时数量为空"
+		} else {
+			continue
 		}
+
 		book := &pb.Goods{Isbn: isbn, StrNum: numStr}
 		books = append(books, book)
 		index++
