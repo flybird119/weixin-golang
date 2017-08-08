@@ -145,6 +145,10 @@ func (s *BooksServer) GetBookInfoByISBN(ctx context.Context, req *pb.Book) (*pb.
 		final_book = spider_book
 	}
 
+	log.Debug(final_book)
+
+	log.Debugf("The check is %t", bookInfoIsOk(final_book))
+
 	// API 调用之后，未找到该图书，或者图书信息不完善 return
 	if final_book == nil || !bookInfoIsOk(final_book) {
 		return &pb.GetBookInfoResp{Code: errs.Ok, Message: "book_not_found"}, nil
