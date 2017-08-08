@@ -71,6 +71,9 @@ func TestSign(t *testing.T) {
 		return
 	}
 
+	if claims.VerifyIsExpired() != false {
+		t.Error("should not expire")
+	}
 	t.Logf("%+v", claims)
 }
 

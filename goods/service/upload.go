@@ -65,7 +65,6 @@ func downloadRemoteExcel(originFileUrl string, filename string) {
 	res, _ := http.Get(originFileUrl)
 	file, _ := os.Create(filename)
 	io.Copy(file, res.Body)
-
 }
 
 func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
@@ -99,16 +98,8 @@ func coreUploadHandler(in *pb.GoodsBatchUploadModel) {
 		return
 	}
 	//获取cpu数量
-	cpuNum := runtime.NumCPU() * 4
-
-	size := len(goodsList) / cpuNum
-	//解决上传商品数量小于cpu分组的情况
-	if size == 0 {
-		size = 1
-	}
 	//4 设置 batch_size 获取批量上传数据列表
-	spiltList, _ := splitGoodsList(size, goodsList)
-
+	spiltList, _ := splitGoodsList(goodsList)
 	//定义传输通道 -- 模拟协程信号通道（数据返回）
 	goodsChan := make(chan pb.Goods)
 	var currentCompleteNum int
@@ -242,11 +233,17 @@ func readExcelByXlsx(name string) (books []*pb.Goods, err error) {
 			index++
 			continue
 		}
-		isbn, _ := row.Cells[0].String()
-		numStr, _ := row.Cells[1].String()
-		if isbn == "" || numStr == "" {
-			break
+		var isbn, numStr string
+		if len(row.Cells) >= 2 {
+			isbn, _ = row.Cells[0].String()
+			numStr, _ = row.Cells[1].String()
+		} else if len(row.Cells) == 1 {
+			isbn, _ = row.Cells[0].String()
+			numStr = "上传时数量为空"
+		} else {
+			continue
 		}
+
 		book := &pb.Goods{Isbn: isbn, StrNum: numStr}
 		books = append(books, book)
 		index++
@@ -297,8 +294,16 @@ func createFailedExcel(failedRechord []*pb.Goods) (fileUrl string, err error) {
 }
 
 // goodsList 分组
-func splitGoodsList(batchSize int, goodsList []*pb.Goods) (splitList [][]*pb.Goods, err error) {
+func splitGoodsList(goodsList []*pb.Goods) (splitList [][]*pb.Goods, err error) {
 
+	cpuNum := runtime.NumCPU() * 4
+
+	batchSize := len(goodsList) / cpuNum
+
+	//解决上传商品数量小于cpu分组的情况
+	if batchSize <= 0 {
+		batchSize = 1
+	}
 	for i := 0; i < len(goodsList); i += batchSize {
 		if i+batchSize >= len(goodsList) {
 			splitList = append(splitList, goodsList[i:])

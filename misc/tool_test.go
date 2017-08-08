@@ -2,6 +2,7 @@ package misc
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -105,7 +106,7 @@ func test(p **int) {
 
 func TestDownloadAndAnaly(t *testing.T) {
 
-	xlFile, err := xlsx.OpenFile("hello.xlsx")
+	xlFile, err := xlsx.OpenFile("/Users/lixiao/Downloads/upload_excel_1501757391.xlsx")
 	if err != nil {
 		fmt.Printf("err :%+v", err)
 	}
@@ -120,14 +121,10 @@ func TestDownloadAndAnaly(t *testing.T) {
 		book := &pb.Goods{Isbn: isbn, StrNum: numStr}
 		books = append(books, book)
 	}
-
+	//
 	splitList, _ := splitGoodsList(50, books)
 	fmt.Printf("%+v\n", len(splitList))
-	fmt.Println("======================")
-	fmt.Printf("%+v\n", splitList[791])
-	fmt.Println("======================")
-	fmt.Printf("%+v\n", splitList[792])
-	//os.Remove("hello.xls")
+	os.Remove("hello.xls")
 }
 func TestUrlSubString(t *testing.T) {
 	uri := "http://image.goushuyun.cn/Exceltest.xls"
